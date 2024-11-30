@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 const DateInput = ({ field, form, ...props }) => {
   const [selectedDate, setSelectedDate] = useState(field.value || null);
@@ -82,7 +83,7 @@ const DateInput = ({ field, form, ...props }) => {
             ))}
           </div>
         );
-      case 'day':
+      case 'day': {
         const daysInMonth = getDaysInMonth(selectedDate);
         return (
           <div className="grid grid-cols-7 gap-2 p-2">
@@ -97,6 +98,9 @@ const DateInput = ({ field, form, ...props }) => {
             ))}
           </div>
         );
+      }
+      default:
+        return null;
     }
   };
 
@@ -145,6 +149,18 @@ const DateInput = ({ field, form, ...props }) => {
       )}
     </div>
   );
+};
+
+DateInput.propTypes = {
+  field: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    value: PropTypes.string
+  }).isRequired,
+  form: PropTypes.shape({
+    setFieldValue: PropTypes.func.isRequired,
+    errors: PropTypes.object,
+    touched: PropTypes.object
+  }).isRequired
 };
 
 export default DateInput; 

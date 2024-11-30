@@ -1,0 +1,46 @@
+{
+  "admin": [
+    {
+      "title": "Admin Mangement",
+      "link": "/dashboard/admin/management"
+    },
+    {
+      "title": "Doctor Management",
+      "link": "/dashboard/doctor/management"
+    },
+    {
+      "title": "Patient Management",
+      "link": "/dashboard/patient/management"
+    }
+  ],
+  "doctor": [
+    {
+      "title": "Appointments",
+      "link": "/dashboard/appointments"
+    },
+    {
+      "title": "Patients",
+      "link": "/dashboard/patients"
+    },
+    {
+      "title": "Prescriptions",
+      "link": "/dashboard/prescriptions"
+    },
+    {
+      "title": "Profile",
+      "link": "/dashboard/profile"
+    }
+  
+  ],
+  "patient": [
+    {
+      "title": "Patient Management",
+      "link": "/dashboard/patient/management"
+    },
+    {
+      "title": "Profile",
+      "link": "/dashboard/profile"
+    }
+
+  ]
+}

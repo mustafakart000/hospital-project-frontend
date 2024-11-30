@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export const CheckIcon = () => (
   <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
@@ -25,3 +26,8 @@ export const InputWrapper = ({ children, showCheck }) => (
     {showCheck && <CheckIcon />}
   </div>
 );
+
+InputWrapper.propTypes = {
+  children: PropTypes.node.isRequired,
+  showCheck: PropTypes.bool
+};

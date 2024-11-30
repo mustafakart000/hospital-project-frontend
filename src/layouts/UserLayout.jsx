@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import LoadingPage from "../components/common/LoadingPage";
 
 const UserLayout = () => {
-  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

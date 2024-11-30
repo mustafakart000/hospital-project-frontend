@@ -51,8 +51,7 @@ const Register = () => {
         "http://localhost:8080/auth/register",
         formattedValues
       );
-      console.log("response: ",response.status)
-      console.log("data: ",response.data)
+      
       if (response.data.success) {
           navigate("/auth/login");
         }
