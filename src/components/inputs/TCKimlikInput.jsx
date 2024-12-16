@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const TCKimlikInput = ({ field, form, ...props }) => {
   const handleChange = (e) => {
@@ -88,6 +89,20 @@ const TCKimlikInput = ({ field, form, ...props }) => {
       )}
     </div>
   );
+};
+
+TCKimlikInput.propTypes = {
+  field: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    value: PropTypes.string
+  }).isRequired,
+  form: PropTypes.shape({
+    setFieldValue: PropTypes.func.isRequired,
+    setFieldTouched: PropTypes.func.isRequired,
+    setFieldError: PropTypes.func.isRequired,
+    errors: PropTypes.object,
+    touched: PropTypes.object
+  }).isRequired
 };
 
 export default TCKimlikInput;

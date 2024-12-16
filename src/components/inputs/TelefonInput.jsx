@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 
     const TelefonInput = ({ field, form, ...props }) => {
@@ -35,5 +36,16 @@ import React from 'react'
       };
       
 
+TelefonInput.propTypes = {
+  field: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    value: PropTypes.string
+  }).isRequired,
+  form: PropTypes.shape({
+    setFieldValue: PropTypes.func.isRequired,
+    errors: PropTypes.object,
+    touched: PropTypes.object
+  }).isRequired
+};
 
 export default TelefonInput

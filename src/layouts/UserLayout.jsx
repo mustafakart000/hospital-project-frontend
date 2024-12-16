@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import LoadingPage from "../components/common/LoadingPage";
+import Header from "../components/common/Header";
+import Footer from "../components/common/Footer";
+import MenuBar from "../components/common/menu-bar";
 
 const UserLayout = () => {
-  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,20 +16,17 @@ const UserLayout = () => {
   if (loading) return <LoadingPage />;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-blue-600 text-white p-4">
-        <h1 className="text-2xl font-bold">Hastane Yönetim Sistemi</h1>
-      </header>
-
-      <main className="flex-grow">
-        <Outlet />
-      </main>
-
-      <footer className="bg-gray-800 text-white p-4 text-center">
-        <p>&copy; 2024 Hastane Yönetim Sistemi</p>
-      </footer>
-    </div>
+    <>
+      <Header />
+      <div className="flex h-screen bg-white">
+        <MenuBar />
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-white shadow rounded-lg">
+          <Outlet />
+        </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 
-export default UserLayout; 
+export default UserLayout;

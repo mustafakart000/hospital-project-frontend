@@ -1,7 +1,7 @@
-import { PrimeReactProvider } from "primereact/api"
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Provider as StoreProvider } from 'react-redux'
+import { PrimeReactProvider } from "primereact/api"
 import App from './App'
 
 // PrimeReact CSS
@@ -14,13 +14,13 @@ import './index.css'
 import store from './redux/store'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  
     <StoreProvider store={store}>
       <PrimeReactProvider>
-        <App />
+          <App />
       </PrimeReactProvider>
     </StoreProvider>
-  </React.StrictMode>,
+  
 )
 
 

@@ -1,12 +1,36 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Formik, Form, Field } from "formik";
-import * as Yup from "yup";
-import axios from "axios";
-import DateInput from "../../components/inputs/DateInput";
-import TCKimlikInput from "../../components/inputs/TCKimlikInput";
-import TelefonInput from "../../components/inputs/TelefonInput";
-import { InputWrapper } from "../../components/common/InputIcons";
+// Bu kod Ant Design kullanılarak formun yeniden oluşturulmuş halidir.
+// Önceki haline göre değişiklikler (Kod yapısı, stil, bileşenler):
+// 1. Tailwind class'ları kaldırıldı, Ant Design bileşenleri eklendi.
+// 2. InputWrapper, custom DateInput, TCKimlikInput, TelefonInput kaldırıldı.
+// 3. Ant Design'ın Form.Item yapısı ve validateMessages sistemi kullanıldı.
+// 4. Ant Design'ın Input, Select, DatePicker, Button bileşenleri eklendi.
+// 5. Kodun genel yapısı daha profesyonel ve okunabilir hale getirildi.
+
+// Değişikliklerin kod üzerinde satır satır açıklaması yapılmıştır.
+
+// -----------------------------------------------------
+// Gerekli importlar:
+import React from "react"; // React kütüphanesi
+import { Link, useNavigate } from "react-router-dom"; // Sayfa yönlendirme için useNavigate
+import { Formik, Form } from "formik"; // Formik bileşeni, form yönetimi için
+import * as Yup from "yup"; // Yup ile doğrulama şeması
+import axios from "axios"; // API istekleri için axios
+import {
+  Form as AntdForm, // Ant Design'ın Form bileşenini Form olarak kullandığımız için 'as' ile yeniden adlandırıyoruz
+  Input,
+  Select,
+  Button,
+  DatePicker,
+  Typography
+} from "antd"; // Ant Design bileşenleri
+import moment from "moment"; // Tarih formatlama için moment (Doğum tarihi seçimi)
+import toast from "react-hot-toast";
+
+// Ant Design tipografi ayarı (Daha iyi başlıklar):
+const { Title, Text } = Typography;
+
+// -----------------------------------------------------
+// Validation şeması (Yup) - Güncelleme yok, önceki kodla aynı mantık:
 const validationSchema = Yup.object({
   username: Yup.string().required("TC Kimlik numarası zorunludur"),
   password: Yup.string()
@@ -23,232 +47,283 @@ const validationSchema = Yup.object({
   adres: Yup.string().required("Adres zorunludur"),
   birthDate: Yup.date().required("Doğum tarihi zorunludur"),
   kanGrubu: Yup.string().required("Kan grubu zorunludur"),
+  tcKimlik: Yup.string().required("TC Kimlik numarası zorunludur"),
 });
 
+// -----------------------------------------------------
+// Başlangıç değerleri:
+const initialValues = {
+  username: "",
+  password: "",
+  ad: "",
+  soyad: "",
+  email: "",
+  telefon: "",
+  adres: "",
+  birthDate: null, // Tarih artık DatePicker ile moment nesnesi olarak alınacak
+  kanGrubu: "",
+  tcKimlik: ""
+};
+
+// -----------------------------------------------------
+// Register bileşeni:
 const Register = () => {
+  // useNavigate ile sayfa yönlendirme
   const navigate = useNavigate();
 
-  const initialValues = {
-    username: "",
-    password: "",
-    ad: "",
-    soyad: "",
-    email: "",
-    telefon: "",
-    adres: "",
-    birthDate: "",
-    kanGrubu: "",
-  };
-  console.log("first")
+  // Form submit fonksiyonu
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    
     try {
+      // Formdan alınan değerleri API'ye uygun formata çeviriyoruz.
+      // Kullanıcı adını trim ediyoruz (boşlukları kaldır)
       const formattedValues = {
         ...values,
-        username: values.username.replace(/\s/g, '').toString()
+        username: values.username.replace(/\s/g, "").toString(),
+        // birthDate alanını 'YYYY-MM-DD' formatına çeviriyoruz.
+        birthDate: values.birthDate ? values.birthDate.format("YYYY-MM-DD") : ""
       };
-        console.log(formattedValues.username)
-      const response = await axios.post(
-        "http://localhost:8080/auth/register",
-        formattedValues
-      );
-      console.log("response: ",response.status)
-      console.log("data: ",response.data)
-      if (response.data.success) {
-          navigate("/auth/login");
-        }
+
+      // API isteği
+      const response = await axios.post("http://localhost:8080/auth/register", formattedValues);
+      console.log("response: ",response);
+      // Başarılıysa login sayfasına yönlendir
+      if (response.data.includes("Başarılı bir şekilde kayıt oldunuz.")) {
+        toast.success("Başarılı bir şekilde kayıt oldunuz.");
+        navigate("/auth/login");
+      }
     } catch (error) {
-        if(error.response.status === 409){ 
-            setErrors({
-                submit: error.response?.data?.message || "Kayıt işlemi başarısız",
-            });
-        }
-        console.log("response: ",error.message)
+      console.error("Error during registration:", error);
+      // Hata durumunda Formik'in setErrors fonksiyonu ile genel bir hata mesajı gösteriyoruz
+      if (error.response && error.response.status === 409) {
         setErrors({
-            submit: error.response?.data?.message || "Kayıt işlemi başarısız",
-      });
+          submit: error.response?.data?.message || "Bu kullanıcı adı zaten mevcut"
+        });
+      } else {
+        setErrors({
+          submit: error.response?.data?.message || "Kayıt işlemi başarısız"
+          
+        });
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
+  // -----------------------------------------------------
+  // Arayüz:
+  // Ant Design form yapısı kullanıldı.
   return (
-    <div className="bg-white p-6 md:p-8 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+    <div style={{ maxWidth: 500, margin: "0 auto", padding: "24px", background: "#fff", borderRadius: "8px" }}>
+      {/* Başlık */}
+      <Title level={2} style={{ textAlign: "center", marginBottom: "24px" }}>
         Kayıt Ol
-      </h2>
+      </Title>
+
+      {/* Formik ile Form kontrolü */}
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={handleSubmit}
+        onSubmit={(values, actions) => {
+          handleSubmit(values, actions);
+        }}
       >
-        {({ errors, touched, values, isSubmitting }) => (
-          <Form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <InputWrapper showCheck={values.ad && !errors.ad && touched.ad}>
-                  <Field
-                    name="ad"
-                    type="text"
-                    className={`w-full p-2 pr-8 border rounded-md ${
-                      errors.ad && touched.ad 
-                        ? "border-red-500" 
-                        : values.ad && !errors.ad && touched.ad 
-                          ? "border-green-500"
-                          : ""
-                    }`}
-                    placeholder="Ad"
-                  />
-                </InputWrapper>
-                {errors.ad && touched.ad && (
-                  <div className="text-red-500 text-sm mt-1">{errors.ad}</div>
-                )}
-              </div>
-              <div>
-                <InputWrapper showCheck={values.soyad && !errors.soyad && touched.soyad}>
-                  <Field
-                    name="soyad"
-                    type="text"
-                    className={`w-full p-2 pr-8 border rounded-md ${
-                      errors.soyad && touched.soyad 
-                        ? "border-red-500" 
-                        : values.soyad && !errors.soyad && touched.soyad 
-                          ? "border-green-500"
-                          : ""
-                    }`}
-                    placeholder="Soyad"
-                  />
-                </InputWrapper>
-                {errors.soyad && touched.soyad && (
-                  <div className="text-red-500 text-sm mt-1">{errors.soyad}</div>
-                )}
-              </div>
-            </div>
+        {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => (
+          <Form
+            labelCol={{ span: 24 }} // Etiketin tüm genişliği kaplaması için
+            wrapperCol={{ span: 24 }} // Giriş alanının tüm genişliği kaplaması için
+          >
+            {/* Ad */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Ad</span>}
+              validateStatus={errors.ad && touched.ad ? "error" : ""}
+              help={errors.ad && touched.ad ? errors.ad : ""}
+            >
+              <Input
+                name="ad"
+                placeholder="Ad"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.ad}
+              />
+            </AntdForm.Item>
 
-            <div>
-              <Field name="username" component={TCKimlikInput} />
-            </div>
+            {/* Soyad */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Soyad</span>}
+              validateStatus={errors.soyad && touched.soyad ? "error" : ""}
+              help={errors.soyad && touched.soyad ? errors.soyad : ""}
+            >
+              <Input
+                name="soyad"
+                placeholder="Soyad"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.soyad}
+              />
+            </AntdForm.Item>
 
-            <div>
-              <InputWrapper showCheck={values.email && !errors.email && touched.email}>
-                <Field
-                  name="email"
-                  type="email"
-                  className={`w-full p-2 pr-8 border rounded-md ${
-                    errors.email && touched.email 
-                      ? "border-red-500" 
-                      : values.email && !errors.email && touched.email 
-                        ? "border-green-500"
-                        : ""
-                  }`}
-                  placeholder="Email"
-                />
-              </InputWrapper>
-              {errors.email && touched.email && (
-                <div className="text-red-500 text-sm mt-1">{errors.email}</div>
-              )}
-            </div>
+            {/* TC Kimlik */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>TC Kimlik</span>}
+              validateStatus={errors.tcKimlik && touched.tcKimlik ? "error" : ""}
+              help={errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : ""}
+            >
+              <Input
+                name="tcKimlik"
+                placeholder="TC Kimlik"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.tcKimlik}
+              />
+            </AntdForm.Item>
 
-            <div>
-              <Field name="telefon" component={TelefonInput} />
-            </div>
+            {/* Username (Aynı TC kimlik alanı gibi zorunluluk) */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Kullanıcı Adı (TC)</span>}
+              validateStatus={errors.username && touched.username ? "error" : ""}
+              help={errors.username && touched.username ? errors.username : ""}
+            >
+              <Input
+                name="username"
+                placeholder="Kullanıcı Adı"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.username}
+              />
+            </AntdForm.Item>
 
-            <div>
-              <Field name="birthDate" component={DateInput} />
-            </div>
+            {/* Email */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Email</span>}
+              validateStatus={errors.email && touched.email ? "error" : ""}
+              help={errors.email && touched.email ? errors.email : ""}
+            >
+              <Input
+                name="email"
+                placeholder="Email"
+                type="email"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.email}
+              />
+            </AntdForm.Item>
 
-            <div>
-              <InputWrapper showCheck={values.adres && !errors.adres && touched.adres}>
-                <Field
-                  as="textarea"
-                  name="adres"
-                  rows="3"
-                  className={`w-full p-2 pr-8 border rounded-md ${
-                    errors.adres && touched.adres 
-                      ? "border-red-500" 
-                      : values.adres && !errors.adres && touched.adres 
-                        ? "border-green-500"
-                        : ""
-                  }`}
-                  placeholder="Adres"
-                />
-              </InputWrapper>
-              {errors.adres && touched.adres && (
-                <div className="text-red-500 text-sm mt-1">{errors.adres}</div>
-              )}
-            </div>
+            {/* Telefon */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Telefon</span>}
+              validateStatus={errors.telefon && touched.telefon ? "error" : ""}
+              help={errors.telefon && touched.telefon ? errors.telefon : ""}
+            >
+              <Input
+                name="telefon"
+                placeholder="Telefon"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.telefon}
+              />
+            </AntdForm.Item>
 
-            <div>
-              <InputWrapper showCheck={values.kanGrubu && !errors.kanGrubu && touched.kanGrubu}>
-                <Field
-                  as="select"
-                  name="kanGrubu"
-                  className={`w-full p-2 pr-8 border rounded-md ${
-                    errors.kanGrubu && touched.kanGrubu 
-                      ? "border-red-500" 
-                      : values.kanGrubu && !errors.kanGrubu && touched.kanGrubu 
-                        ? "border-green-500"
-                        : ""
-                  }`}
-                >
-                  <option value="">Kan grubu seçiniz</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="0+">0+</option>
-                  <option value="0-">0-</option>
-                </Field>
-              </InputWrapper>
-              {errors.kanGrubu && touched.kanGrubu && (
-                <div className="text-red-500 text-sm mt-1">{errors.kanGrubu}</div>
-              )}
-            </div>
+            {/* Doğum Tarihi */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Doğum Tarihi</span>}
+              validateStatus={errors.birthDate && touched.birthDate ? "error" : ""}
+              help={errors.birthDate && touched.birthDate ? errors.birthDate : ""}
+            >
+              <DatePicker
+                style={{ width: "100%" }}
+                placeholder="Doğum Tarihi Seçiniz"
+                onChange={(date) => setFieldValue("birthDate", date)}
+                onBlur={handleBlur}
+                value={values.birthDate ? moment(values.birthDate) : null}
+                format="YYYY-MM-DD"
+              />
+            </AntdForm.Item>
 
-            <div>
-              <InputWrapper showCheck={values.password && !errors.password && touched.password}>
-                <Field
-                  name="password"
-                  type="password"
-                  className={`w-full p-2 pr-8 border rounded-md ${
-                    errors.password && touched.password 
-                      ? "border-red-500" 
-                      : values.password && !errors.password && touched.password 
-                        ? "border-green-500"
-                        : ""
-                  }`}
-                  placeholder="Şifre"
-                />
-              </InputWrapper>
-              {errors.password && touched.password && (
-                <div className="text-red-500 text-sm mt-1">{errors.password}</div>
-              )}
-            </div>
+            {/* Adres */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Adres</span>}
+              validateStatus={errors.adres && touched.adres ? "error" : ""}
+              help={errors.adres && touched.adres ? errors.adres : ""}
+            >
+              <Input.TextArea
+                name="adres"
+                placeholder="Adres"
+                rows={3}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.adres}
+              />
+            </AntdForm.Item>
 
+            {/* Kan Grubu */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Kan Grubu</span>}
+              validateStatus={errors.kanGrubu && touched.kanGrubu ? "error" : ""}
+              help={errors.kanGrubu && touched.kanGrubu ? errors.kanGrubu : ""}
+            >
+              <Select
+                placeholder="Kan grubu seçiniz"
+                onChange={(value) => setFieldValue("kanGrubu", value)}
+                onBlur={handleBlur}
+                value={values.kanGrubu || ""}
+              >
+                <Select.Option value="A+">A+</Select.Option>
+                <Select.Option value="A-">A-</Select.Option>
+                <Select.Option value="B+">B+</Select.Option>
+                <Select.Option value="B-">B-</Select.Option>
+                <Select.Option value="AB+">AB+</Select.Option>
+                <Select.Option value="AB-">AB-</Select.Option>
+                <Select.Option value="0+">0+</Select.Option>
+                <Select.Option value="0-">0-</Select.Option>
+              </Select>
+            </AntdForm.Item>
+
+            {/* Şifre */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Şifre</span>}
+              validateStatus={errors.password && touched.password ? "error" : ""}
+              help={errors.password && touched.password ? errors.password : ""}
+            >
+              <Input.Password
+                name="password"
+                placeholder="Şifre"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.password}
+              />
+            </AntdForm.Item>
+
+            {/* Genel hata mesajı (submit hatası) */}
             {errors.submit && (
-              <div className="text-red-500 text-sm text-center">{errors.submit}</div>
+              <div style={{ textAlign: "center", color: "red", marginBottom: "16px" }}>
+                {errors.submit}
+              </div>
             )}
 
-            <button
-              type="submit"
+            {/* Kayıt Ol butonu */}
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              loading={isSubmitting}
               disabled={isSubmitting}
-              className={`w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-              }`}
             >
               {isSubmitting ? "Kaydediliyor..." : "Kayıt Ol"}
-            </button>
+            </Button>
           </Form>
         )}
       </Formik>
 
-      <p className="mt-4 text-center text-gray-600">
-        Zaten hesabınız var mı?{" "}
-        <Link to="/auth/login" className="text-blue-600 hover:underline">
-          Giriş Yap
-        </Link>
-      </p>
+      {/* Giriş yap linki */}
+      <div style={{ textAlign: "center", marginTop: "16px" }}>
+        <Text>
+          Zaten hesabınız var mı?{" "}
+          <Link to="/auth/login">
+            Giriş Yap
+          </Link>
+        </Text>
+      </div>
     </div>
   );
 };
