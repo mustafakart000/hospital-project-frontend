@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const DateInput = ({ field, form, ...props }) => {
-  const [selectedDate, setSelectedDate] = useState(field.value || null);
+  const [selectedDate, setSelectedDate] = useState(field.value ? new Date(field.value) : null);
   const [step, setStep] = useState('year');
   const [isOpen, setIsOpen] = useState(false);
   const popupRef = useRef(null);
@@ -44,7 +44,7 @@ const DateInput = ({ field, form, ...props }) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(day);
     setSelectedDate(newDate);
-    form.setFieldValue(field.name, newDate);
+    form.setFieldValue(field.name, newDate.toISOString().split('T')[0]);
     setIsOpen(false);
     setStep('year');
   };

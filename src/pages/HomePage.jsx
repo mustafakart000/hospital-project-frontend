@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const LandingPage = () => {
+const HomePage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -102,4 +102,4 @@ const LandingPage = () => {
   );
 };
 
-export default LandingPage;  
+export default HomePage;  

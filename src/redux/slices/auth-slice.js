@@ -26,8 +26,10 @@ const authSlice = createSlice({
         role: action.payload.role,
         token: action.payload.token,
       };
-
+      
       state.menu = getMenuItems(action.payload.role);
+      console.log("redux/index: Role:", action.payload.role); // Hangi role geldiğini kontrol et
+      console.log("redux/index: Menu Items:", getMenuItems(action.payload.role)); // Menü öğeleri kontrolü
     },
     logout: (state) => {
       state.user = null;
@@ -39,7 +41,12 @@ const authSlice = createSlice({
       state.error = action.payload.message;
     },
   },
-});
+  
+}
+
+//extraReducers nedir ne işe yarar? ve uygun senaryoları nelerdir?
+
+);
 
 export const { loginStart, loginSuccess, logout, loginFailure } =
   authSlice.actions;

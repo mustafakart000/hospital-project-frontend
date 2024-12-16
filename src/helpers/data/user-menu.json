@@ -1,19 +1,27 @@
 {
-  "admin": [
+  "ADMIN": [
     {
       "title": "Admin Mangement",
-      "link": "/dashboard/admin/management"
+      "link": "/dashboard/admin-management"
     },
     {
       "title": "Doctor Management",
-      "link": "/dashboard/doctor/management"
+      "link": "/dashboard/doctor-management"
     },
     {
       "title": "Patient Management",
-      "link": "/dashboard/patient/management"
+      "link": "/dashboard/patient-management"
+    },
+    {
+      "title": "Profile",
+      "link": "/dashboard/profile"
+    },
+    {
+      "title": "Register Doctor",
+      "link": "/dashboard/doctor-management/register"
     }
   ],
-  "doctor": [
+  "DOCTOR": [
     {
       "title": "Appointments",
       "link": "/dashboard/appointments"
@@ -30,17 +38,39 @@
       "title": "Profile",
       "link": "/dashboard/profile"
     }
+    
   
   ],
-  "patient": [
+  "PATIENT": [
     {
-      "title": "Patient Management",
-      "link": "/dashboard/patient/management"
+      "title": "Patient Panel",
+      "link": "/patient-dashboard/patient-panel"
     },
     {
       "title": "Profile",
-      "link": "/dashboard/profile"
+      "link": "/patient-dashboard/profile"
+    },
+    {
+      "title": "Prescriptions",
+      "link": "/patient-dashboard/prescriptions"
+    },
+    {
+      "title": "Appointments",
+      "link": "/patient-dashboard/appointments"
+    },
+    {
+      "title": "My Test Results",
+      "link": "/patient-dashboard/test-results"
+    },
+    {
+      "title": "My Diseases",
+      "link": "/patient-dashboard/my-diseases"
+    },
+    {
+      "title": "My Radiological Images",
+      "link": "/patient-dashboard/radiological-images"
     }
 
   ]
 }
+

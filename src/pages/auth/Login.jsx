@@ -42,9 +42,9 @@ const Login = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      console.log("first");
+      //console.log("first");
       await dispatch(loginThunk(values));
-      console.log("second");
+      //console.log("second");
       navigate("/dashboard");
       toast.success("Giriş başarılı");
     } catch {

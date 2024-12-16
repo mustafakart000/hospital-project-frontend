@@ -5,7 +5,7 @@ import { Navigate } from "react-router-dom";
 
 const PrivateRoute = ({children, roles}) => {
  const {isUserLogin, user} = useSelector((state) => state.auth);
- console.log("private-route user", user);
+ //console.log("private-route user", user);
  if(!isUserLogin) return <Navigate to="/auth/login" />;
  if(!roles || !Array.isArray(roles) || !roles.includes(user?.role)) return <Navigate to="/unauthorized" />;
  return <div>{children}</div>;
@@ -17,3 +17,7 @@ PrivateRoute.propTypes = {
 };
 
 export default PrivateRoute;
+
+
+
+
