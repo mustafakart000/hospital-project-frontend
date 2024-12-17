@@ -3,7 +3,7 @@ export const config = {
         baseUrl: "http://localhost:8080",
       },
       pageRoles: {
-        dashboard: ["ADMIN", "DOCTOR", "SECRETARY"],
+        dashboard: ["ADMIN", "DOCTOR", "SECRETARY" ],
         adminManagement: ["ADMIN"],
         doctorManagement: ["DOCTOR"],
         patientManagement: ["PATIENT"],

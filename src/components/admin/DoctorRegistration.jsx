@@ -38,11 +38,13 @@ const validationSchema = Yup.object({
   adres: Yup.string().required("Adres zorunludur"),
   birthDate: Yup.date().required("Doğum tarihi zorunludur"),
   kanGrubu: Yup.string().required("Kan grubu zorunludur"),
-  tcKimlik: Yup.string().required("TC Kimlik numarası zorunludur") .matches(/^[0-9]{11}$/, "Geçerli bir TC Kimlik numarası giriniz"),
+  tcKimlik: Yup.string()
+    .required("TC Kimlik numarası zorunludur")
+    .matches(/^[0-9]{11}$/, "Geçerli bir TC Kimlik numarası giriniz"),
   uzmanlik: Yup.string().required("Uzmanlık zorunludur"),
   diplomaNo: Yup.string().required("Diploma notu zorunludur"),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], "Şifreler eşleşmiyor")
+    .oneOf([Yup.ref("password"), null], "Şifreler eşleşmiyor")
     .required("Şifre tekrarı zorunludur"),
 });
 
@@ -80,39 +82,34 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
         toast.success("Başarılı bir şekilde kayıt oldunuz.");
         Form.resetFields();
         navigate("/dashboard/doctor-management");
-        
       }
     } catch (error) {
       console.error("Hata:", error); // Hataları konsolda göster
-      
+
       setErrors({
         submit: error.response?.data?.message || "Kayıt işlemi başarısız",
-
-
       });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const specialties = useSelector((state) => state.specialties);  
+  const specialties = useSelector((state) => state.specialties);
   useEffect(() => {
     dispatch(fetchSpecialties());
   }, [dispatch]);
-
 
   console.log("specialties", specialties);
   return (
     <div
       style={{
-        maxWidth: 350,
+        maxWidth: "80%",
         margin: "0 auto",
         marginBottom: "100px",
         padding: "15px",
         paddingBottom: "100px",
-        background: "#fff",
+        background: "#c0ccd8",
         borderRadius: "8px",
-        
       }}
     >
       <Title level={2} style={{ textAlign: "center", marginBottom: "24px" }}>
@@ -132,27 +129,27 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
           setFieldTouched,
           isSubmitting,
         }) => (
-          <Form >
+          <Form className="grid md:grid-cols-2 gap-1 sm:grid-cols-1 lg:grid-cols-3">
             {/* Ad */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Ad"
+              className="custom-form-item col-span-1 md:col-span-1 lg:col-span-1"
               validateStatus={errors.ad && touched.ad ? "error" : ""}
               help={errors.ad && touched.ad ? errors.ad : ""}
             >
               <Input
-                name="ad"
                 placeholder="Ad"
                 onChange={(e) => setFieldValue("ad", e.target.value)}
                 onBlur={() => setFieldTouched("ad", true)}
                 value={values.ad}
-                style={{ width: '70%' }}
+                style={{ width: "70%" }}
               />
             </AntdForm.Item>
 
             {/* Soyad */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Soyad"
               validateStatus={errors.soyad && touched.soyad ? "error" : ""}
               help={errors.soyad && touched.soyad ? errors.soyad : ""}
@@ -163,29 +160,27 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onChange={(e) => setFieldValue("soyad", e.target.value)}
                 onBlur={() => setFieldTouched("soyad", true)}
                 value={values.soyad}
-                style={{ width: '70%' }}
+                style={{ width: "70%" }}
               />
             </AntdForm.Item>
             {/* Uzmanlık dropdown */}
             <AntdForm.Item
-                layout="vertical"
+              layout="horizontal"
               label="Uzmanlık"
               validateStatus={
                 errors.uzmanlik && touched.uzmanlik ? "error" : ""
               }
-              help={
-                errors.uzmanlik && touched.uzmanlik ? errors.uzmanlik : ""
-              }
+              help={errors.uzmanlik && touched.uzmanlik ? errors.uzmanlik : ""}
             >
               <Select
                 placeholder="Uzmanlık Seçiniz"
                 showSearch
                 onChange={(value) => setFieldValue("uzmanlik", value)}
                 onBlur={() => setFieldTouched("speciality", true)}
-                value={values.uzmanlik || "Pratisyen Hekim (Genel Sağlık Hizmetleri)"}
-                style={{ width: '70%' }}
-                
-
+                value={
+                  values.uzmanlik || "Pratisyen Hekim (Genel Sağlık Hizmetleri)"
+                }
+                style={{ width: "70%" }}
               >
                 {specialties.map((specialty) => (
                   <Select.Option key={specialty.id} value={specialty.name}>
@@ -197,7 +192,7 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
 
             {/* TC Kimlik */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="TC Kimlik"
               validateStatus={
                 errors.tcKimlik && touched.tcKimlik ? "error" : ""
@@ -210,17 +205,16 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onChange={(e) => setFieldValue("tcKimlik", e.target.value)}
                 onBlur={() => setFieldTouched("tcKimlik", true)}
                 value={values.tcKimlik}
-                style={{ width: '70%' }}
+                style={{ width: "70%" }}
               />
             </AntdForm.Item>
 
             {/* diploma not */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Diploma Notu"
               labelCol={labelCol}
               wrapperCol={wrapperCol}
-              
             >
               <Input
                 name="diplomaNo"
@@ -228,12 +222,12 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onChange={(e) => setFieldValue("diplomaNo", e.target.value)}
                 onBlur={() => setFieldTouched("diplomaNo", true)}
                 value={values.diplomaNo}
-                style={{ width: '70%' }}
+                style={{ width: "70%" }}
               />
             </AntdForm.Item>
             {/* unvan */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Unvan"
               labelCol={labelCol}
               wrapperCol={wrapperCol}
@@ -244,12 +238,12 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onChange={(e) => setFieldValue("unvan", e.target.value)}
                 onBlur={() => setFieldTouched("unvan", true)}
                 value={values.unvan}
-                style={{ width: '70%' }}
+                style={{ width: "70%" }}
               />
             </AntdForm.Item>
             {/* Kullanıcı Adı */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Kullanıcı Adı"
               labelCol={labelCol}
               wrapperCol={wrapperCol}
@@ -265,13 +259,13 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onBlur={() => setFieldTouched("username", true)}
                 value={values.username}
                 autoComplete="off"
-                style={{ width: '70%' }}
+                style={{ width: "70%" }}
               />
             </AntdForm.Item>
 
             {/* Email */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Email"
               validateStatus={errors.email && touched.email ? "error" : ""}
               help={errors.email && touched.email ? errors.email : ""}
@@ -282,13 +276,13 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onChange={(e) => setFieldValue("email", e.target.value)}
                 onBlur={() => setFieldTouched("email", true)}
                 value={values.email}
-                style={{ width: '70%' }}
+                style={{ width: "70%" }}
               />
             </AntdForm.Item>
 
             {/* Telefon */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Telefon"
               validateStatus={errors.telefon && touched.telefon ? "error" : ""}
               help={errors.telefon && touched.telefon ? errors.telefon : ""}
@@ -299,13 +293,13 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onChange={(e) => setFieldValue("telefon", e.target.value)}
                 onBlur={() => setFieldTouched("telefon", true)}
                 value={values.telefon}
-                style={{ width: '70%' }}
+                style={{ width: "70%" }}
               />
             </AntdForm.Item>
 
             {/* Doğum Tarihi */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Doğum Tarihi"
               validateStatus={
                 errors.birthDate && touched.birthDate ? "error" : ""
@@ -315,7 +309,7 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
               }
             >
               <DatePicker
-                  style={{ width: "50%" }}
+                style={{ width: "50%" }}
                 placeholder="Doğum Tarihi"
                 onChange={(date) => setFieldValue("birthDate", date)}
                 onBlur={() => setFieldTouched("birthDate", true)}
@@ -325,7 +319,7 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
 
             {/* Adres */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Adres"
               labelCol={labelCol}
               wrapperCol={wrapperCol}
@@ -344,7 +338,7 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
 
             {/* Kan Grubu */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Kan Grubu"
               labelCol={labelCol}
               wrapperCol={wrapperCol}
@@ -358,7 +352,7 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onChange={(value) => setFieldValue("kanGrubu", value)}
                 onBlur={() => setFieldTouched("kanGrubu", true)}
                 value={values.kanGrubu || ""}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               >
                 <Select.Option value="A+">A+</Select.Option>
                 <Select.Option value="A-">A-</Select.Option>
@@ -373,7 +367,7 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
 
             {/* Şifre */}
             <AntdForm.Item
-                layout="vertical"
+              layout="horizontal"
               label="Şifre"
               labelCol={labelCol}
               wrapperCol={wrapperCol}
@@ -388,30 +382,35 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
                 onChange={(e) => setFieldValue("password", e.target.value)}
                 onBlur={() => setFieldTouched("password", true)}
                 value={values.password}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               />
             </AntdForm.Item>
             {/* confirm password */}
             <AntdForm.Item
-              layout="vertical"
+              layout="horizontal"
               label="Şifre Tekrar"
               labelCol={labelCol}
               wrapperCol={wrapperCol}
               validateStatus={
                 errors.confirmPassword && touched.confirmPassword ? "error" : ""
               }
-              help={errors.confirmPassword && touched.confirmPassword ? errors.confirmPassword : ""}
+              help={
+                errors.confirmPassword && touched.confirmPassword
+                  ? errors.confirmPassword
+                  : ""
+              }
             >
               <Input.Password
                 name="confirmPassword"
                 placeholder="Şifre Tekrar"
-                onChange={(e) => setFieldValue("confirmPassword", e.target.value)}
+                onChange={(e) =>
+                  setFieldValue("confirmPassword", e.target.value)
+                }
                 onBlur={() => setFieldTouched("confirmPassword", true)}
                 value={values.confirmPassword}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               />
             </AntdForm.Item>
-
 
             {errors.submit && (
               <div style={{ color: "red", marginBottom: "16px" }}>
@@ -439,6 +438,5 @@ DoctorRegistration.propTypes = {
   labelCol: PropTypes.object,
   wrapperCol: PropTypes.object,
 };
-
 
 export default DoctorRegistration;

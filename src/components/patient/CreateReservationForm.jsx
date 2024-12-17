@@ -1,24 +1,45 @@
-import React, { useEffect } from "react";
-import { Modal, Form, Input } from "antd";
+import { DatePicker, Form, Modal, Select, TimePicker } from "antd";
 import PropTypes from "prop-types";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
+import axios from "axios";
+import { getAuthHeader } from "../../services/auth-header";
+
 
 const CreateReservationForm = ({ visible, onCancel, onSubmit }) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const specialties = useSelector((state) => state.specialties);
+  const [doctors, setDoctors] = useState([]);
+  const [speciality, setSpeciality] = useState([]);
 
   useEffect(() => {
-    dispatch(fetchSpecialties());
-    console.log("specialties",specialties);
-  }, [dispatch]);
+    const fetchData = async () => {
+      dispatch(fetchSpecialties());
+      setSpeciality(specialties);
+    };
+    
+    fetchData();
+  }, [dispatch, speciality]);
   
   useEffect(() => {
     if (visible) {
       form.resetFields();
     }
   }, [visible, form]);
+
+  const handleSpecialtyChange = async (selectedSpecialtyId) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/reservations/getall/doctors/${selectedSpecialtyId}`,
+        { headers: getAuthHeader() }
+      );
+      setDoctors(response.data);
+    } catch (error) {
+      console.error("Doktorlar getirilirken hata oluştu:", error);
+    }
+  };
 
   return (
     <Modal
@@ -28,26 +49,35 @@ const CreateReservationForm = ({ visible, onCancel, onSubmit }) => {
       onCancel={onCancel}
     >
       <Form form={form} layout="vertical" onFinish={onSubmit}>
-        <Form.Item label="Doktor ID" name="doctorId" rules={[{ required: true }]}>
-          <Input placeholder="Doktor ID" />
-        </Form.Item>
-        <Form.Item label="Hasta ID" name="patientId" rules={[{ required: true }]}>
-          <Input placeholder="Hasta ID" />
-        </Form.Item>
-        <Form.Item label="Tarih" name="date" rules={[{ required: true }]}>
-          <Input placeholder="YYYY-MM-DD" />
-        </Form.Item>
-        <Form.Item label="Saat" name="time" rules={[{ required: true }]}>
-          <Input placeholder="HH:MM" />
-        </Form.Item>
         <Form.Item label="Uzmanlık" name="speciality" rules={[{ required: true }]}>
-          <Input placeholder="Uzmanlık Alanı" />
+          <Select 
+            placeholder="Bir uzmanlık seçiniz" 
+            onChange={handleSpecialtyChange}
+            options={specialties.map((specialty) => ({
+              label: specialty.name,
+              value: specialty.id
+            }))} 
+          />
+        </Form.Item>
+        <Form.Item label="Doktor" name="doctor" rules={[{ required: true }]}>
+          <Select placeholder="Bir doktor seçiniz" options={doctors.map((doctor) => ({
+            label:doctor.ad + " " + doctor.soyad,
+            value: doctor.id,
+            key: doctor.id,
+            
+
+          }))} />
         </Form.Item>
         <Form.Item label="Randevu Tarihi" name="reservationDate" rules={[{ required: true }]}>
-          <Input placeholder="YYYY-MM-DD" />
+          <DatePicker placeholder="YYYY-MM-DD" format="YYYY-MM-DD" />
         </Form.Item>
         <Form.Item label="Randevu Saati" name="reservationTime" rules={[{ required: true }]}>
-          <Input placeholder="HH:MM" />
+          <TimePicker 
+            placeholder="HH:MM" 
+            format="HH:mm"
+            minuteStep={15}
+            showNow={false}
+          />
         </Form.Item>
       </Form>
     </Modal>

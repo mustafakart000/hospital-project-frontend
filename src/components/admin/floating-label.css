@@ -67,3 +67,39 @@
 .floating-label-wrapper .ant-input-password .ant-input {
   padding-top: 0 !important; /* İç padding'i sıfırla */
 }
+
+
+.custom-form-item {
+  position: relative;  /* Parent için relative positioning */
+}
+
+.custom-form-item .ant-form-item-label {
+  position: absolute;
+  z-index: 2;
+  background: white;
+  border-radius: 10px;
+  padding: 0 8px;      /* Padding artırıldı */
+  margin-left: 8px;    /* Sol margin azaltıldı */
+  margin-top: -10px;   /* Label'ı biraz yukarı çektik */
+  height: 20px;        /* Sabit yükseklik verdik */
+  display: flex;       /* Flex ile hizalama */
+  align-items: center; /* Dikey hizalama */
+}
+
+.custom-form-item .ant-form-item-label label {
+  font-size: 13px;/* Font boyutu artırıldı */
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
+
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 1;
+     /* Label'ın arka planı */
+  padding: 0 4px;      /* Label için extra padding */
+}
+
+/* Input için extra stil */
+.custom-form-item .ant-input {
+  padding: 8px 12px;   /* Input padding'i */
+  height: 40px;        /* Input yüksekliği */
+}
