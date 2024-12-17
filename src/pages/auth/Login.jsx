@@ -6,6 +6,7 @@ import * as yup from "yup";
 import { Formik, Form, Field } from "formik";
 import { toast } from "react-hot-toast";
 import { loginThunk } from "../../redux/slices/authThunks";
+
 const validationSchema = yup.object({
   username: yup
     .string()
@@ -42,10 +43,15 @@ const Login = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      //console.log("first");
-      await dispatch(loginThunk(values));
-      //console.log("second");
-      navigate("/dashboard");
+      const resp= await dispatch(loginThunk(values));
+      console.log("role login.jsx: ", resp.data.role);
+      if(resp.data.role === "ADMIN") {
+        navigate("/dashboard");
+      } else if(resp.data.role === "DOCTOR") {
+        navigate("/dashboard/doctor-management");
+      } else if(resp.data.role === "PATIENT") {
+        navigate("/patient-dashboard");
+      }
       toast.success("Giriş başarılı");
     } catch {
       setHasError(true);

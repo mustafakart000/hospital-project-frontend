@@ -1,7 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import NewReservation from '../../components/patient/NewReservation'
+
 import PatientDashboard from '../../components/patient/PatientDashboard'
+import CreateReservationForm from '../../components/patient/CreateReservationForm'
 
 
 const PatientManagementPage = () => {
@@ -10,7 +11,7 @@ const PatientManagementPage = () => {
   
   return (
     <>
-      {currentOperation === 'new' && <NewReservation />}
+      {currentOperation === 'new' && <CreateReservationForm />}
       <PatientDashboard />
     </>
   )

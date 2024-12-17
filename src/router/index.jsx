@@ -83,19 +83,13 @@ const router = createBrowserRouter([
     ],
     
   },
-  {
-    path: "/patient-dashboard",
+  {path: "/patient-dashboard",
+    
     element: (
       <PrivateRoute roles={config.pageRoles.patientManagement}>
         <PatientPanelPage/>
       </PrivateRoute>
-    ),
-    children: [
-      {
-        path: "",
-        element: <PatientPanelPage/>,
-      },
-    ]
+    )
   },
   {
     path: '*',

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getMenuItems } from "../../helpers/functions/user-menu";
+import { getMenuItems } from "../../helpers/config/getMenuItems";
 
 const initialState = {
   isUserLogin: null,
