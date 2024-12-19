@@ -25,8 +25,9 @@ const authSlice = createSlice({
         username: action.payload.username,
         role: action.payload.role,
         token: action.payload.token,
+        id: action.payload.id,
       };
-      
+      console.log("user:: ",state.user)
       state.menu = getMenuItems(action.payload.role);
       console.log("redux/index: Role:", action.payload.role); // Hangi role geldiğini kontrol et
       console.log("redux/index: Menu Items:", getMenuItems(action.payload.role)); // Menü öğeleri kontrolü

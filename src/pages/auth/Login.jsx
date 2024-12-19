@@ -48,7 +48,7 @@ const Login = () => {
       if(resp.data.role === "ADMIN") {
         navigate("/dashboard");
       } else if(resp.data.role === "DOCTOR") {
-        navigate("/dashboard/doctor-management");
+        navigate("/dashboard/doctor-dashboard");
       } else if(resp.data.role === "PATIENT") {
         navigate("/patient-dashboard");
       }

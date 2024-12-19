@@ -9,7 +9,7 @@ export const userLogin = async (payload)=> {
     try {
         // //console.log("userLogin payload: ", payload)
         const resp = await axios.post(`${baseUrl}/auth/login`, payload)
-         //console.log("userLogin resp: ", resp)
+        //  console.log("userLogin resp: ", resp)
         return resp;
     } catch (error) {
         toast.error(error.response?.data?.message || "Giriş başarısız");
@@ -26,6 +26,5 @@ export const userLogin = async (payload)=> {
 export const getUser = async () => {
     const resp = await axios.get(`${baseUrl}/auth/me`,{headers: getAuthHeader()})
     const data = await resp.data;
-    
     return data;
 }
