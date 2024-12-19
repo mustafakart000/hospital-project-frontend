@@ -5,7 +5,7 @@ const PhoneInput = ({
   label = "Telefon",
   id = "telefon",
   error,
-  containerClassName = "w-60",
+  containerClassName = "w-full ",
   inputClassName = "border-gray-400 focus:border-blue-500 focus:ring-0 pt-3 pl-2",
   labelClassName = "text-gray-500",
   labelActiveClassName = "text-blue-500",
@@ -76,7 +76,7 @@ const PhoneInput = ({
           transition-all
           outline-none
           bg-transparent
-          
+          px-2
           border-y-2
           border-t-[0.15px]
           border-b-[0.15px]

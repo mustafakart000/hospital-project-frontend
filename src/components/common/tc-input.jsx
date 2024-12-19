@@ -62,9 +62,10 @@ const TcInput = ({
         onChange={handleChange}
         className={`
           peer 
+          
           w-full 
           h-9 
-          px-3 
+          px-2 
           pt-5 
           pb-2 
           text-base 
@@ -80,7 +81,7 @@ const TcInput = ({
         onFocus={handleFocus}
         onBlur={handleBlur}
         placeholder=" "
-        maxLength={13}
+        maxLength={14}
         inputMode="numeric"
       />
       <label
