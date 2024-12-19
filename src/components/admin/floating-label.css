@@ -1,0 +1,105 @@
+.floating-label-wrapper {
+  position: relative;
+  margin-bottom: 0px;
+}
+
+.floating-label-wrapper .ant-input,
+.floating-label-wrapper .ant-select,
+.floating-label-wrapper .ant-picker-input > input,
+.floating-label-wrapper .ant-input-password,
+.floating-label-wrapper .ant-input-textarea {
+  padding-top: 20px !important;
+}
+
+.floating-label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  padding: 0 4px;
+  transition: 0.2s ease all;
+  pointer-events: none;
+  color: #999;
+  font-size: 14px;
+}
+
+.ant-form-item-explain {
+  font-size: 14px; /* Daha küçük font isteniyorsa */
+
+  text-align: left;
+  margin-left: 10px;
+  margin-bottom: 15px;
+}
+
+.floating-label-wrapper:focus-within .floating-label,
+.floating-label-wrapper input:not(:placeholder-shown) ~ .floating-label,
+.floating-label-wrapper
+  .ant-select:not(.ant-select-customize-input).ant-select-filled
+  .ant-select-selector:not(:placeholder-shown)
+  ~ .floating-label,
+.floating-label-wrapper
+  .ant-picker-input
+  > input:not(:placeholder-shown)
+  ~ .floating-label,
+.floating-label-wrapper textarea:not(:placeholder-shown) ~ .floating-label {
+  top: 0;
+  transform: translateY(-50%) scale(0.9);
+  font-size: 12px;
+  color: #1890ff;
+}
+.floating-label-wrapper .ant-select {
+  padding-top: 10px !important;
+  padding: 0px !important;
+}
+
+.floating-label-wrapper .ant-input-password {
+  padding-top: 10px !important; /* Üst boşluk */
+  height: 50px; /* Input boyutu */
+  textarea:not(:placeholder-shown) ~ .floating-label {
+    top: 0;
+  }
+  > input:not(:placeholder-shown) ~ .floating-label {
+    top: 0;
+  }
+}
+
+.floating-label-wrapper .ant-input-password .ant-input {
+  padding-top: 0 !important; /* İç padding'i sıfırla */
+}
+
+
+.custom-form-item {
+  position: relative;  /* Parent için relative positioning */
+}
+
+.custom-form-item .ant-form-item-label {
+  position: absolute;
+  z-index: 2;
+  background: white;
+  border-radius: 10px;
+  padding: 0 8px;      /* Padding artırıldı */
+  margin-left: 8px;    /* Sol margin azaltıldı */
+  margin-top: -10px;   /* Label'ı biraz yukarı çektik */
+  height: 20px;        /* Sabit yükseklik verdik */
+  display: flex;       /* Flex ile hizalama */
+  align-items: center; /* Dikey hizalama */
+}
+
+.custom-form-item .ant-form-item-label label {
+  font-size: 13px;/* Font boyutu artırıldı */
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
+
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 1;
+     /* Label'ın arka planı */
+  padding: 0 4px;      /* Label için extra padding */
+}
+
+/* Input için extra stil */
+.custom-form-item .ant-input {
+  padding: 8px 12px;   /* Input padding'i */
+  height: 40px;        /* Input yüksekliği */
+}
