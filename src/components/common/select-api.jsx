@@ -19,7 +19,7 @@ const SelectApi = ({ value, onChange, options, label, containerClassName }) => {
         width: { containerClassName }, // Genişliği küçült
         "& .MuiOutlinedInput-root": {
           height: "32px", // Yüksekliği küçült
-          fontSize: "15px", // Yazı boyutunu küçült
+          fontSize: "12px", // Yazı boyutunu küçült
         },
       }}
       renderOption={(props, option) => (

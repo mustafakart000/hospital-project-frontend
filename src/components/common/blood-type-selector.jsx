@@ -26,10 +26,10 @@ const BloodTypeSelector = ({ value, onChange }) => {
       options={bloodTypes}
       isOptionEqualToValue={(option, value) => option.value === value}
       sx={{
-        width: "120px", // Genişliği küçült
+        width: "196.8px", // Genişliği küçült
         
         "& .MuiOutlinedInput-root": {
-          height: "32px", // Yüksekliği küçült
+          height: "36px", // Yüksekliği küçült
           fontSize: "15px", // Yazı boyutunu küçült
         },
       }}
