@@ -23,7 +23,6 @@ import com.hospital.entity.User;
 import com.hospital.exception.EmailAlreadyExistsException;
 import com.hospital.exception.InvalidCredentialsException;
 import com.hospital.exception.UserAlreadyExistsException;
-import com.hospital.model.DoctorSpeciality;
 import com.hospital.model.Role;
 import com.hospital.repository.DoctorRepository;
 import com.hospital.repository.UserRepository;
