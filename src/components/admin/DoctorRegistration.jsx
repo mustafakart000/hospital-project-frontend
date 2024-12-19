@@ -7,8 +7,6 @@ import {
   Form as AntdForm,
   Button,
   DatePicker,
-  Input,
-  Select,
   Typography,
 } from "antd";
 import moment from "moment";
@@ -19,6 +17,11 @@ import { useNavigate } from "react-router-dom";
 import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
 import { createDoctor } from "../../services/doctor-service";
 import "./floating-label.css";
+import TcInput from "../common/tc-input";
+import CustomInput from "../common/custom-input";
+import BloodTypeSelector from "../common/blood-type-selector";
+import PhoneInput from "../common/phone-input";
+import SelectApi from "../common/select-api";
 
 const { Title } = Typography;
 
@@ -40,9 +43,10 @@ const validationSchema = Yup.object({
   kanGrubu: Yup.string().required("Kan grubu zorunludur"),
   tcKimlik: Yup.string()
     .required("TC Kimlik numarası zorunludur")
-    .matches(/^[0-9]{11}$/, "Geçerli bir TC Kimlik numarası giriniz"),
+    .matches(/^\d{11}$/, "TC Kimlik 11 haneli olmalıdır"),
   uzmanlik: Yup.string().required("Uzmanlık zorunludur"),
   diplomaNo: Yup.string().required("Diploma notu zorunludur"),
+  unvan: Yup.string().required("Unvan zorunludur"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Şifreler eşleşmiyor")
     .required("Şifre tekrarı zorunludur"),
@@ -61,6 +65,7 @@ const initialValues = {
   tcKimlik: "",
   uzmanlik: "",
   diplomaNo: "",
+  unvan: "",
 };
 
 const DoctorRegistration = ({ labelCol, wrapperCol }) => {
@@ -76,6 +81,7 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
           ? values.birthDate.format("YYYY-MM-DD")
           : "",
       };
+      console.log("DoctorRegistration.jsx formattedValues", formattedValues);
       const response = await createDoctor(formattedValues);
       console.log("API Yanıtı:", response); // API yanıtını kontrol edin
       if (response.includes("Doktor başarıyla eklendi")) {
@@ -103,16 +109,16 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
   return (
     <div
       style={{
-        maxWidth: "80%",
-        margin: "0 auto",
-        marginBottom: "100px",
-        padding: "15px",
-        paddingBottom: "100px",
-        background: "#c0ccd8",
-        borderRadius: "8px",
+        width: '100%',
+        maxWidth: '900px',
+        margin: '0 auto',
+        marginBottom: '20px',
+        padding: '20px',
+        borderRadius: '8px',
+        boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.3)',
       }}
     >
-      <Title level={2} style={{ textAlign: "center", marginBottom: "24px" }}>
+      <Title level={2} style={{ textAlign: 'center', marginBottom: '24px' }}>
         Doktor Kaydı
       </Title>
 
@@ -129,304 +135,283 @@ const DoctorRegistration = ({ labelCol, wrapperCol }) => {
           setFieldTouched,
           isSubmitting,
         }) => (
-          <Form className="grid md:grid-cols-2 gap-1 sm:grid-cols-1 lg:grid-cols-3">
-            {/* Ad */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Ad"
-              className="custom-form-item col-span-1 md:col-span-1 lg:col-span-1"
-              validateStatus={errors.ad && touched.ad ? "error" : ""}
-              help={errors.ad && touched.ad ? errors.ad : ""}
-            >
-              <Input
-                placeholder="Ad"
-                onChange={(e) => setFieldValue("ad", e.target.value)}
-                onBlur={() => setFieldTouched("ad", true)}
-                value={values.ad}
-                style={{ width: "70%" }}
-              />
-            </AntdForm.Item>
-
-            {/* Soyad */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Soyad"
-              validateStatus={errors.soyad && touched.soyad ? "error" : ""}
-              help={errors.soyad && touched.soyad ? errors.soyad : ""}
-            >
-              <Input
-                name="soyad"
-                placeholder="Soyad"
-                onChange={(e) => setFieldValue("soyad", e.target.value)}
-                onBlur={() => setFieldTouched("soyad", true)}
-                value={values.soyad}
-                style={{ width: "70%" }}
-              />
-            </AntdForm.Item>
-            {/* Uzmanlık dropdown */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Uzmanlık"
-              validateStatus={
-                errors.uzmanlik && touched.uzmanlik ? "error" : ""
-              }
-              help={errors.uzmanlik && touched.uzmanlik ? errors.uzmanlik : ""}
-            >
-              <Select
-                placeholder="Uzmanlık Seçiniz"
-                showSearch
-                onChange={(value) => setFieldValue("uzmanlik", value)}
-                onBlur={() => setFieldTouched("speciality", true)}
-                value={
-                  values.uzmanlik || "Pratisyen Hekim (Genel Sağlık Hizmetleri)"
-                }
-                style={{ width: "70%" }}
-              >
-                {specialties.map((specialty) => (
-                  <Select.Option key={specialty.id} value={specialty.name}>
-                    {specialty.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </AntdForm.Item>
-
-            {/* TC Kimlik */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="TC Kimlik"
-              validateStatus={
-                errors.tcKimlik && touched.tcKimlik ? "error" : ""
-              }
-              help={errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : ""}
-            >
-              <Input
-                name="tcKimlik"
-                placeholder="TC Kimlik"
-                onChange={(e) => setFieldValue("tcKimlik", e.target.value)}
-                onBlur={() => setFieldTouched("tcKimlik", true)}
-                value={values.tcKimlik}
-                style={{ width: "70%" }}
-              />
-            </AntdForm.Item>
-
-            {/* diploma not */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Diploma Notu"
-              labelCol={labelCol}
-              wrapperCol={wrapperCol}
-            >
-              <Input
-                name="diplomaNo"
-                placeholder="Diploma Notu"
-                onChange={(e) => setFieldValue("diplomaNo", e.target.value)}
-                onBlur={() => setFieldTouched("diplomaNo", true)}
-                value={values.diplomaNo}
-                style={{ width: "70%" }}
-              />
-            </AntdForm.Item>
-            {/* unvan */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Unvan"
-              labelCol={labelCol}
-              wrapperCol={wrapperCol}
-            >
-              <Input
-                name="unvan"
-                placeholder="Unvan"
-                onChange={(e) => setFieldValue("unvan", e.target.value)}
-                onBlur={() => setFieldTouched("unvan", true)}
-                value={values.unvan}
-                style={{ width: "70%" }}
-              />
-            </AntdForm.Item>
-            {/* Kullanıcı Adı */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Kullanıcı Adı"
-              labelCol={labelCol}
-              wrapperCol={wrapperCol}
-              validateStatus={
-                errors.username && touched.username ? "error" : ""
-              }
-              help={errors.username && touched.username ? errors.username : ""}
-            >
-              <Input
-                name="username"
-                placeholder="Kullanıcı Adı"
-                onChange={(e) => setFieldValue("username", e.target.value)}
-                onBlur={() => setFieldTouched("username", true)}
-                value={values.username}
-                autoComplete="off"
-                style={{ width: "70%" }}
-              />
-            </AntdForm.Item>
-
-            {/* Email */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Email"
-              validateStatus={errors.email && touched.email ? "error" : ""}
-              help={errors.email && touched.email ? errors.email : ""}
-            >
-              <Input
-                name="email"
-                placeholder="Email"
-                onChange={(e) => setFieldValue("email", e.target.value)}
-                onBlur={() => setFieldTouched("email", true)}
-                value={values.email}
-                style={{ width: "70%" }}
-              />
-            </AntdForm.Item>
-
-            {/* Telefon */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Telefon"
-              validateStatus={errors.telefon && touched.telefon ? "error" : ""}
-              help={errors.telefon && touched.telefon ? errors.telefon : ""}
-            >
-              <Input
-                name="telefon"
-                placeholder="Telefon"
-                onChange={(e) => setFieldValue("telefon", e.target.value)}
-                onBlur={() => setFieldTouched("telefon", true)}
-                value={values.telefon}
-                style={{ width: "70%" }}
-              />
-            </AntdForm.Item>
-
-            {/* Doğum Tarihi */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Doğum Tarihi"
-              validateStatus={
-                errors.birthDate && touched.birthDate ? "error" : ""
-              }
-              help={
-                errors.birthDate && touched.birthDate ? errors.birthDate : ""
-              }
-            >
-              <DatePicker
-                style={{ width: "50%" }}
-                placeholder="Doğum Tarihi"
-                onChange={(date) => setFieldValue("birthDate", date)}
-                onBlur={() => setFieldTouched("birthDate", true)}
-                value={values.birthDate ? moment(values.birthDate) : null}
-              />
-            </AntdForm.Item>
-
-            {/* Adres */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Adres"
-              labelCol={labelCol}
-              wrapperCol={wrapperCol}
-              validateStatus={errors.adres && touched.adres ? "error" : ""}
-              help={errors.adres && touched.adres ? errors.adres : ""}
-            >
-              <Input.TextArea
-                name="adres"
-                placeholder="Adres"
-                rows={3}
-                onChange={(e) => setFieldValue("adres", e.target.value)}
-                onBlur={() => setFieldTouched("adres", true)}
-                value={values.adres}
-              />
-            </AntdForm.Item>
-
-            {/* Kan Grubu */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Kan Grubu"
-              labelCol={labelCol}
-              wrapperCol={wrapperCol}
-              validateStatus={
-                errors.kanGrubu && touched.kanGrubu ? "error" : ""
-              }
-              help={errors.kanGrubu && touched.kanGrubu ? errors.kanGrubu : ""}
-            >
-              <Select
-                placeholder="Kan Grubu Seçiniz"
-                onChange={(value) => setFieldValue("kanGrubu", value)}
-                onBlur={() => setFieldTouched("kanGrubu", true)}
-                value={values.kanGrubu || ""}
-                style={{ width: "100%" }}
-              >
-                <Select.Option value="A+">A+</Select.Option>
-                <Select.Option value="A-">A-</Select.Option>
-                <Select.Option value="B+">B+</Select.Option>
-                <Select.Option value="B-">B-</Select.Option>
-                <Select.Option value="AB+">AB+</Select.Option>
-                <Select.Option value="AB-">AB-</Select.Option>
-                <Select.Option value="0+">0+</Select.Option>
-                <Select.Option value="0-">0-</Select.Option>
-              </Select>
-            </AntdForm.Item>
-
-            {/* Şifre */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Şifre"
-              labelCol={labelCol}
-              wrapperCol={wrapperCol}
-              validateStatus={
-                errors.password && touched.password ? "error" : ""
-              }
-              help={errors.password && touched.password ? errors.password : ""}
-            >
-              <Input.Password
-                name="password"
-                placeholder="Şifre"
-                onChange={(e) => setFieldValue("password", e.target.value)}
-                onBlur={() => setFieldTouched("password", true)}
-                value={values.password}
-                style={{ width: "100%" }}
-              />
-            </AntdForm.Item>
-            {/* confirm password */}
-            <AntdForm.Item
-              layout="horizontal"
-              label="Şifre Tekrar"
-              labelCol={labelCol}
-              wrapperCol={wrapperCol}
-              validateStatus={
-                errors.confirmPassword && touched.confirmPassword ? "error" : ""
-              }
-              help={
-                errors.confirmPassword && touched.confirmPassword
-                  ? errors.confirmPassword
-                  : ""
-              }
-            >
-              <Input.Password
-                name="confirmPassword"
-                placeholder="Şifre Tekrar"
-                onChange={(e) =>
-                  setFieldValue("confirmPassword", e.target.value)
-                }
-                onBlur={() => setFieldTouched("confirmPassword", true)}
-                value={values.confirmPassword}
-                style={{ width: "100%" }}
-              />
-            </AntdForm.Item>
-
-            {errors.submit && (
-              <div style={{ color: "red", marginBottom: "16px" }}>
-                {errors.submit}
+          <Form>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Uzmanlık - Tek satır */}
+              <div className="col-span-full px-16">
+                <AntdForm.Item
+                  className="w-full mb-0"
+                  validateStatus={errors.uzmanlik && touched.uzmanlik ? "error" : ""}
+                  help={errors.uzmanlik && touched.uzmanlik ? errors.uzmanlik : ""}
+                >
+                  <SelectApi
+                    onChange={(value) => setFieldValue("uzmanlik", value)}
+                    onBlur={() => setFieldTouched("speciality", true)}
+                    value={
+                      values.uzmanlik || "lütfen bir uzmanlık seçiniz"
+                    }
+                    
+                    options={specialties}
+                    label="Uzmanlık"
+                    className="w-full"
+                  />
+                </AntdForm.Item>
               </div>
-            )}
 
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              loading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              Kaydet
-            </Button>
+              {/* İkişerli grup inputlar */}
+              <div className="flex justify-end ms-24 ">
+                <CustomInput
+                  containerClassName="w-full"
+                  id="ad"
+                  label="Ad"
+                  onChange={(e) => setFieldValue("ad", e.target.value)}
+                  onBlur={() => setFieldTouched("ad", true)}
+                  value={values.ad}
+                  style={{ width: '100%', maxWidth: '300px' }}
+                />
+              </div>
+
+              <div className="flex ">
+                <CustomInput
+                  id="soyad"
+                  label="Soyad"
+                  onChange={(e) => setFieldValue("soyad", e.target.value)}
+                  onBlur={() => setFieldTouched("soyad", true)}
+                  value={values.soyad}
+                  style={{ width: '100%', maxWidth: '300px' }}
+                />
+              </div>
+
+              {/* TC Kimlik */}           
+              <AntdForm.Item
+                className=" flex justify-end mb-0 "
+                validateStatus={
+                  errors.tcKimlik && touched.tcKimlik ? "error" : "success"
+                }
+                help={errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : null}
+              >
+                <TcInput
+                  value={values.tcKimlik}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Sadece sayısal değer ve 11 karakterden uzun olmadığını kontrol et
+                    if (/^\d{0,1}$/.test(value)) {
+                      setFieldValue("tcKimlik", value);
+                    }
+                  }}
+                  onBlur={() => setFieldTouched("tcKimlik", true)}
+                  error={
+                    touched.tcKimlik && errors.tcKimlik ? errors.tcKimlik : ""
+                  }
+                />
+              </AntdForm.Item>
+
+              {/* diploma not */}
+              <AntdForm.Item              
+                className="w-full flex justify-center m-0"
+              >
+                <CustomInput
+                  id="diplomaNo"
+                  label="Diploma Notu"
+                  onChange={(e) => setFieldValue("diplomaNo", e.target.value)}
+                  onBlur={() => setFieldTouched("diplomaNo", true)}
+                  value={values.diplomaNo}
+                  style={{ width: "70%" }}
+                />
+              </AntdForm.Item>
+              {/* unvan */}
+              <AntdForm.Item      
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <CustomInput
+                  id="unvan"
+                  label="Unvan"
+                  onChange={(e) => setFieldValue("unvan", e.target.value)}
+                  onBlur={() => setFieldTouched("unvan", true)}
+                  value={values.unvan}
+                  style={{ width: "100%" }}
+                />
+              </AntdForm.Item>
+              {/* Kullanıcı Adı */}
+              <AntdForm.Item            
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+                validateStatus={
+                  errors.username && touched.username ? "error" : ""
+                }
+                help={errors.username && touched.username ? errors.username : ""}
+              >
+                <CustomInput
+                  id="username"
+                  label="Kullanıcı Adı"
+                  onChange={(e) => setFieldValue("username", e.target.value)}
+                  onBlur={() => setFieldTouched("username", true)}
+                  value={values.username}
+                  autoComplete="off"
+                  style={{ width: "100%" }}
+                />
+              </AntdForm.Item>
+
+              {/* Email */}
+              <AntdForm.Item
+              
+                validateStatus={errors.email && touched.email ? "error" : ""}
+                help={errors.email && touched.email ? errors.email : ""}
+              >
+                <CustomInput
+                containerClassName="w-80"
+                
+                  id="email"
+                  label="Email"
+                  onChange={(e) => setFieldValue("email", e.target.value)}
+                  onBlur={() => setFieldTouched("email", true)}
+                  value={values.email}
+                  style={{ width: "70%" }}
+                />
+              </AntdForm.Item>
+
+              {/* Telefon */}
+              <AntdForm.Item
+                            validateStatus={errors.telefon && touched.telefon ? "error" : ""}
+                help={errors.telefon && touched.telefon ? errors.telefon : ""}
+              >
+                <PhoneInput
+                  name="telefon"
+                  placeholder="Telefon"
+                  onChange={(e) => setFieldValue("telefon", e.target.value)}
+                  onBlur={() => setFieldTouched("telefon", true)}
+                  value={values.telefon}
+                  style={{ width: "70%"}}
+                  
+                />
+              </AntdForm.Item>
+
+              {/* Doğum Tarihi */}
+              <AntdForm.Item
+                
+                validateStatus={
+                  errors.birthDate && touched.birthDate ? "error" : ""
+                }
+                help={
+                  errors.birthDate && touched.birthDate ? errors.birthDate : ""
+                }
+              >
+                <DatePicker
+                  showLabel={true}
+                  label="Doğum Tarihi"
+                  labelCol={labelCol}
+                  wrapperCol={wrapperCol}
+                  style={{ width: "50%" }}
+                  placeholder="Doğum Tarihi"
+                  onChange={(date) => setFieldValue("birthDate", date)}
+                  onBlur={() => setFieldTouched("birthDate", true)}
+                  value={values.birthDate ? moment(values.birthDate) : null}
+                  className="h-9 border-gray-400 focus:border-blue-500 focus:ring-0"
+                />
+              </AntdForm.Item>
+              {/* Kan Grubu */}
+              <AntdForm.Item
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+                validateStatus={
+                  errors.kanGrubu && touched.kanGrubu ? "error" : ""
+                }
+                help={errors.kanGrubu && touched.kanGrubu ? errors.kanGrubu : ""}
+              >
+                <BloodTypeSelector
+                  value={values.kanGrubu}
+                  onChange={(newValue) => setFieldValue("kanGrubu", newValue)}
+                  style={{ width: "70%" }}
+                />
+              </AntdForm.Item>
+
+              {/* Adres */}
+              <div className="col-span-full px-2">
+                <AntdForm.Item
+                  className="w-full flex justify-center"
+                  validateStatus={errors.adres && touched.adres ? "error" : ""}
+                  help={errors.adres && touched.adres ? errors.adres : ""}
+                >
+                  <CustomInput
+                    id="adres"
+                    label="Adres"
+                    containerClassName="w-full"
+                    onChange={(e) => setFieldValue("adres", e.target.value)}
+                    onBlur={() => setFieldTouched("adres", true)}
+                    value={values.adres}
+                    style={{ width: '100%', maxWidth: '600px' }}
+                  />
+                </AntdForm.Item>
+              </div>
+
+              
+
+              {/* Şifre */}
+              <AntdForm.Item
+                           labelCol={labelCol}
+                wrapperCol={wrapperCol}
+                validateStatus={
+                  errors.password && touched.password ? "error" : ""
+                }
+                help={errors.password && touched.password ? errors.password : ""}
+              >
+                <CustomInput
+                
+                  id="password"
+                  label="Şifre"
+                  type="password"
+                  onChange={(e) => setFieldValue("password", e.target.value)}
+                  onBlur={() => setFieldTouched("password", true)}
+                  value={values.password}
+                  style={{ width: "100%" }}
+                />
+              </AntdForm.Item>
+              {/* confirm password */}
+              <AntdForm.Item
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+                validateStatus={
+                  errors.confirmPassword && touched.confirmPassword ? "error" : ""
+                }
+                help={
+                  errors.confirmPassword && touched.confirmPassword
+                    ? errors.confirmPassword
+                    : ""
+                }
+              >
+                  <CustomInput
+                  id="confirmPassword"
+                  label="Şifre Tekrar"
+                  type="password"
+                  onChange={(e) =>
+                    setFieldValue("confirmPassword", e.target.value)
+                  }
+                  onBlur={() => setFieldTouched("confirmPassword", true)}
+                  value={values.confirmPassword}
+                  style={{ width: "100%" }}
+                />
+              </AntdForm.Item>
+
+              {errors.submit && (
+                <div style={{ color: "red", marginBottom: "16px" }}>
+                  {errors.submit}
+                </div>
+              )}
+
+              {/* Buton */}
+              <div className="col-span-full flex justify-center mt-8">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                  style={{ width: '100%', maxWidth: '300px' }}
+                >
+                  Kaydet
+                </Button>
+              </div>
+            </div>
           </Form>
         )}
       </Formik>
