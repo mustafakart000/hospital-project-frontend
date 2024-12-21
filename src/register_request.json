@@ -1,0 +1,11 @@
+{
+    "password": "password123",
+    "ad": "Test",
+    "soyad": "User",
+    "email": "testuser@example.com",
+    "telefon": "1234567890",
+    "adres": "123 Test Street",
+    "birthDate": "1990-01-01",
+    "kanGrubu": "A+",
+    "tcKimlik": "12345678901"
+}
