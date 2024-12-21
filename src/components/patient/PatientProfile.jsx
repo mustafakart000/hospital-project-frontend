@@ -66,6 +66,12 @@ const PatientProfile = ({ patientId }) => {
     </div>
   );
 
+  InfoItem.propTypes = {
+    icon: PropTypes.elementType.isRequired,
+    label: PropTypes.string.isRequired,
+    value: PropTypes.string.isRequired,
+  };
+
   if (loading || !patient) {
     return <div>Yükleniyor...</div>;
   }
