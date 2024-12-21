@@ -44,6 +44,8 @@ public class RegisterRequest {
     @NotNull(message = "Doğum tarihi zorunludur")
     private LocalDate birthDate; // Kullanıcının doğum tarihi
 
+    private String medicalHistory;
+
     @NotBlank(message = "Kan grubu zorunludur")
     private String kanGrubu;   // Kullanıcının kan grubu
 

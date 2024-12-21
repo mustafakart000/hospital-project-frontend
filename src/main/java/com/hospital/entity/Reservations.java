@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.hospital.model.DoctorSpeciality;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,10 +34,12 @@ public class Reservations {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "doctor_id")
     private Doctor doctor;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
