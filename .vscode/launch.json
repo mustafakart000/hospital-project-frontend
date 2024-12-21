@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "HospitalApplication",
+            "request": "launch",
+            "mainClass": "com.hospital.HospitalApplication",
+            "projectName": "hospital-management"
+        },
+        {
+            "type": "firefox",
+            "request": "launch",
+            "name": "Launch Firefox against localhost",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}",
+            "firefoxExecutable": "C:\\Program Files\\WindowsApps\\Mozilla.Firefox_129.0.1.0_x64__n80bbvh6b1yt2\\VFS\\ProgramFiles\\Firefox Package Root"
+        }
+    ]
+}
