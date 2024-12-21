@@ -16,6 +16,7 @@ import DoctorRegistration from "../components/admin/DoctorRegistration.jsx";
 import AdminMainDashboard from "../components/admin/admin-main-dashboard.jsx";
 import PatientManagementPage from "../pages/dashboards/PatientManagementPage.jsx";
 import PatientPanelPage from "../pages/dashboards/patientPage/PatientPanelPage.jsx";
+import DoctorPanel from "../components/doctor/DoctorPanel.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -88,6 +89,14 @@ const router = createBrowserRouter([
     element: (
       <PrivateRoute roles={config.pageRoles.patientManagement}>
         <PatientPanelPage/>
+      </PrivateRoute>
+    )
+  },
+  {path: "/dashboard/doctor-dashboard",
+    
+    element: (
+      <PrivateRoute roles={config.pageRoles.doctorManagement}>
+        <DoctorPanel/>
       </PrivateRoute>
     )
   },

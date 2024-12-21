@@ -12,7 +12,8 @@ export const loginThunk = (payload) => async (dispatch) => {
         dispatch(loginSuccess({
             role: response.data.role,        // data içinden alıyoruz
             username: response.data.username, // data içinden alıyoruz
-            token: response.data.token       // data içinden alıyoruz
+            token: response.data.token,       // data içinden alıyoruz
+            id: response.data.id
         }));
         setToLocalStorage('token', response.data.token);
         //console.log("Login success dispatched"); // Bu log'u görebilmeliyiz
