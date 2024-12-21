@@ -42,7 +42,8 @@ const AdminMainDashboard = () => {
           acc[doctor.speciality] = (acc[doctor.speciality] || 0) + 1;
           return acc;
         }, {});
-
+        console.log("fetchedDoctors: ", fetchedDoctors);
+        console.log("specialityMap: ", specialityMap);
         const specialityData = Object.entries(specialityMap).map(([name, value]) => ({
           name,
           value
@@ -150,6 +151,20 @@ const AdminMainDashboard = () => {
     }
   ];
 
+  // specialityColumns tanımlaması
+  const specialityColumns = [
+    {
+      title: 'Uzmanlık Adı',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Doktor Sayısı',
+      dataIndex: 'value',
+      key: 'value',
+    }
+  ];
+
   // Genel arama için filtreleme
   const filteredDoctors = doctors.filter(doctor => {
     const searchTerm = searchText.toLowerCase().trim();
@@ -169,7 +184,7 @@ const AdminMainDashboard = () => {
             <Col span={getResponsiveSpan()}>
               <Card>
                 <Statistic 
-                  title="Total Doctors" 
+                  title="Toplam doktor" 
                   value={doctors.length} 
                   prefix={<UserOutlined />} 
                 />
@@ -178,7 +193,7 @@ const AdminMainDashboard = () => {
             <Col span={getResponsiveSpan()}>
               <Card>
                 <Statistic 
-                  title="Total Specialities" 
+                  title="Toplam Uzmanlık" 
                   value={specialityCounts.length} 
                   prefix={<MedicineBoxOutlined />} 
                 />
@@ -187,18 +202,19 @@ const AdminMainDashboard = () => {
             <Col span={getResponsiveSpan()}>
               <Card>
                 <Statistic 
-                  title="Speciality Diversity" 
+                  title="Uzmanlık Çeşitliliği" 
                   value={`${((specialityCounts.length / doctors.length) * 100).toFixed(1)}%`} 
                   prefix={<GlobalOutlined />} 
                 />
+                
               </Card>
             </Col>
           </Row>
         </Col>
 
         {/* Specialty Distribution Charts */}
-        <Col xs={24} lg={12}>
-          <Card title="Doctor Count by Speciality (Bar Chart)">
+        <Col xs={24} lg={24}>
+          <Card title="Uzmanlık Dağılımı">
             <ResponsiveContainer width="100%" height={getChartHeight()}>
               <BarChart data={specialityCounts}>
                 <XAxis 
@@ -206,16 +222,21 @@ const AdminMainDashboard = () => {
                   tick={{ fontSize: width < 576 ? 10 : 12 }} // Küçük ekranlarda font boyutunu küçült
                   angle={width < 576 ? -45 : 0} // Küçük ekranlarda yazıları aç
                   textAnchor="end"
-                />
+                  display={width < 1900 ? "none" : "auto"}
+                  onClick={() => console.log("clicked")}
+                  />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="value" fill="#82ca9d" />
+                <Bar dataKey="value" name="Uzmanlıklar" fill="#c9d341" />
               </BarChart>
             </ResponsiveContainer>
           </Card>
         </Col>
+        <Col span={24}>
 
+            <Table style={{ marginTop: 16 }} dataSource={specialityCounts} columns={specialityColumns} />
+        </Col>
         {/* Doctor List */}
         <Col span={24}>
           <Card title="Doctor Details">
