@@ -87,7 +87,7 @@ const DoctorAppointments = () => {
         headers: getAuthHeader()
       });
       
-      fetchAppointments();
+      await fetchAppointments();
       setEditModalVisible(false);
       form.resetFields();
     } catch (error) {
@@ -100,11 +100,18 @@ const DoctorAppointments = () => {
   const handleCancel = async () => {
     try {
       setLoading(true);
-      await axios.put(`${BASE_URL}/reservations/cancel/${selectedAppointment.id}`, {}, {
-        headers: getAuthHeader()
-      });
+      // Randevunun durumunu "CANCELLED" olarak güncelle
+      await axios.put(`${BASE_URL}/reservations/update/${selectedAppointment.id}`, 
+        {
+          ...selectedAppointment,
+          status: 'CANCELLED'
+        }, 
+        {
+          headers: getAuthHeader()
+        }
+      );
       
-      fetchAppointments();
+      await fetchAppointments();
       setCancelModalVisible(false);
     } catch (error) {
       console.error('Randevu iptal edilirken hata oluştu:', error);
@@ -299,7 +306,10 @@ const DoctorAppointments = () => {
       open={cancelModalVisible}
       onCancel={() => setCancelModalVisible(false)}
       footer={[
-        <Button key="back" onClick={() => setCancelModalVisible(false)}>
+        <Button 
+          key="back" 
+          onClick={() => setCancelModalVisible(false)}
+        >
           Vazgeç
         </Button>,
         <Button 
@@ -313,14 +323,28 @@ const DoctorAppointments = () => {
         </Button>
       ]}
     >
-      <p>Bu randevuyu iptal etmek istediğinizden emin misiniz?</p>
-      {selectedAppointment && (
-        <div className="mt-4 p-4 bg-gray-50 rounded-md">
-          <p><strong>Hasta:</strong> {`${selectedAppointment.patientName} ${selectedAppointment.patientSurname}`}</p>
-          <p><strong>Tarih:</strong> {selectedAppointment.reservationDate}</p>
-          <p><strong>Saat:</strong> {selectedAppointment.reservationTime}</p>
+      <div className="space-y-4">
+        <div className="text-red-600 font-medium">
+          Bu randevuyu iptal etmek istediğinizden emin misiniz?
         </div>
-      )}
+        {selectedAppointment && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-md space-y-2">
+            <p><strong>Hasta:</strong> {`${selectedAppointment.patientName} ${selectedAppointment.patientSurname}`}</p>
+            <p><strong>Tarih:</strong> {selectedAppointment.reservationDate}</p>
+            <p><strong>Saat:</strong> {selectedAppointment.reservationTime}</p>
+            <p><strong>Uzmanlık:</strong> {selectedAppointment.speciality}</p>
+            <div className="mt-2">
+              <strong>Mevcut Durum: </strong>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedAppointment.status)}`}>
+                {getStatusText(selectedAppointment.status)}
+              </span>
+            </div>
+          </div>
+        )}
+        <div className="text-sm text-gray-500 mt-4">
+          Not: Bu işlem geri alınamaz ve randevu iptal edildiğinde hasta bilgilendirilecektir.
+        </div>
+      </div>
     </Modal>
   );
 
