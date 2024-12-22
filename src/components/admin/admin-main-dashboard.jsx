@@ -12,6 +12,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } fro
 import { getAllDoctors } from '../../services/doctor-service';
 import { useWindowSize } from 'react-use'; // Ekran boyutunu takip etmek için
 
+
 const AdminMainDashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [specialityCounts, setSpecialityCounts] = useState([]);
@@ -228,7 +229,7 @@ const AdminMainDashboard = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="value" name="Uzmanlıklar" fill="#c9d341" />
+                <Bar dataKey="value" name="Uzmanlıklar" fill="#1cf315" />
               </BarChart>
             </ResponsiveContainer>
           </Card>

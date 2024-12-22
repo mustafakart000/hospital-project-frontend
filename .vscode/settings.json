@@ -1,5 +1,7 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.debug.settings.onBuildFailureProceed": true
+    "java.debug.settings.onBuildFailureProceed": true,
+    "editor.semanticHighlighting.enabled": "configuredByTheme",
+    "editor.copyWithSyntaxHighlighting": true
 }
