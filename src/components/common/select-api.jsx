@@ -24,7 +24,7 @@ const SelectApi = ({ value, onChange, options, label, containerClassName }) => {
       }}
       renderOption={(props, option) => (
         <li {...props} key={option.name}>
-          {console.log("option:::: ", option)}
+         
           <span
             style={{
               fontWeight: 500,
@@ -35,7 +35,7 @@ const SelectApi = ({ value, onChange, options, label, containerClassName }) => {
           >
             {option.name}
           </span>
-        </li>
+        </li>   
       )}
       renderInput={(params) => (
         <TextField

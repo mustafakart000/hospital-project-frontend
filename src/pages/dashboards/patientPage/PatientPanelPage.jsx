@@ -34,8 +34,8 @@ const PatientPanel = () => {
   const [activeTab, setActiveTab] = useState('appointments');
   const patientId = useSelector(state => state.auth.user.id.toString());
 
-  const handleCreate = (values) => {
-    console.log("Yeni randevu eklendi:", values);
+  const handleCreate = () => {
+    //console.log("Yeni randevu eklendi:", values);
     setIsCreateModalVisible(false);
   };
 

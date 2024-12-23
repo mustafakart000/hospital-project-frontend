@@ -72,10 +72,10 @@ const DoctorEdit = () => {
   useEffect(() => {
     const fetchDoctorDetails = async () => {
       try {
-        console.log("id", id);
+        //console.log("id", id);
         const response = await getDoctorById(id);
         const doctorData = response;
-        console.log("doctorData", doctorData);
+        //console.log("doctorData", doctorData);
         // DEĞİŞİKLİK YAPILDI: Burada backend’den dönen alanlar ile initialValues alanları aynı isimde olmalı.
         setInitialValues({
           ...doctorData,
@@ -83,8 +83,9 @@ const DoctorEdit = () => {
         });
         setIsLoading(false);
       } catch (error) {
+        console.log("DoctorEdit.jsx fetchDoctorDetails error: ", error);
         toast.error("Doktor bilgileri yüklenemedi");
-        console.log("error", error);
+        //console.log("error", error);
         navigate("/dashboard/doctor-management");
       }
     };
@@ -99,10 +100,10 @@ const DoctorEdit = () => {
         ...values,
         birthDate: values.birthDate ? values.birthDate.format("YYYY-MM-DD") : "",
       };
-      console.log("doctor-edit.jsx-values: ", values);
-      console.log("doctor-edit.jsx-formattedValues: ", formattedValues);
+      //console.log("doctor-edit.jsx-values: ", values);
+      //console.log("doctor-edit.jsx-formattedValues: ", formattedValues);
       const response = await updateDoctor(id, formattedValues);
-      console.log("response:  ", response);
+      //console.log("response:  ", response);
       if (response === "OK") {
         toast.success("Doktor bilgileri başarıyla güncellendi");
         navigate("/dashboard/doctor-management");

@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getAllDoctors } from '../../services/doctor-service';
-import { useWindowSize } from 'react-use'; // Ekran boyutunu takip etmek için
+import { useWindowSize} from 'react-use'; // Ekran boyutunu takip etmek için
 
 
 const AdminMainDashboard = () => {
@@ -43,8 +43,8 @@ const AdminMainDashboard = () => {
           acc[doctor.speciality] = (acc[doctor.speciality] || 0) + 1;
           return acc;
         }, {});
-        console.log("fetchedDoctors: ", fetchedDoctors);
-        console.log("specialityMap: ", specialityMap);
+        //console.log("fetchedDoctors: ", fetchedDoctors);
+        //console.log("specialityMap: ", specialityMap);
         const specialityData = Object.entries(specialityMap).map(([name, value]) => ({
           name,
           value
@@ -194,15 +194,18 @@ const AdminMainDashboard = () => {
             <Col span={getResponsiveSpan()}>
               <Card>
                 <Statistic 
+                  key={specialityCounts.length} 
                   title="Toplam Uzmanlık" 
                   value={specialityCounts.length} 
                   prefix={<MedicineBoxOutlined />} 
                 />
+                
               </Card>
             </Col>
             <Col span={getResponsiveSpan()}>
               <Card>
                 <Statistic 
+                key={specialityCounts.length} 
                   title="Uzmanlık Çeşitliliği" 
                   value={`${((specialityCounts.length / doctors.length) * 100).toFixed(1)}%`} 
                   prefix={<GlobalOutlined />} 
@@ -217,26 +220,29 @@ const AdminMainDashboard = () => {
         <Col xs={24} lg={24}>
           <Card title="Uzmanlık Dağılımı">
             <ResponsiveContainer width="100%" height={getChartHeight()}>
-              <BarChart data={specialityCounts}>
+              <BarChart data={specialityCounts} >
                 <XAxis 
                   dataKey="name" 
                   tick={{ fontSize: width < 576 ? 10 : 12 }} // Küçük ekranlarda font boyutunu küçült
                   angle={width < 576 ? -45 : 0} // Küçük ekranlarda yazıları aç
                   textAnchor="end"
                   display={width < 1900 ? "none" : "auto"}
-                  onClick={() => console.log("clicked")}
+                  
                   />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="value" name="Uzmanlıklar" fill="#1cf315" />
+                <Bar dataKey="value" name="Uzmanlıklar" fill="#87e983" />
               </BarChart>
             </ResponsiveContainer>
           </Card>
         </Col>
         <Col span={24}>
 
-            <Table style={{ marginTop: 16 }} dataSource={specialityCounts} columns={specialityColumns} />
+            <Table style={{ marginTop: 16 }} dataSource={specialityCounts} columns={specialityColumns} rowKey={(record) => record.name} pagination={{ 
+              pageSize: width < 768 ? 5 : 10,
+              simple: width < 576
+            }} scroll={{ x: true }} />
         </Col>
         {/* Doctor List */}
         <Col span={24}>
@@ -251,7 +257,7 @@ const AdminMainDashboard = () => {
               <Table 
                 columns={tableColumns} 
                 dataSource={filteredDoctors}
-                rowKey="id" 
+                rowKey="id"
                 pagination={{ 
                   pageSize: width < 768 ? 5 : 10,
                   simple: width < 576

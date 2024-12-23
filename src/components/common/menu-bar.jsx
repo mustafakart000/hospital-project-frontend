@@ -194,6 +194,8 @@ const MenuBar = () => {
 
       {/* Mobile Menu Button */}
       <Button
+        //sabitleştirme
+        
         type="primary"
         className="lg:hidden fixed top-4 left-4 z-50"
         icon={<MenuOutlined />}
@@ -205,6 +207,9 @@ const MenuBar = () => {
           border: "none",
           padding: "8px 12px",
           height: "auto",
+          position: "fixed",
+          
+          
         }}
       />
 
@@ -217,6 +222,7 @@ const MenuBar = () => {
               alignItems: "center",
               gap: "8px",
               color: "#1a365d",
+              
             }}
           >
             <MedicineBoxOutlined />
@@ -236,8 +242,11 @@ const MenuBar = () => {
         open={drawerVisible}
         className="lg:hidden"
         width={300}
-        bodyStyle={{
-          padding: "12px",
+        styles={{
+          body: {
+            backgroundColor: 'white',
+            padding: '16px',
+          },
         }}
       >
         <Menu

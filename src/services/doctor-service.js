@@ -8,9 +8,9 @@ const baseUrl = config.api.baseUrl;
 export const getAllSpecialties = async () => {
     try {
         const response = await axios.get(`${baseUrl}/auth/allspecialties`,{headers: getAuthHeader ()})
-        //console.log("Service Response:", response);
+        ////console.log("Service Response:", response);
         const data = await response.data;
-        console.log("data", data)
+        //console.log("data", data)
         return data;
     } catch (error) {
         console.error("Service Error:", error);
@@ -25,7 +25,7 @@ export const createDoctor = async (doctorData) => {
         return response.data;
     } catch (error) {
         if (error.response) {
-            console.log("error.response", error.response)
+            //console.log("error.response", error.response)
             // Hata mesajını burada döndürebilir veya işleyebilirsiniz
             const { status, message } = error.response.data;
             console.error("Service Error:", message); // Hata mesajını logluyoruz
@@ -44,7 +44,7 @@ export const createDoctor = async (doctorData) => {
 
 export const getDoctorById = async (id) => {
     try {
-        const response = await axios.get(`${baseUrl}/doctor/get/${id}`, { headers: getAuthHeader() });
+        const response = await axios.get(`${baseUrl}/admin/doctor/get/${id}`, { headers: getAuthHeader() });
         return response.data;
     } catch (error) {
         console.error("Service Error:", error);
@@ -54,7 +54,7 @@ export const getDoctorById = async (id) => {
 
 export const updateDoctor = async (id, doctorData) => {
     try {
-        const response = await axios.put(`${baseUrl}/doctor/update/${id}`, doctorData, { headers: getAuthHeader() });
+        const response = await axios.put(`${baseUrl}/admin/doctor/update/${id}`, doctorData, { headers: getAuthHeader() });
         return response.data;
     } catch (error) {
         console.error("Service Error:", error);
@@ -64,7 +64,7 @@ export const updateDoctor = async (id, doctorData) => {
 
 export const deleteDoctor = async (id) => {
     try {
-        const response = await axios.delete(`${baseUrl}/doctor/delete/${id}`, { headers: getAuthHeader() });
+        const response = await axios.delete(`${baseUrl}/admin/doctor/delete/${id}`, { headers: getAuthHeader() });
         return response.data;
     } catch (error) {
         console.error("Service Error:", error);
@@ -74,7 +74,7 @@ export const deleteDoctor = async (id) => {
 
 export const getAllDoctors = async () => {
     try {
-        const response = await axios.get(`${baseUrl}/doctor/all`, { headers: getAuthHeader() });
+        const response = await axios.get(`${baseUrl}/admin/doctor/all`, { headers: getAuthHeader() });
         return response.data;
     } catch (error) {
         console.error("Service Error:", error);

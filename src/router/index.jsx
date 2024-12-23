@@ -17,6 +17,7 @@ import AdminMainDashboard from "../components/admin/admin-main-dashboard.jsx";
 import PatientManagementPage from "../pages/dashboards/PatientManagementPage.jsx";
 import PatientPanelPage from "../pages/dashboards/patientPage/PatientPanelPage.jsx";
 import DoctorPanel from "../components/doctor/DoctorPanel.jsx";
+import AdminEdit from "../components/admin/admin-edit.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -80,6 +81,14 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      {
+        path: 'admin-management/edit/:id',
+        element: (
+          <PrivateRoute roles={config.pageRoles.adminManagement}>
+            <AdminEdit/>
+          </PrivateRoute>
+        )
+      },
       
     ],
     
@@ -100,6 +109,8 @@ const router = createBrowserRouter([
       </PrivateRoute>
     )
   },
+
+  
   {
     path: '*',
     element: <Error404Page/>,
