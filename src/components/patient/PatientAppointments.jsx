@@ -5,9 +5,11 @@ import axios from 'axios';
 import { getAuthHeader } from '../../services/auth-header';
 import { config } from '../../helpers/config';
 import PropTypes from 'prop-types';
+import { getPatientProfile } from '../../services/patient-service';
 
 const PatientAppointments = ({ patientId }) => {
   const [appointments, setAppointments] = useState([]);
+  const [patientDetails, setPatientDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -16,22 +18,22 @@ const PatientAppointments = ({ patientId }) => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const BASE_URL = config.api.baseUrl;
 
-  const fetchAppointments = async () => {
+  const fetchPatientDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/reservations/getByPatientId/${patientId}`, {
-        headers: getAuthHeader(),
-      });
-      setAppointments(response.data);
+      const response = await getPatientProfile(patientId);
+      console.log("response.reservations",response.reservations)
+      setPatientDetails(response);
+      setAppointments(response.reservations);
     } catch (error) {
-      console.error('Randevular yüklenirken hata oluştu:', error);
+      console.error('Hasta bilgileri yüklenirken hata oluştu:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAppointments();
+    fetchPatientDetails();
   }, [patientId]);
 
   const getStatusColor = (status) => {
@@ -67,7 +69,7 @@ const PatientAppointments = ({ patientId }) => {
           headers: getAuthHeader()
         }
       );
-      await fetchAppointments();
+      await fetchPatientDetails();
       setCancelModalVisible(false);
     } catch (error) {
       console.error('Randevu iptal edilirken hata oluştu:', error);
@@ -78,9 +80,12 @@ const PatientAppointments = ({ patientId }) => {
 
   const getFilteredAppointments = () => {
     return appointments.filter(appointment => {
+      const doctorName = appointment.doctor.ad || '';
+      const speciality = appointment.speciality || '';
+
       const matchesSearch = 
-        appointment.doctorName.toLowerCase().includes(searchText.toLowerCase()) ||
-        appointment.speciality.toLowerCase().includes(searchText.toLowerCase());
+        doctorName.toLowerCase().includes(searchText.toLowerCase()) ||
+        speciality.toLowerCase().includes(searchText.toLowerCase());
       
       const matchesStatus = filterStatus === 'all' || appointment.status === filterStatus;
 
@@ -96,7 +101,7 @@ const PatientAppointments = ({ patientId }) => {
         <div className="flex items-center space-x-2">
           <User className="w-4 h-4 text-gray-400" />
           <div>
-            <div className="font-medium">{`${record.doctorName} ${record.doctorSurname}`}</div>
+            <div className="font-medium">{`${record.doctor.ad} ${record.doctor.soyad}`}</div>
             <div className="text-sm text-gray-500">{record.speciality}</div>
           </div>
         </div>
@@ -173,6 +178,46 @@ const PatientAppointments = ({ patientId }) => {
 
   return (
     <div className="space-y-6">
+      {/* Hasta Detayları */}
+      {patientDetails && (
+        <Card className="bg-white shadow-sm p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Ad</p>
+              <p className="font-medium">{patientDetails.ad} {patientDetails.soyad}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">TC Kimlik</p>
+              <p className="font-medium">{patientDetails.tcKimlik}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Email</p>
+              <p className="font-medium">{patientDetails.email}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Telefon</p>
+              <p className="font-medium">{patientDetails.telefon}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Adres</p>
+              <p className="font-medium">{patientDetails.adres}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Doğum Tarihi</p>
+              <p className="font-medium">{patientDetails.birthDate}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Kan Grubu</p>
+              <p className="font-medium">{patientDetails.kanGrubu}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-sm text-gray-500">Tıbbi Geçmiş</p>
+              <p className="font-medium">{patientDetails.medicalHistory}</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* İstatistikler */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-white shadow-sm">
@@ -251,7 +296,7 @@ const PatientAppointments = ({ patientId }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-500">Doktor</p>
-                  <p className="font-medium">{`${selectedAppointment.doctorName} ${selectedAppointment.doctorSurname}`}</p>
+                  <p className="font-medium">{`${selectedAppointment.doctor.ad} ${selectedAppointment.doctor.soyad}`}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Uzmanlık</p>
@@ -304,7 +349,7 @@ const PatientAppointments = ({ patientId }) => {
           </div>
           {selectedAppointment && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-2">
-              <p><strong>Doktor:</strong> {`${selectedAppointment.doctorName} ${selectedAppointment.doctorSurname}`}</p>
+              <p><strong>Doktor:</strong> {`${selectedAppointment.doctor.ad} ${selectedAppointment.doctor.soyad}`}</p>
               <p><strong>Tarih:</strong> {selectedAppointment.reservationDate}</p>
               <p><strong>Saat:</strong> {selectedAppointment.reservationTime}</p>
               <p><strong>Uzmanlık:</strong> {selectedAppointment.speciality}</p>
