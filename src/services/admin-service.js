@@ -46,3 +46,13 @@ export const getAllAdmins = async () => {
         throw error;
     }
 };
+
+export const getAdminById = async (id) => {
+    try {
+        const response = await axios.get(`${baseUrl}/admin/get/${id}`, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        console.error("Service Error:", error);
+        throw error;
+    }
+};

@@ -6,6 +6,7 @@ export const getMenuItems = (role) => {
       { title: "Doktor Yönetimi", link: "/dashboard/doctor-management" },
       { title: "Hasta Yönetimi", link: "/dashboard/patient-management" },
       
+      
     ],
     DOCTOR: [
       { title: "Doctor Management", link: "/dashboard/doctor-dashboard" },
