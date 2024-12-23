@@ -86,7 +86,7 @@ const Register = () => {
 
       // API isteği
       const response = await axios.post("http://localhost:8080/auth/register", formattedValues);
-      console.log("response: ",response);
+      //console.log("response: ",response);
       // Başarılıysa login sayfasına yönlendir
       if (response.data.includes("Başarılı bir şekilde kayıt oldunuz.")) {
         toast.success("Başarılı bir şekilde kayıt oldunuz.");

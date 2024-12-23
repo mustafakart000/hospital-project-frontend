@@ -3,20 +3,20 @@ import { Table, Button, Space, Popconfirm, Input } from "antd";
 import { TbUserEdit } from "react-icons/tb";
 import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
-import { deleteDoctor, getAllDoctors } from "../../services/doctor-service";
+import { deleteAdmin, getAllAdmins } from "../../services/admin-service";
 
-const DoctorTable = () => {
-  const [doctors, setDoctors] = useState([]);
+const AdminTable = () => {
+  const [admins, setAdmins] = useState([]);
   const [searchText, setSearchText] = useState('');  // Arama metni için state
-  const [filteredDoctors, setFilteredDoctors] = useState([]); // Filtrelenmiş doktorlar için state
+    const [filteredAdmins, setFilteredAdmins] = useState([]); // Filtrelenmiş doktorlar için state
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await getAllDoctors();
-        const formattedDoctors = response.map((doctor) => {
-          const { ad, soyad, phone, speciality, id } = doctor;
+        const response = await getAllAdmins();
+        const formattedAdmins = response.map((admin) => {
+          const { ad, soyad, phone, speciality, id } = admin;
           return {
             name: `${ad} ${soyad}`,
             phone,
@@ -24,8 +24,8 @@ const DoctorTable = () => {
             id: id,
           };
         });
-        setDoctors(formattedDoctors);
-        setFilteredDoctors(formattedDoctors); // Başlangıçta tüm doktorları filtered state'e de ata
+        setAdmins(formattedAdmins);
+        setFilteredAdmins(formattedAdmins); // Başlangıçta tüm doktorları filtered state'e de ata
       } catch (error) {
         console.error("Doktorları çekerken hata oluştu:", error);
       }
@@ -36,32 +36,32 @@ const DoctorTable = () => {
 
   const handleSearch = (value) => {
     const searchValue = value.toLowerCase();
-    const filtered = doctors.filter((doctor) =>
-      Object.values(doctor).some(
+    const filtered = admins.filter((admin) =>
+      Object.values(admin).some(
         (val) =>
           val &&
           val.toString().toLowerCase().includes(searchValue)
       )
     );
-    setFilteredDoctors(filtered);
+    setFilteredAdmins(filtered);
     setSearchText(value);
   };
 
   const handleEdit = (record) => {
-    navigate(`/dashboard/doctor-management/edit/${record.id}`);
+    navigate(`/dashboard/admin-management/edit/${record.id}`);
   };
 
   const handleDelete = (key) => {
-    deleteDoctor(key);
-    toast.success("Doktor başarıyla silindi");
-    const updatedDoctors = doctors.filter((doc) => doc.id !== key);
-    setDoctors(updatedDoctors);
-    setFilteredDoctors(updatedDoctors); // Filtrelenmiş listeyi de güncelle
+    deleteAdmin(key);
+    toast.success("Admin başarıyla silindi");
+    const updatedAdmins = admins.filter((admin) => admin.id !== key);
+    setAdmins(updatedAdmins);
+    setFilteredAdmins(updatedAdmins); // Filtrelenmiş listeyi de güncelle
   };
 
   // Uzmanlık alanları için benzersiz değerleri al
   const getSpecialties = () => {
-    const specialties = [...new Set(doctors.map(doctor => doctor.speciality))];
+    const specialties = [...new Set(admins.map(admin => admin.speciality))];
     return specialties.map(specialty => ({
       text: specialty,
       value: specialty,
@@ -76,9 +76,9 @@ const DoctorTable = () => {
       responsive: ["xs", "sm", "md", "lg"],
       sorter: (a, b) => a.name.localeCompare(b.name),
       filterSearch: true,
-      filters: doctors.map(doctor => ({
-        text: doctor.name,
-        value: doctor.id, // id'yi value olarak kullan
+      filters: admins.map(admin => ({
+        text: admin.name,
+        value: admin.id, // id'yi value olarak kullan
       })),
       onFilter: (value, record) => record.id === value,
     },
@@ -145,7 +145,7 @@ const DoctorTable = () => {
       />
       <Table
         columns={columns}
-        dataSource={filteredDoctors}
+        dataSource={filteredAdmins}
         rowKey={(record) => record.id}
         pagination={{ pageSize: 10 }}
         scroll={{ x: true }}
@@ -154,4 +154,4 @@ const DoctorTable = () => {
   );
 };
 
-export default DoctorTable;
+export default AdminTable;

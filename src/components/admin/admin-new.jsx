@@ -1,5 +1,5 @@
 import { Form, Formik } from "formik";
-import React, { useEffect } from "react";
+import React from "react";
 import * as Yup from "yup";
 
 import {
@@ -13,16 +13,16 @@ import {
 import moment from "moment";
 import toast from "react-hot-toast";
 
-import { useDispatch, useSelector } from "react-redux";
+
 import { useNavigate } from "react-router-dom";
-import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
-import { createDoctor } from "../../services/doctor-service";
+
+import { createAdmin } from "../../services/admin-service";
 import "./floating-label.css";
 import TcInput from "../common/tc-input";
 import CustomInput from "../common/custom-input";
 import BloodTypeSelector from "../common/blood-type-selector";
 import PhoneInput from "../common/phone-input";
-import SelectApi from "../common/select-api";
+
 
 const { Title } = Typography;
 
@@ -45,33 +45,26 @@ const validationSchema = Yup.object({
   tcKimlik: Yup.string()
     .required("TC Kimlik numarası zorunludur")
     .matches(/^\d{11}$/, "TC Kimlik 11 haneli olmalıdır"),
-  uzmanlik: Yup.string().required("Uzmanlık zorunludur"),
-  diplomaNo: Yup.string().required("Diploma notu zorunludur"),
-  unvan: Yup.string().required("Unvan zorunludur"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Şifreler eşleşmiyor")
     .required("Şifre tekrarı zorunludur"),
 });
 
 const initialValues = {
-  username: "",
-  password: "",
-  ad: "",
-  soyad: "",
-  email: "",
-  telefon: "",
-  adres: "",
-  birthDate: null,
-  kanGrubu: "",
-  tcKimlik: "",
-  uzmanlik: "",
-  diplomaNo: "",
-  unvan: "",
-};
+    "username": "",
+    "password": "",
+    "ad": "",
+    "soyad": "",
+    "email": "",
+    "telefon": "",
+    "adres": "",
+    "birthDate": "",
+    "kanGrubu": "",
+    "tcKimlik":""
+  }
 
-const DoctorRegistration = () => {
+const AdminNew = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const handleSubmit = async (
     values,
     { setSubmitting, setErrors, resetForm }
@@ -85,12 +78,12 @@ const DoctorRegistration = () => {
           ? values.birthDate.format("YYYY-MM-DD")
           : "",
       };
-      //console.log("DoctorRegistration.jsx formattedValues", formattedValues);
-      const response = await createDoctor(formattedValues);
-      //console.log("API Yanıtı:", response); // API yanıtını kontrol edin
-      if (response.includes("Doktor başarıyla eklendi")) {
+      console.log("admin-new.jsx formattedValues", formattedValues);
+      const response = await createAdmin(formattedValues);
+      console.log("API Yanıtı:", response); // API yanıtını kontrol edin
+      if (response.includes("Admin başarıyla eklendi")) {
         toast.success("Başarılı bir şekilde kayıt oldunuz.");
-        navigate("/dashboard/doctor-management");
+        navigate("/dashboard/admin-management");
         resetForm();
       }
     } catch (error) {
@@ -104,10 +97,7 @@ const DoctorRegistration = () => {
     }
   };
 
-  const specialties = useSelector((state) => state.specialties);
-  useEffect(() => {
-    dispatch(fetchSpecialties());
-  }, [dispatch]);
+
 
   return (
     <div className="w-full max-w-[700px] mx-auto mb-5 p-5 rounded-lg shadow-lg">
@@ -123,7 +113,7 @@ const DoctorRegistration = () => {
             fontSize: "clamp(1.15rem, 5vw, 2.25rem)", // responsive font size
           }}
         >
-          Yeni Doktor Personeli
+          Yeni Admin Personeli
         </Title>
       </div>
       <Formik
@@ -141,28 +131,7 @@ const DoctorRegistration = () => {
         }) => (
           <Form>
             <Row gutter={[16, 8]}>
-              {/* Uzmanlık Seçimi - Tam Genişlik */}
-              <Col xs={24} className="flex justify-center">
-                <AntdForm.Item
-                  className="w-full max-w-md"
-                  validateStatus={
-                    errors.uzmanlik && touched.uzmanlik ? "error" : "success"
-                  }
-                  help={
-                    errors.uzmanlik && touched.uzmanlik ? errors.uzmanlik : null
-                  }
-                >
-                  <SelectApi
-                    onChange={(value) => setFieldValue("uzmanlik", value)}
-                    onBlur={() => setFieldTouched("speciality", true)}
-                    value={values.uzmanlik || "lütfen bir uzmanlık seçiniz"}
-                    options={specialties}
-                    label="Uzmanlık"
-                    className="w-full"
-                  />
-                </AntdForm.Item>
-              </Col>
-
+             
               {/* Kişisel Bilgiler */}
               <Col xs={24} sm={12}>
                 <AntdForm.Item
@@ -225,49 +194,10 @@ const DoctorRegistration = () => {
                 </AntdForm.Item>
               </Col>
 
-              <Col xs={24} sm={12}>
-                <AntdForm.Item
-                  className="w-full"
-                  validateStatus={
-                    errors.diplomaNo && touched.diplomaNo ? "error" : "success"
-                  }
-                  help={
-                    errors.diplomaNo && touched.diplomaNo
-                      ? errors.diplomaNo
-                      : null
-                  }
-                >
-                  <CustomInput
-                    id="diplomaNo"
-                    label="Diploma Notu"
-                    onChange={(e) => setFieldValue("diplomaNo", e.target.value)}
-                    onBlur={() => setFieldTouched("diplomaNo", true)}
-                    value={values.diplomaNo}
-                    className="w-full"
-                  />
-                </AntdForm.Item>
-              </Col>
+              
 
-              {/* Unvan ve Kullanıcı Adı */}
-              <Col xs={24} sm={12}>
-                <AntdForm.Item
-                  className="w-full"
-                  validateStatus={
-                    errors.unvan && touched.unvan ? "error" : "success"
-                  }
-                  help={errors.unvan && touched.unvan ? errors.unvan : null}
-                >
-                  <CustomInput
-                    id="unvan"
-                    label="Unvan"
-                    onChange={(e) => setFieldValue("unvan", e.target.value)}
-                    onBlur={() => setFieldTouched("unvan", true)}
-                    value={values.unvan}
-                    className="w-full"
-                  />
-                </AntdForm.Item>
-              </Col>
-
+             
+            
               <Col xs={24} sm={12}>
                 <AntdForm.Item
                   className="w-full"
@@ -473,4 +403,4 @@ const DoctorRegistration = () => {
   );
 };
 
-export default DoctorRegistration;
+export default AdminNew;

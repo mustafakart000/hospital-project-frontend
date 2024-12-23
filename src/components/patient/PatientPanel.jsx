@@ -25,7 +25,7 @@ const PatientPanel = () => {
       });
       setReservations(response.data);
     } catch (error) {
-      console.log(error);
+      console.log("PatientPanel.jsx fetchReservations error: ", error);
       message.error("Randevular getirilirken hata oluştu.");
     } finally {
       setLoading(false);
@@ -41,7 +41,7 @@ const PatientPanel = () => {
       fetchReservations();
       setIsCreateModalVisible(false);
     } catch (error) {
-      console.log(error);
+      console.log("PatientPanel.jsx handleCreate error: ", error);
       message.error("Ekleme sırasında hata oluştu.");
     }
   };
@@ -56,7 +56,7 @@ const PatientPanel = () => {
       setIsUpdateModalVisible(false);
       setEditingReservation(null);
     } catch (error) {
-      console.log(error);
+      console.log("PatientPanel.jsx handleUpdate error: ", error);
       message.error("Güncelleme sırasında hata oluştu.");
     }
   };
@@ -71,7 +71,7 @@ const PatientPanel = () => {
       await axios.delete(`${BASE_URL}/reservations/delete/${id}`, { headers: getAuthHeader() });
       fetchReservations();
     } catch (error) {
-      console.log(error);
+      console.log("PatientPanel.jsx handleDelete error: ", error);
       message.error("Silme sırasında hata oluştu.");
     }
   };

@@ -27,10 +27,10 @@ const authSlice = createSlice({
         token: action.payload.token,
         id: action.payload.id,
       };
-      console.log("user:: ",state.user)
+      //console.log("user:: ",state.user)
       state.menu = getMenuItems(action.payload.role);
-      console.log("redux/index: Role:", action.payload.role); // Hangi role geldiğini kontrol et
-      console.log("redux/index: Menu Items:", getMenuItems(action.payload.role)); // Menü öğeleri kontrolü
+      //console.log("redux/index: Role:", action.payload.role); // Hangi role geldiğini kontrol et
+      //console.log("redux/index: Menu Items:", getMenuItems(action.payload.role)); // Menü öğeleri kontrolü
     },
     logout: (state) => {
       state.user = null;

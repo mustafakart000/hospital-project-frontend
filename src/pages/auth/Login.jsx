@@ -44,7 +44,7 @@ const Login = () => {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const resp= await dispatch(loginThunk(values));
-      console.log("role login.jsx: ", resp.data.role);
+      //console.log("role login.jsx: ", resp.data.role);
       if(resp.data.role === "ADMIN") {
         navigate("/dashboard");
       } else if(resp.data.role === "DOCTOR") {

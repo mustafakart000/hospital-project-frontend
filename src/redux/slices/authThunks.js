@@ -5,10 +5,10 @@ import { setToLocalStorage } from "../../helpers/functions/encrypted-storage";
 export const loginThunk = (payload) => async (dispatch) => {
     dispatch(loginStart());
     try {
-        //console.log("payload: ", payload)
+        ////console.log("payload: ", payload)
         const response = await userLogin(payload);//burada hata verirse catch'e gider
-        //console.log('response:', response);
-        //console.log(response.data.role, response.data.username, response.data.token)
+        ////console.log('response:', response);
+        ////console.log(response.data.role, response.data.username, response.data.token)
         dispatch(loginSuccess({
             role: response.data.role,        // data içinden alıyoruz
             username: response.data.username, // data içinden alıyoruz
@@ -16,7 +16,7 @@ export const loginThunk = (payload) => async (dispatch) => {
             id: response.data.id
         }));
         setToLocalStorage('token', response.data.token);
-        //console.log("Login success dispatched"); // Bu log'u görebilmeliyiz
+        ////console.log("Login success dispatched"); // Bu log'u görebilmeliyiz
 
          // Bir mikrosaniye bekletelim
          await new Promise(resolve => setTimeout(resolve, 0));

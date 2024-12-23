@@ -6,9 +6,9 @@ import { useSelector } from "react-redux";
 const UpdateReservationForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
   const specialties = useSelector(state => state.specialties);
-console.log("specialties",specialties);
+//console.log("specialties",specialties);
   useEffect(() => {
-    console.log(specialties);
+    //console.log(specialties);
     if (initialValues) {
       form.setFieldsValue(initialValues);
     }
