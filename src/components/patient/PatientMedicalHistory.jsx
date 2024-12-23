@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Timeline, Tag, Button, Modal, Select, Empty } from 'antd';
 import { Activity, AlertCircle, File, Heart, Thermometer, Pill, Stethoscope } from 'lucide-react';
-import axios from 'axios';
-import { getAuthHeader } from '../../services/auth-header';
-import { config } from '../../helpers/config';
 import moment from 'moment';
 import PropTypes from 'prop-types';
+import { getMedicalRecordById } from '../../services/medical-records-service';
 
 const PatientMedicalHistory = ({ patientId }) => {
   const [medicalHistory, setMedicalHistory] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
-  const BASE_URL = config.api.baseUrl;
 
   const fetchMedicalHistory = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/medical-history/${patientId}`, {
-        headers: getAuthHeader(),
-      });
-      setMedicalHistory(response.data);
+      const response = await getMedicalRecordById(patientId);
+      // API'dan gelen her kaydın additionalInfo ve attachments alanlarını parse et
+      const processedRecords = response.map(record => ({
+        ...record,
+        additionalInfo: JSON.parse(record.additionalInfo || '{}'),
+        attachments: JSON.parse(record.attachments || '{}')
+      }));
+      setMedicalHistory(processedRecords);
     } catch (error) {
       console.error('Tıbbi geçmiş yüklenirken hata oluştu:', error);
     }
@@ -31,33 +32,40 @@ const PatientMedicalHistory = ({ patientId }) => {
 
   const getCategoryIcon = (category) => {
     const icons = {
+      'Cardiology': Heart,
       'diagnosis': Stethoscope,
       'treatment': Pill,
       'test': Thermometer,
       'surgery': AlertCircle,
-      'checkup': Heart,
+      'checkup': Activity
     };
     return icons[category] || Activity;
   };
 
   const getCategoryColor = (category) => {
     const colors = {
+      'Cardiology': 'pink',
       'diagnosis': 'blue',
       'treatment': 'green',
       'test': 'purple',
       'surgery': 'red',
-      'checkup': 'cyan',
+      'checkup': 'cyan'
     };
     return colors[category] || 'gray';
   };
 
   // Özet bilgileri
   const getSummaryStats = () => {
+    const categoryCount = medicalHistory.reduce((acc, record) => {
+      acc[record.category] = (acc[record.category] || 0) + 1;
+      return acc;
+    }, {});
+
     return {
       totalRecords: medicalHistory.length,
-      diagnoses: medicalHistory.filter(record => record.category === 'diagnosis').length,
-      treatments: medicalHistory.filter(record => record.category === 'treatment').length,
-      surgeries: medicalHistory.filter(record => record.category === 'surgery').length,
+      cardiology: categoryCount['Cardiology'] || 0,
+      diagnoses: categoryCount['diagnosis'] || 0,
+      treatments: categoryCount['treatment'] || 0
     };
   };
 
@@ -69,42 +77,6 @@ const PatientMedicalHistory = ({ patientId }) => {
       return medicalHistory;
     }
     return medicalHistory.filter(record => record.category === activeCategory);
-  };
-
-  const renderTimelineItem = (record) => {
-    const Icon = getCategoryIcon(record.category);
-    const color = getCategoryColor(record.category);
-
-    return (
-      <Timeline.Item
-        key={record.id}
-        dot={<Icon className={`w-5 h-5 text-${color}-500`} />}
-      >
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="flex items-center space-x-2">
-                <Tag color={color}>{record.category.toUpperCase()}</Tag>
-                <span className="text-sm text-gray-500">
-                  {moment(record.date).format('DD.MM.YYYY')}
-                </span>
-              </div>
-              <h4 className="font-medium mt-2">{record.title}</h4>
-              <p className="text-gray-600 mt-1">{record.description}</p>
-            </div>
-            <Button
-              type="link"
-              onClick={() => {
-                setSelectedRecord(record);
-                setViewModalVisible(true);
-              }}
-            >
-              Detay
-            </Button>
-          </div>
-        </div>
-      </Timeline.Item>
-    );
   };
 
   return (
@@ -120,9 +92,9 @@ const PatientMedicalHistory = ({ patientId }) => {
         </Card>
         <Card className="bg-white shadow-sm">
           <div className="text-center">
-            <Stethoscope className="w-8 h-8 text-green-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">{stats.diagnoses}</div>
-            <div className="text-sm text-gray-500">Tanı</div>
+            <Heart className="w-8 h-8 text-pink-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-gray-900">{stats.cardiology}</div>
+            <div className="text-sm text-gray-500">Kardiyoloji</div>
           </div>
         </Card>
         <Card className="bg-white shadow-sm">
@@ -134,9 +106,9 @@ const PatientMedicalHistory = ({ patientId }) => {
         </Card>
         <Card className="bg-white shadow-sm">
           <div className="text-center">
-            <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">{stats.surgeries}</div>
-            <div className="text-sm text-gray-500">Ameliyat</div>
+            <Stethoscope className="w-8 h-8 text-green-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-gray-900">{stats.diagnoses}</div>
+            <div className="text-sm text-gray-500">Tanı</div>
           </div>
         </Card>
       </div>
@@ -149,10 +121,10 @@ const PatientMedicalHistory = ({ patientId }) => {
           onChange={setActiveCategory}
           options={[
             { value: 'all', label: 'Tüm Kayıtlar' },
+            { value: 'Cardiology', label: 'Kardiyoloji' },
             { value: 'diagnosis', label: 'Tanılar' },
             { value: 'treatment', label: 'Tedaviler' },
             { value: 'test', label: 'Testler' },
-            { value: 'surgery', label: 'Ameliyatlar' },
             { value: 'checkup', label: 'Kontroller' },
           ]}
         />
@@ -161,11 +133,43 @@ const PatientMedicalHistory = ({ patientId }) => {
       {/* Zaman Çizelgesi */}
       <Card className="bg-white shadow-sm">
         {getFilteredRecords().length > 0 ? (
-          <Timeline>
-            {getFilteredRecords()
+          <Timeline
+            items={getFilteredRecords()
               .sort((a, b) => moment(b.date).valueOf() - moment(a.date).valueOf())
-              .map(renderTimelineItem)}
-          </Timeline>
+              .map(record => {
+                const Icon = getCategoryIcon(record.category);
+                const color = getCategoryColor(record.category);
+                return {
+                  key: record.id,
+                  dot: <Icon className={`w-5 h-5 text-${color}-500`} />,
+                  children: (
+                    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <Tag color={color}>{record.category.toUpperCase()}</Tag>
+                            <span className="text-sm text-gray-500">
+                              {moment(record.date).format('DD.MM.YYYY')}
+                            </span>
+                          </div>
+                          <h4 className="font-medium mt-2">{record.title}</h4>
+                          <p className="text-gray-600 mt-1">{record.description}</p>
+                        </div>
+                        <Button
+                          type="link"
+                          onClick={() => {
+                            setSelectedRecord(record);
+                            setViewModalVisible(true);
+                          }}
+                        >
+                          Detay
+                        </Button>
+                      </div>
+                    </div>
+                  ),
+                };
+              })}
+          />
         ) : (
           <Empty
             description="Kayıt bulunamadı"
@@ -224,14 +228,14 @@ const PatientMedicalHistory = ({ patientId }) => {
             )}
 
             {/* Ek Bilgiler */}
-            {selectedRecord.additionalInfo && (
+            {Object.keys(selectedRecord.additionalInfo).length > 0 && (
               <div>
                 <h3 className="text-lg font-medium mb-2">Ek Bilgiler</h3>
                 <div className="space-y-2">
                   {Object.entries(selectedRecord.additionalInfo).map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
+                    <div key={key} className="flex justify-start">
                       <span className="text-gray-500">{key}:</span>
-                      <span className="font-medium">{value}</span>
+                      <span className="font-medium ml-1">{value}</span>
                     </div>
                   ))}
                 </div>
@@ -239,18 +243,24 @@ const PatientMedicalHistory = ({ patientId }) => {
             )}
 
             {/* Ekler */}
-            {selectedRecord.attachments && selectedRecord.attachments.length > 0 && (
+            {Object.keys(selectedRecord.attachments).length > 0 && (
               <div>
                 <h3 className="text-lg font-medium mb-2">Ekler</h3>
                 <div className="space-y-2">
-                  {selectedRecord.attachments.map((attachment, index) => (
+                  {Object.entries(selectedRecord.attachments).map(([key, value]) => (
                     <div
-                      key={index}
+                      key={key}
                       className="flex items-center space-x-2 p-2 bg-gray-50 rounded"
                     >
                       <File className="w-4 h-4 text-gray-400" />
-                      <span>{attachment.name}</span>
-                      <Button type="link" size="small">
+                      <span>{key}</span>
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                          window.open(value, '_blank');
+                        }}
+                      >
                         Görüntüle
                       </Button>
                     </div>

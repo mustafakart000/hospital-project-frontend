@@ -6,6 +6,7 @@ import { getAuthHeader } from '../../services/auth-header';
 import axios from 'axios';
 import { config } from '../../helpers/config';
 import PropTypes from 'prop-types';
+import { getPatientProfile } from '../../services/patient-service';
 
 const PatientProfile = ({ patientId }) => {
   const [patient, setPatient] = useState(null);
@@ -17,10 +18,8 @@ const PatientProfile = ({ patientId }) => {
   const fetchPatientProfile = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/patient/get/${patientId}`, {
-        headers: getAuthHeader(),
-      });
-      setPatient(response.data);
+      const response = await getPatientProfile(patientId);
+      setPatient(response);
     } catch (error) {
       console.error('Profil bilgileri yüklenemedi:', error);
     } finally {
@@ -120,6 +119,7 @@ const PatientProfile = ({ patientId }) => {
             <InfoItem icon={Heart} label="Kan Grubu" value={patient.kanGrubu} />
             <InfoItem icon={AlertTriangle} label="Alerjiler" value={patient.allergies || "Belirtilmemiş"} />
             <InfoItem icon={Clock} label="Son Muayene" value={patient.lastCheckup || "Belirtilmemiş"} />
+            <InfoItem icon={Clock} label="Tıbbi Geçmiş" value={patient.medicalHistory || "Belirtilmemiş"} />
           </div>
         </Card>
 
@@ -129,7 +129,7 @@ const PatientProfile = ({ patientId }) => {
             <div className="p-4 bg-blue-50 rounded-lg">
               <h4 className="font-medium text-blue-700 mb-2">Yaklaşan Randevu</h4>
               <p className="text-sm text-blue-600">
-                {patient.nextAppointment || "Planlanmış randevu bulunmuyor"}
+                {patient.reservations.length > 0 ? `${moment(patient.reservations[0].reservationDate).format('DD/MM/YYYY')} - ${patient.reservations[0].reservationTime}` : "Planlanmış randevu bulunmuyor"}
               </p>
             </div>
             <div className="p-4 bg-green-50 rounded-lg">
