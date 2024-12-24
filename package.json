@@ -18,7 +18,7 @@
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.7",
-    "encrypt-storage": "^2.12.22",
+    "encrypt-storage": "^2.13.3",
     "formik": "^2.4.6",
     "frontend": "file:",
     "lucide-react": "^0.465.0",

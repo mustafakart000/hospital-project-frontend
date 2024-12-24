@@ -11,16 +11,14 @@ import "primereact/resources/primereact.min.css"
 
 import './App.css'
 import './index.css'
-import store from './redux/store'
+import store from './redux/store.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  
-    <StoreProvider store={store}>
-      <PrimeReactProvider>
-          <App />
-      </PrimeReactProvider>
-    </StoreProvider>
-  
+  <StoreProvider store={store}>
+    <PrimeReactProvider>
+      <App />
+    </PrimeReactProvider>
+  </StoreProvider>
 )
 
 

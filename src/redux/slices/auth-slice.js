@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getMenuItems } from "../../helpers/config/getMenuItems";
+import { removeFromLocalStorage } from "../../helpers/functions/encrypted-storage";
 
 const initialState = {
   isUserLogin: null,
@@ -7,6 +8,8 @@ const initialState = {
   menu: [],
   error: null,
   loading: false,
+  user: null,
+  loginSuccess: null,
 };
 
 const authSlice = createSlice({
@@ -20,26 +23,41 @@ const authSlice = createSlice({
     loginSuccess: (state, action) => {
       state.loading = false;
       state.isUserLogin = true;
+      state.loginSuccess = true;
+
+      console.log("LoginSuccess Payload:", action.payload);
+
+      const currentToken = state.user?.token;
 
       state.user = {
         username: action.payload.username,
         role: action.payload.role,
-        token: action.payload.token,
+        token: action.payload.token || currentToken,
         id: action.payload.id,
+        ad: action.payload.ad || '',
+        soyad: action.payload.soyad || '',
+        email: action.payload.email || ''
       };
-      //console.log("user:: ",state.user)
+
       state.menu = getMenuItems(action.payload.role);
-      //console.log("redux/index: Role:", action.payload.role); // Hangi role geldiğini kontrol et
-      //console.log("redux/index: Menu Items:", getMenuItems(action.payload.role)); // Menü öğeleri kontrolü
+      console.log("Updated User State:", state.user);
     },
     logout: (state) => {
       state.user = null;
       state.isUserLogin = false;
+      state.loginSuccess = false;
+      state.isAuthenticated = false;
       state.menu = [];
+      
+      removeFromLocalStorage('user');
+      removeFromLocalStorage('token');
     },
     loginFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload.message;
+    },
+    setLoginSuccess: (state, action) => {
+      state.loginSuccess = action.payload;
     },
   },
   
@@ -49,6 +67,11 @@ const authSlice = createSlice({
 
 );
 
-export const { loginStart, loginSuccess, logout, loginFailure } =
-  authSlice.actions;
+export const { 
+  loginStart, 
+  loginSuccess, 
+  logout, 
+  loginFailure,
+  setLoginSuccess
+} = authSlice.actions;
 export default authSlice.reducer;
