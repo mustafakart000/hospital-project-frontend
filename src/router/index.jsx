@@ -17,11 +17,19 @@ import AdminMainDashboard from "../components/admin/admin-main-dashboard.jsx";
 import PatientManagementPage from "../pages/dashboards/PatientManagementPage.jsx";
 import PatientPanelPage from "../pages/dashboards/patientPage/PatientPanelPage.jsx";
 import DoctorPanel from "../components/doctor/DoctorPanel.jsx";
-import AdminEdit from "../components/admin/admin-edit.jsx";
+import { logout } from "../redux/slices/auth-slice.js";
+import { removeFromLocalStorage } from "../helpers/functions/encrypted-storage.js";
+import store from "../redux/store.jsx";
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <HomePage />,
+    action: async () => {
+      store.dispatch(logout());
+      removeFromLocalStorage('token');
+      return null;
+    }
   },
   AuthRoutes,
   {
@@ -81,14 +89,6 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
-      {
-        path: 'admin-management/edit/:id',
-        element: (
-          <PrivateRoute roles={config.pageRoles.adminManagement}>
-            <AdminEdit/>
-          </PrivateRoute>
-        )
-      },
       
     ],
     
@@ -109,8 +109,6 @@ const router = createBrowserRouter([
       </PrivateRoute>
     )
   },
-
-  
   {
     path: '*',
     element: <Error404Page/>,
@@ -127,12 +125,12 @@ const AppRouter = () => {
     <RouterProvider
       router={router}
       future={{
-        v7_startTransition: true, // Transition'ları optimize etmek
-        v7_relativeSplatPath: true, // Daha iyi path eşlemesi
-        v7_fetcherPersist: true, // Fetcher'ların kalıcılık davranışı
-        v7_normalizeFormMethod: true, // Form metodunun normalize edilmesi
-        v7_partialHydration: true, // Kısmi hidrasyon davranışı
-        v7_skipActionErrorRevalidation: true, // 4xx/5xx revalidation davranışı
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+        v7_fetcherPersist: true,
+        v7_normalizeFormMethod: true,
+        v7_partialHydration: true,
+        v7_skipActionErrorRevalidation: true,
       }}
     />
   );
