@@ -1,17 +1,18 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-
 import PatientDashboard from '../../components/patient/PatientDashboard'
-import CreateReservationForm from '../../components/patient/CreateReservationForm'
-
 
 const PatientManagementPage = () => {
-
-  const { currentOperation } = useSelector(state => state.misc)
+  const currentOperation = useSelector(state => state.misc.currentOperation)
   
+  useEffect(() => {
+    // Değerin gelip gelmediğini kontrol edelim
+    console.log("currentOperation değeri:", currentOperation)
+    console.log("currentOperation tipi:", typeof currentOperation)
+  }, [currentOperation])
+
   return (
     <>
-      {currentOperation === 'new' && <CreateReservationForm />}
       <PatientDashboard />
     </>
   )

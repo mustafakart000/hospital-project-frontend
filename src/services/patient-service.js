@@ -9,9 +9,32 @@ export const getPatientProfile = async (patientId) => {
 }
 
 export const createReservation = async (reservation) => {
-    const response = await axios.post(`${baseUrl}/reservation/create`, reservation, { headers: getAuthHeader() });
-    return response.data;
-}
+    try {
+        const headers = getAuthHeader();
+        
+        // Debug için
+        console.log("Auth bilgileri:", {
+            headers,
+            token: localStorage.getItem("token"),
+            user: JSON.parse(localStorage.getItem("user"))
+        });
+        
+        const response = await axios.post(
+            `${baseUrl}/reservations/create`, 
+            reservation, 
+            { 
+                headers: getAuthHeader()
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (error.response?.status === 403) {
+            throw new Error("Bu işlemi yapmak için yetkiniz bulunmamaktadır. Lütfen giriş yapın veya hasta hesabı kullanın.");
+        }
+        throw error;
+    }
+};
 
 
 

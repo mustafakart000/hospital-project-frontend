@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, Timeline, Tag, Button, Modal, Select, Empty } from 'antd';
 import { Activity, AlertCircle, File, Heart, Thermometer, Pill, Stethoscope } from 'lucide-react';
 import moment from 'moment';
-import PropTypes from 'prop-types';
 import { getMedicalRecordById } from '../../services/medical-records-service';
 import { useSelector } from 'react-redux';
 
@@ -277,8 +276,6 @@ const PatientMedicalHistory = () => {
   );
 };
 
-PatientMedicalHistory.propTypes = {
-  patientId: PropTypes.string.isRequired,
-};
+
 
 export default PatientMedicalHistory;
