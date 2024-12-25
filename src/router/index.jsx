@@ -7,19 +7,14 @@ import HomePage from "../pages/HomePage.jsx";
 import PrivateRoute from "./private-route.jsx";
 import AuthRoutes from "./routes/auth-routes.jsx";
 
-import AdminDashboardPage from "../pages/dashboards/AdminDashboardPage.jsx";
-import DoctorManagement from "../components/admin/DoctorManagement.jsx";
-import Error404Page from "../pages/errors/error-404.jsx";
-import Error401Page from "../pages/errors/error-401.jsx";
-import DoctorEdit from "../components/admin/doctor-edit.jsx";
-import DoctorRegistration from "../components/admin/DoctorRegistration.jsx";
-import AdminMainDashboard from "../components/admin/admin-main-dashboard.jsx";
-import PatientManagementPage from "../pages/dashboards/PatientManagementPage.jsx";
-import PatientPanelPage from "../pages/dashboards/patientPage/PatientPanelPage.jsx";
 import DoctorPanel from "../components/doctor/DoctorPanel.jsx";
-import { logout } from "../redux/slices/auth-slice.js";
 import { removeFromLocalStorage } from "../helpers/functions/encrypted-storage.js";
+import PatientPanelPage from "../pages/dashboards/patientPage/PatientPanelPage.jsx";
+import Error401Page from "../pages/errors/error-401.jsx";
+import Error404Page from "../pages/errors/error-404.jsx";
+import { logout } from "../redux/slices/auth-slice.js";
 import store from "../redux/store.jsx";
+import AdminRoutes from "./routes/admin-routes.jsx";
 
 const router = createBrowserRouter([
   {
@@ -40,56 +35,7 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      {
-        path: "",
-        element: (
-          <PrivateRoute roles={config.pageRoles.dashboard}>
-            <AdminMainDashboard />
-          </PrivateRoute>
-        ),
-      },
-      
-      {
-        path: "admin-management",
-        element: (
-          <PrivateRoute roles={config.pageRoles.adminManagement}>
-            <AdminDashboardPage />
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "doctor-management",
-        element: (
-          <PrivateRoute roles={config.pageRoles.adminManagement}>
-            <DoctorManagement/>
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "doctor-management/register",
-        element: (
-          <PrivateRoute roles={config.pageRoles.adminManagement}>
-            <DoctorRegistration/>
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "doctor-management/edit/:id",
-        element: (
-          <PrivateRoute roles={config.pageRoles.adminManagement}>
-            <DoctorEdit/>
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "patient-management",
-        element: (
-          <PrivateRoute roles={config.pageRoles.adminManagement}>
-            <PatientManagementPage/>
-          </PrivateRoute>
-        ),
-      },
-      
+      ...AdminRoutes,    
     ],
     
   },
@@ -101,6 +47,7 @@ const router = createBrowserRouter([
       </PrivateRoute>
     )
   },
+  
   {path: "/dashboard/doctor-dashboard",
     
     element: (
