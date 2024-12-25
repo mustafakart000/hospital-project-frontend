@@ -3,7 +3,7 @@ import { Card } from 'antd';
 import { Calendar, Clock, User, FileText } from 'lucide-react';
 import CreateReservationForm from '../../../components/patient/CreateReservationForm';
 
-const PatientPortal = () => {
+const PatientPanelPage = () => {
   const [isFormVisible, setFormVisible] = useState(false);
 
   // Örnek kullanıcı bilgileri - API'den gelecek
@@ -166,4 +166,4 @@ const PatientPortal = () => {
   );
 };
 
-export default PatientPortal;
+export default PatientPanelPage;

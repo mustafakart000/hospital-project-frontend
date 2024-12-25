@@ -7,6 +7,7 @@ import { config } from '../../helpers/config';
 import { getPatientProfile } from '../../services/patient-service';
 import { useSelector } from 'react-redux';
 import CreateReservationForm from './CreateReservationForm';
+import './PatientAppointments.css';
 
 const PatientAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -93,82 +94,82 @@ const PatientAppointments = () => {
     });
   };
 
-  const columns = [
-    {
-      title: 'Doktor',
-      key: 'doctor',
-      render: (record) => (
-        <div className="flex items-center space-x-2">
-          <User className="w-4 h-4 text-gray-400" />
-          <div>
-            <div className="font-medium">{`${record.doctor.ad} ${record.doctor.soyad}`}</div>
-            <div className="text-sm text-gray-500">{record.speciality}</div>
-          </div>
+const columns = [
+  {
+    title: 'Doktor',
+    key: 'doctor',
+    render: (record) => (
+      <div className="flex items-center space-x-2">
+        <User className="w-4 h-4 text-gray-400" />
+        <div>
+          <div className="font-medium">{`${record.doctor.ad} ${record.doctor.soyad}`}</div>
+          <div className="text-sm text-gray-500">{record.speciality}</div>
         </div>
-      ),
-    },
-    {
-      title: 'Tarih',
-      dataIndex: 'reservationDate',
-      key: 'reservationDate',
-      render: (text) => (
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-4 h-4 text-gray-400" />
-          <span>{text}</span>
-        </div>
-      ),
-    },
-    {
-      title: 'Saat',
-      dataIndex: 'reservationTime',
-      key: 'reservationTime',
-      render: (text) => (
-        <div className="flex items-center space-x-2">
-          <Clock className="w-4 h-4 text-gray-400" />
-          <span>{text}</span>
-        </div>
-      ),
-    },
-    {
-      title: 'Durum',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-          {getStatusText(status)}
-        </span>
-      ),
-    },
-    {
-      title: 'İşlemler',
-      key: 'actions',
-      render: (_, record) => (
-        <div className="space-x-2">
+      </div>
+    ),
+  },
+  {
+    title: 'Tarih',
+    dataIndex: 'reservationDate',
+    key: 'reservationDate',
+    render: (text) => (
+      <div className="flex items-center space-x-2">
+        <Calendar className="w-4 h-4 text-gray-400" />
+        <span>{text}</span>
+      </div>
+    ),
+  },
+  {
+    title: 'Saat',
+    dataIndex: 'reservationTime',
+    key: 'reservationTime',
+    render: (text) => (
+      <div className="flex items-center space-x-2">
+        <Clock className="w-4 h-4 text-gray-400" />
+        <span>{text}</span>
+      </div>
+    ),
+  },
+  {
+    title: 'Durum',
+    dataIndex: 'status',
+    key: 'status',
+    render: (status) => (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+        {getStatusText(status)}
+      </span>
+    ),
+  },
+  {
+    title: 'İşlemler',
+    key: 'actions',
+    render: (_, record) => (
+      <div className="space-x-2">
+        <Button
+          size="small"
+          onClick={() => {
+            setSelectedAppointment(record);
+            setViewModalVisible(true);
+          }}
+        >
+          Detay
+        </Button>
+        {record.status === 'CONFIRMED' && (
           <Button
             size="small"
+            danger
             onClick={() => {
               setSelectedAppointment(record);
-              setViewModalVisible(true);
+              setCancelModalVisible(true);
             }}
           >
-            Detay
+            İptal Et
           </Button>
-          {record.status === 'CONFIRMED' && (
-            <Button
-              size="small"
-              danger
-              onClick={() => {
-                setSelectedAppointment(record);
-                setCancelModalVisible(true);
-              }}
-            >
-              İptal Et
-            </Button>
-          )}
-        </div>
-      ),
-    },
-  ];
+        )}
+      </div>
+    ),
+  },
+];
 
   const stats = {
     upcoming: appointments.filter(a => a.status === 'CONFIRMED').length,
@@ -262,25 +263,28 @@ const PatientAppointments = () => {
       </div>
 
       {/* Randevular Tablosu */}
-      <Table
-        columns={columns}
-        dataSource={getFilteredAppointments()}
-        rowKey="id"
-        loading={loading}
-        pagination={{
-          total: getFilteredAppointments().length,
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Toplam ${total} randevu`,
-        }}
-        className="shadow-sm rounded-lg overflow-x-auto"
-      />
+      <div className="responsive-table">
+        <Table
+          columns={columns}
+          dataSource={getFilteredAppointments()}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            total: getFilteredAppointments().length,
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Toplam ${total} randevu`,
+          }}
+          className="shadow-sm rounded-lg overflow-x-auto"
+        />
+      </div>
 
       {/* CreateReservationForm Bileşeni */}
       {isFormVisible && (
         <CreateReservationForm 
           visible={isFormVisible}
           onCancel={() => setFormVisible(false)}
+          onClose={() => setFormVisible(false)}
           onSubmit={(data) => {
             console.log('Yeni randevu verileri:', data);
             setFormVisible(false);
@@ -376,4 +380,3 @@ const PatientAppointments = () => {
 };
 
 export default PatientAppointments;
-

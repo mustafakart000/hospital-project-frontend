@@ -10,11 +10,10 @@ export const getMenuItems = (role) => {
     ],
     DOCTOR: [
       { title: "Ana Sayfa", link: "/doctor-dashboard" },
-      { title: "Doktor Düzenle", link: "/doctor-dashboard/doctor-management/edit" },
-      { title: "Doktor Profili", link: "/doctor-dashboard/doctor-management-profile" },
-      { title: "Randevu Yönetimi", link: "/doctor-dashboard/doctor-management-appointments" },
-      { title: "Hasta Yönetimi", link: "/doctor-dashboard/doctor-management-patients" },
-      
+      { title: "Randevu Yönetimi", link: "/doctor-dashboard/doctor-appointments" },
+      { title: "Reçete Yönetimi", link: "/doctor-dashboard/doctor-prescriptions" },
+      { title: "Hasta Yönetimi", link: "/doctor-dashboard/doctor-patients" },
+      { title: "Doktor Profili", link: "/doctor-dashboard/doctor-profile" },
     ],
     PATIENT: [
       { title: "Ana Sayfa", link: "/patient-dashboard" },

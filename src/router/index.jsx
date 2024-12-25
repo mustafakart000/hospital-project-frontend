@@ -20,7 +20,10 @@ import PatientPrescriptions from "../components/patient/PatientPrescriptions.jsx
 import PatientMedicalHistory from "../components/patient/PatientMedicalHistory.jsx";
 import PatientProfile from "../components/patient/PatientProfile.jsx";
 import AdminRoutes from "./routes/admin-routes.jsx";
-
+import DoctorProfile from "../components/doctor/DoctorProfile.jsx";
+import DoctorPatients from "../components/doctor/DoctorPatients.jsx";
+import DoctorPrescriptions from "../components/doctor/DoctorPrescriptions.jsx";
+import DoctorAppointments from "../components/doctor/DoctorAppointments.jsx";
 
 const router = createBrowserRouter([
   {
@@ -28,9 +31,9 @@ const router = createBrowserRouter([
     element: <HomePage />,
     action: async () => {
       store.dispatch(logout());
-      removeFromLocalStorage('token');
+      removeFromLocalStorage("token");
       return null;
-    }
+    },
   },
   AuthRoutes,
   {
@@ -40,10 +43,7 @@ const router = createBrowserRouter([
         <UserLayout />
       </PrivateRoute>
     ),
-    children: [
-      ...AdminRoutes,    
-    ],
-    
+    children: [...AdminRoutes],
   },
   {
     path: "/patient-dashboard",
@@ -61,7 +61,7 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
-      
+
       {
         path: "patient-appointments",
         element: (
@@ -96,24 +96,68 @@ const router = createBrowserRouter([
       },
     ],
   },
-  
-  {path: "/dashboard/doctor-dashboard",
-    
+  {
+    path: "/doctor-dashboard",
     element: (
       <PrivateRoute roles={config.pageRoles.doctorManagement}>
-        <DoctorPanel/>
+        <UserLayout />
       </PrivateRoute>
-    )
+    ),
+
+    children: [
+      {
+        path: "",
+        element: (
+          <PrivateRoute roles={config.pageRoles.doctorManagement}>
+            <DoctorPanel />
+          </PrivateRoute>
+        ),
+      },
+
+      {
+        path: "/doctor-dashboard/doctor-appointments",
+        element: (
+          <PrivateRoute roles={config.pageRoles.doctorManagement}>
+            <DoctorAppointments />
+          </PrivateRoute>
+        ),
+      },
+
+      {
+        path: "/doctor-dashboard/doctor-prescriptions",
+
+        element: (
+          <PrivateRoute roles={config.pageRoles.doctorManagement}>
+            <DoctorPrescriptions />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/doctor-dashboard/doctor-patients",
+        element: (
+          <PrivateRoute roles={config.pageRoles.doctorManagement}>
+            <DoctorPatients />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/doctor-dashboard/doctor-profile",
+        element: (
+          <PrivateRoute roles={config.pageRoles.doctorManagement}>
+            <DoctorProfile />
+          </PrivateRoute>
+        ),
+      },
+    ],
   },
   {
-    path: '*',
-    element: <Error404Page/>,
+    path: "*",
+    element: <Error404Page />,
   },
   {
     path: "unauthorized",
-    element: <Error401Page/>
+    element: <Error401Page />,
   },
-  
 ]);
 
 const AppRouter = () => {
