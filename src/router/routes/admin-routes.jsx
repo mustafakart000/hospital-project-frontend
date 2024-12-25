@@ -7,6 +7,7 @@ import PatientManagementPage from "../../pages/dashboards/PatientManagementPage"
 import PrivateRoute from "../private-route";
 import { config } from "../../helpers/config";
 import DoctorRegistration from "../../components/admin/DoctorRegistration";
+import AdminEdit from "../../components/admin/admin-edit";
 
 const  AdminRoutes = [
     {
@@ -55,6 +56,14 @@ const  AdminRoutes = [
         element: (
           <PrivateRoute roles={config.pageRoles.adminManagement}>
             <PatientManagementPage/>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "admin-management/edit/:id",
+        element: (
+          <PrivateRoute roles={config.pageRoles.adminManagement}>
+            <AdminEdit/>
           </PrivateRoute>
         ),
       }

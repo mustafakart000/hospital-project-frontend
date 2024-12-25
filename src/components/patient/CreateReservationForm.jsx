@@ -7,8 +7,10 @@ import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { getAllDoctorsBySpecialtyId } from "../../services/reservation-service";
+import { createReservation } from "../../services/patient-service";
+import { setOperation } from "../../redux/slices/misc-slice";
 
-const CreateReservationForm = ({ visible, onCancel, onSubmit }) => {
+const CreateReservationForm = ({ visible, onCancel }) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const specialties = useSelector((state) => state.specialties);
@@ -20,6 +22,19 @@ const CreateReservationForm = ({ visible, onCancel, onSubmit }) => {
     reservationDate: yup.string().required("Randevu tarihi seçilmedi"),
     reservationTime: yup.string().required("Randevu saati seçilmedi"),
   });
+  
+  const user = useSelector((state) => state.auth.user);
+  
+  const token = localStorage.getItem("token");
+  
+  useEffect(() => {
+    console.log("Kullanıcı bilgileri:", {
+      id: user?.id,
+      role: user?.role,
+      token: token
+    });
+  }, [user]);
+  
   const formik = useFormik({
     initialValues: {
       speciality: "",
@@ -28,9 +43,52 @@ const CreateReservationForm = ({ visible, onCancel, onSubmit }) => {
       reservationTime: "",
     },
     validationSchema: validationSchema,
-    onSubmit: (values) => {
-      console.log("CreateReservationForm.jsx values:", values);
-      onSubmit(values);
+    onSubmit: async (values) => {
+      try {
+        if (!user?.role?.includes('PATIENT')) {
+          Modal.error({
+            title: 'Yetki Hatası',
+            content: 'Bu işlemi yapmak için hasta rolüne sahip olmanız gerekiyor.'
+          });
+          console.log("setOperation çağrılıyor...")
+          return;
+        }
+        
+        console.log("CreateReservationForm.jsx values:", values);
+        const payload = {
+          doctor: {
+            id: values.doctor
+          },
+          date: values.reservationDate.format('YYYY-MM-DD'),
+          time: values.reservationTime.format('HH:mm'),
+          status: "CONFIRMED",
+          speciality: specialties.find(s => s.id === values.speciality)?.name,
+          patient: {
+            id: user.id
+          },
+          reservationDate: values.reservationDate.format('YYYY-MM-DD'),
+          reservationTime: values.reservationTime.format('HH:mm')
+        };
+        
+        
+        await createReservation(payload);
+        Modal.success({
+          title: 'Başarılı',
+          content: 'Randevu başarıyla oluşturuldu.'
+        });
+        dispatch(setOperation(Math.random()));
+        onCancel();
+      } catch (error) {
+        console.error("Randevu oluşturulurken hata:", {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data
+        });
+        Modal.error({
+          title: 'Hata',
+          content: 'Randevu oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'
+        });
+      }
     },
   });
   
@@ -70,7 +128,6 @@ const CreateReservationForm = ({ visible, onCancel, onSubmit }) => {
       <Form form={form} layout="vertical">
         <Form.Item label="Uzmanlık" name="speciality" rules={[{ required: true }]}>
           <Select 
-
             placeholder="Bir uzmanlık seçiniz" 
             onChange={(value) => {
               console.log("createReservationForm.jsx value", value);
@@ -131,9 +188,7 @@ const CreateReservationForm = ({ visible, onCancel, onSubmit }) => {
 
 CreateReservationForm.propTypes = {
   visible: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
 };
 
 export default CreateReservationForm;
