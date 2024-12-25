@@ -4,12 +4,14 @@ import { Activity, AlertCircle, File, Heart, Thermometer, Pill, Stethoscope } fr
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { getMedicalRecordById } from '../../services/medical-records-service';
+import { useSelector } from 'react-redux';
 
-const PatientMedicalHistory = ({ patientId }) => {
+const PatientMedicalHistory = () => {
   const [medicalHistory, setMedicalHistory] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
+  const patientId = useSelector(state => state.auth.user.id.toString());
 
   const fetchMedicalHistory = async () => {
     try {
@@ -148,7 +150,7 @@ const PatientMedicalHistory = ({ patientId }) => {
                         <div>
                           <div className="flex items-center space-x-2">
                             <Tag color={color}>{record.category.toUpperCase()}</Tag>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-gray-500 hidden [@media(min-width:385px)]:block">
                               {moment(record.date).format('DD.MM.YYYY')}
                             </span>
                           </div>

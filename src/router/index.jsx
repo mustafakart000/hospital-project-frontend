@@ -20,6 +20,10 @@ import DoctorPanel from "../components/doctor/DoctorPanel.jsx";
 import { logout } from "../redux/slices/auth-slice.js";
 import { removeFromLocalStorage } from "../helpers/functions/encrypted-storage.js";
 import store from "../redux/store.jsx";
+import PatientAppointments from "../components/patient/PatientAppointments.jsx";
+import PatientPrescriptions from "../components/patient/PatientPrescriptions.jsx";
+import PatientMedicalHistory from "../components/patient/PatientMedicalHistory.jsx";
+import PatientProfile from "../components/patient/PatientProfile.jsx";
 
 const router = createBrowserRouter([
   {
@@ -93,13 +97,56 @@ const router = createBrowserRouter([
     ],
     
   },
-  {path: "/patient-dashboard",
-    
+  {
+    path: "/patient-dashboard",
     element: (
       <PrivateRoute roles={config.pageRoles.patientManagement}>
-        <PatientPanelPage/>
+        <UserLayout />
       </PrivateRoute>
-    )
+    ),
+    children: [
+      {
+        path: "",
+        element: (
+          <PrivateRoute roles={config.pageRoles.patientManagement}>
+            <PatientPanelPage />
+          </PrivateRoute>
+        ),
+      },
+      
+      {
+        path: "patient-appointments",
+        element: (
+          <PrivateRoute roles={config.pageRoles.patientManagement}>
+            <PatientAppointments />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "patient-prescriptions",
+        element: (
+          <PrivateRoute roles={config.pageRoles.patientManagement}>
+            <PatientPrescriptions />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "patient-medical-history",
+        element: (
+          <PrivateRoute roles={config.pageRoles.patientManagement}>
+            <PatientMedicalHistory />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "patient-profile",
+        element: (
+          <PrivateRoute roles={config.pageRoles.patientManagement}>
+            <PatientProfile />
+          </PrivateRoute>
+        ),
+      },
+    ],
   },
   {path: "/dashboard/doctor-dashboard",
     

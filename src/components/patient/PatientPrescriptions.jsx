@@ -6,8 +6,9 @@ import { getAuthHeader } from '../../services/auth-header';
 import { config } from '../../helpers/config';
 import moment from 'moment';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
-const PatientPrescriptions = ({ patientId }) => {
+const PatientPrescriptions = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -15,6 +16,7 @@ const PatientPrescriptions = ({ patientId }) => {
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const BASE_URL = config.api.baseUrl;
+  const patientId = useSelector(state => state.auth.user.id.toString());
 
   const fetchPrescriptions = async () => {
     try {
