@@ -1,0 +1,34 @@
+@media (max-width: 727px) {
+    .responsive-table {
+      width: 100%;
+      overflow-x: auto;
+    }
+    
+  }
+
+@media (max-width: 620px) {
+  .responsive-table {
+    overflow-x: auto;
+  }
+
+  .ant-table {
+    min-width: 600px; /* Tablonun minimum genişliğini ayarlayın */
+  }
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

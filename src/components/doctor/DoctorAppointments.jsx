@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Tag, Button, Dropdown, Modal, Form, Select, DatePicker, TimePicker } from 'antd';
 import { MoreVertical, Calendar, Clock, User } from 'lucide-react';
-import axios from 'axios';
 import { getAuthHeader } from '../../services/auth-header';
-import { config } from '../../helpers/config';
 import moment from 'moment';
+import { getAllDoctorByReservations, updateReservation } from '../../services/reservation-service';
 
 const DoctorAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -14,15 +13,12 @@ const DoctorAppointments = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const BASE_URL = config.api.baseUrl;
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/reservations/getall`, {
-        headers: getAuthHeader(),
-      });
-      setAppointments(response.data);
+      const response = await getAllDoctorByReservations();
+      setAppointments(response);
     } catch (error) {
       console.error('Randevular yüklenirken hata oluştu:', error);
     } finally {
@@ -79,7 +75,7 @@ const DoctorAppointments = () => {
   const handleUpdate = async (values) => {
     try {
       setLoading(true);
-      await axios.put(`${BASE_URL}/reservations/update/${selectedAppointment.id}`, {
+      await updateReservation(selectedAppointment.id, {
         ...values,
         reservationDate: values.reservationDate.format('YYYY-MM-DD'),
         reservationTime: values.reservationTime.format('HH:mm')
@@ -101,7 +97,7 @@ const DoctorAppointments = () => {
     try {
       setLoading(true);
       // Randevunun durumunu "CANCELLED" olarak güncelle
-      await axios.put(`${BASE_URL}/reservations/update/${selectedAppointment.id}`, 
+      await updateReservation(selectedAppointment.id, 
         {
           ...selectedAppointment,
           status: 'CANCELLED'
@@ -384,11 +380,11 @@ const DoctorAppointments = () => {
       {/* Table */}
       <Table
         columns={columns}
-        dataSource={appointments}
+        dataSource={appointments || []}
         rowKey="id"
         loading={loading}
         pagination={{
-          total: appointments.length,
+          total: appointments ? appointments.length : 0,
           pageSize: 10,
           showSizeChanger: true,
           showTotal: (total) => `Toplam ${total} randevu`,
