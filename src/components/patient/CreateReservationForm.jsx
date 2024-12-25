@@ -131,6 +131,7 @@ const CreateReservationForm = ({ visible, onCancel, onSubmit }) => {
 
 CreateReservationForm.propTypes = {
   visible: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

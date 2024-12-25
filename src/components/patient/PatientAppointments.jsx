@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Modal, Input, Select } from 'antd';
-import { Calendar, Clock, User, Search, Filter, AlertCircle } from 'lucide-react';
+import { Table, Button, Modal, Input, Select } from 'antd';
+import { Calendar, Clock, User, Search, Filter, AlertCircle, Check, X } from 'lucide-react';
 import axios from 'axios';
 import { getAuthHeader } from '../../services/auth-header';
 import { config } from '../../helpers/config';
-import PropTypes from 'prop-types';
 import { getPatientProfile } from '../../services/patient-service';
+import { useSelector } from 'react-redux';
+import CreateReservationForm from './CreateReservationForm';
 
-const PatientAppointments = ({ patientId }) => {
+const PatientAppointments = () => {
   const [appointments, setAppointments] = useState([]);
-  const [patientDetails, setPatientDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [isFormVisible, setFormVisible] = useState(false);
+  const patientId = useSelector(state => state.auth.user.id.toString());
   const BASE_URL = config.api.baseUrl;
 
   const fetchPatientDetails = async () => {
     try {
       setLoading(true);
       const response = await getPatientProfile(patientId);
-      console.log("response.reservations",response.reservations)
-      setPatientDetails(response);
       setAppointments(response.reservations);
     } catch (error) {
       console.error('Hasta bilgileri yüklenirken hata oluştu:', error);
@@ -176,72 +176,62 @@ const PatientAppointments = ({ patientId }) => {
     cancelled: appointments.filter(a => a.status === 'CANCELLED').length,
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Hasta Detayları */}
-      {patientDetails && (
-        <Card className="bg-white shadow-sm p-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">Ad</p>
-              <p className="font-medium">{patientDetails.ad} {patientDetails.soyad}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">TC Kimlik</p>
-              <p className="font-medium">{patientDetails.tcKimlik}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-medium">{patientDetails.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Telefon</p>
-              <p className="font-medium">{patientDetails.telefon}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Adres</p>
-              <p className="font-medium">{patientDetails.adres}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Doğum Tarihi</p>
-              <p className="font-medium">{patientDetails.birthDate}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Kan Grubu</p>
-              <p className="font-medium">{patientDetails.kanGrubu}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-sm text-gray-500">Tıbbi Geçmiş</p>
-              <p className="font-medium">{patientDetails.medicalHistory}</p>
-            </div>
-          </div>
-        </Card>
-      )}
+  const handleCreateAppointment = () => {
+    setFormVisible(true);
+  };
 
-      {/* İstatistikler */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-white shadow-sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.upcoming}</div>
-            <div className="text-sm text-gray-500">Yaklaşan Randevu</div>
+  return (
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8">
+      {/* İstatistik Kartları */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-blue-50">
+              <Calendar className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Yaklaşan</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-blue-600">{stats.upcoming}</span>
+                <span className="text-sm text-gray-500">Randevu</span>
+              </div>
+            </div>
           </div>
-        </Card>
-        <Card className="bg-white shadow-sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-            <div className="text-sm text-gray-500">Tamamlanan</div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-green-50">
+              <Check className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Tamamlanan</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-green-600">{stats.completed}</span>
+                <span className="text-sm text-gray-500">Randevu</span>
+              </div>
+            </div>
           </div>
-        </Card>
-        <Card className="bg-white shadow-sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">{stats.cancelled}</div>
-            <div className="text-sm text-gray-500">İptal Edilen</div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-red-50">
+              <X className="w-5 h-5 text-red-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">İptal Edilen</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-red-600">{stats.cancelled}</span>
+                <span className="text-sm text-gray-500">Randevu</span>
+              </div>
+            </div>
           </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Filtreler */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      {/* Arama, Filtre ve Randevu Oluştur Butonu */}
+      <div className="flex flex-col md:flex-row gap-4 items-center">
         <Input
           placeholder="Doktor veya Uzmanlık Ara"
           prefix={<Search className="w-4 h-4 text-gray-400" />}
@@ -253,7 +243,7 @@ const PatientAppointments = ({ patientId }) => {
           placeholder="Durum Filtrele"
           value={filterStatus}
           onChange={setFilterStatus}
-          className="w-full sm:w-48"
+          className="w-full md:w-48"
           suffixIcon={<Filter className="w-4 h-4" />}
         >
           <Select.Option value="all">Tümü</Select.Option>
@@ -262,9 +252,16 @@ const PatientAppointments = ({ patientId }) => {
           <Select.Option value="COMPLETED">Tamamlandı</Select.Option>
           <Select.Option value="CANCELLED">İptal Edildi</Select.Option>
         </Select>
+        <Button
+          type="primary"
+          className="bg-blue-500 text-white"
+          onClick={handleCreateAppointment}
+        >
+          Randevu Oluştur
+        </Button>
       </div>
 
-      {/* Randevu Tablosu */}
+      {/* Randevular Tablosu */}
       <Table
         columns={columns}
         dataSource={getFilteredAppointments()}
@@ -276,8 +273,21 @@ const PatientAppointments = ({ patientId }) => {
           showSizeChanger: true,
           showTotal: (total) => `Toplam ${total} randevu`,
         }}
-        className="shadow-sm rounded-lg"
+        className="shadow-sm rounded-lg overflow-x-auto"
       />
+
+      {/* CreateReservationForm Bileşeni */}
+      {isFormVisible && (
+        <CreateReservationForm 
+          visible={isFormVisible}
+          onCancel={() => setFormVisible(false)}
+          onSubmit={(data) => {
+            console.log('Yeni randevu verileri:', data);
+            setFormVisible(false);
+            fetchPatientDetails();
+          }}
+        />
+      )}
 
       {/* Detay Modalı */}
       <Modal
@@ -293,26 +303,26 @@ const PatientAppointments = ({ patientId }) => {
         {selectedAppointment && (
           <div className="space-y-4">
             <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Doktor</p>
-                  <p className="font-medium">{`${selectedAppointment.doctor.ad} ${selectedAppointment.doctor.soyad}`}</p>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-4">
+                <div className="flex flex-col md:flex-row md:items-center">
+                  <p className="text-sm text-gray-500 md:w-1/3">Doktor</p>
+                  <p className="font-medium md:w-2/3 truncate">{`${selectedAppointment.doctor.ad} ${selectedAppointment.doctor.soyad}`}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Uzmanlık</p>
-                  <p className="font-medium">{selectedAppointment.speciality}</p>
+                <div className="flex flex-col md:flex-row md:items-center">
+                  <p className="text-sm text-gray-500 md:w-1/3">Uzmanlık</p>
+                  <p className="font-medium md:w-2/3 truncate">{selectedAppointment.speciality}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Tarih</p>
-                  <p className="font-medium">{selectedAppointment.reservationDate}</p>
+                <div className="flex flex-col md:flex-row md:items-center">
+                  <p className="text-sm text-gray-500 md:w-1/3">Tarih</p>
+                  <p className="font-medium md:w-2/3 truncate">{selectedAppointment.reservationDate}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Saat</p>
-                  <p className="font-medium">{selectedAppointment.reservationTime}</p>
+                <div className="flex flex-col md:flex-row md:items-center">
+                  <p className="text-sm text-gray-500 md:w-1/3">Saat</p>
+                  <p className="font-medium md:w-2/3 truncate">{selectedAppointment.reservationTime}</p>
                 </div>
-                <div className="col-span-2">
-                  <p className="text-sm text-gray-500">Durum</p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedAppointment.status)}`}>
+                <div className="flex flex-col md:flex-row md:items-center col-span-1 md:col-span-2">
+                  <p className="text-sm text-gray-500 md:w-1/3">Durum</p>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium md:w-2/3 truncate ${getStatusColor(selectedAppointment.status)}`}>
                     {getStatusText(selectedAppointment.status)}
                   </span>
                 </div>
@@ -365,8 +375,5 @@ const PatientAppointments = ({ patientId }) => {
   );
 };
 
-PatientAppointments.propTypes = {
-  patientId: PropTypes.string.isRequired,
-};
-
 export default PatientAppointments;
+

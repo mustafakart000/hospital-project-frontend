@@ -7,13 +7,15 @@ import axios from 'axios';
 import { config } from '../../helpers/config';
 import PropTypes from 'prop-types';
 import { getPatientProfile } from '../../services/patient-service';
+import { useSelector } from 'react-redux';
 
-const PatientProfile = ({ patientId }) => {
+const PatientProfile = () => {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [form] = Form.useForm();
   const BASE_URL = config.api.baseUrl;
+  const patientId = useSelector(state => state.auth.user.id.toString());
 
   const fetchPatientProfile = async () => {
     try {
@@ -53,8 +55,8 @@ const PatientProfile = ({ patientId }) => {
     }
   };
 
-  const InfoItem = ({ icon: Icon, label, value }) => (
-    <div className="flex items-center space-x-3 py-2">
+  const InfoItem = ({ icon: Icon, label, value, className }) => (
+    <div className={`flex items-center space-x-3 py-2 ${className}`}>
       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50">
         <Icon className="w-4 h-4 text-blue-600" />
       </div>
@@ -69,6 +71,7 @@ const PatientProfile = ({ patientId }) => {
     icon: PropTypes.elementType.isRequired,
     label: PropTypes.string.isRequired,
     value: PropTypes.string.isRequired,
+    className: PropTypes.string,
   };
 
   if (loading || !patient) {
@@ -76,10 +79,10 @@ const PatientProfile = ({ patientId }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 md:px-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Profil Bilgilerim</h2>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4 md:mb-0">Profil Bilgilerim</h2>
         <Button
           type="primary"
           icon={<Edit className="w-4 h-4" />}
@@ -100,16 +103,21 @@ const PatientProfile = ({ patientId }) => {
         {/* Kişisel Bilgiler */}
         <Card title="Kişisel Bilgiler" className="shadow-sm">
           <div className="space-y-4">
-            <div className="flex items-center space-x-4 mb-6">
-              <Avatar size={64} icon={<User />} className="bg-blue-100 text-blue-600" />
+            <div className="flex flex-col md:flex-row items-center space-x-0 md:space-x-4 mb-6">
+              <Avatar size={64} icon={<User />} className="bg-blue-100 text-blue-600 mb-4 md:mb-0" />
               <div>
-                <h3 className="text-lg font-medium">{`${patient.ad} ${patient.soyad}`}</h3>
+                <h3 className="text-lg font-medium text-center md:text-left">{`${patient.ad} ${patient.soyad}`}</h3>
               </div>
             </div>
             <InfoItem icon={Mail} label="E-posta" value={patient.email} />
             <InfoItem icon={Phone} label="Telefon" value={patient.telefon} />
             <InfoItem icon={MapPin} label="Adres" value={patient.adres} />
-            <InfoItem icon={Clock} label="Doğum Tarihi" value={moment(patient.birthDate).format('DD/MM/YYYY')} />
+            <InfoItem
+              icon={Clock}
+              label="Doğum Tarihi"
+              value={moment(patient.birthDate).format('DD/MM/YYYY')}
+              className="hidden custom:block"
+            />
           </div>
         </Card>
 

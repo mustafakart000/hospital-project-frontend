@@ -1,158 +1,169 @@
-import React, { useState } from "react";
-import PropTypes from 'prop-types';
-import { Calendar, User, Clock, FileText, Plus, Activity, Heart } from "lucide-react";
-import { useSelector } from "react-redux";
-import PatientProfile from "../../../components/patient/PatientProfile";
-import PatientAppointments from "../../../components/patient/PatientAppointments";
-import PatientPrescriptions from "../../../components/patient/PatientPrescriptions";
-import PatientMedicalHistory from "../../../components/patient/PatientMedicalHistory";
-import CreateReservationForm from "../../../components/patient/CreateReservationForm";
+import React, { useState } from 'react';
+import { Card } from 'antd';
+import { Calendar, Clock, User, FileText } from 'lucide-react';
+import CreateReservationForm from '../../../components/patient/CreateReservationForm';
 
-const StatCard = ({ title, value, icon: Icon, color }) => (
-  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-    <div className="flex items-center justify-between">
-      <div className="space-y-2">
-        <p className="text-sm text-gray-500 font-medium">{title}</p>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-      </div>
-      <div className={`p-3 rounded-full ${color}`}>
-        <Icon className="w-6 h-6 text-white" />
-      </div>
-    </div>
-  </div>
-);
+const PatientPortal = () => {
+  const [isFormVisible, setFormVisible] = useState(false);
 
-StatCard.propTypes = {
-  title: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
-  icon: PropTypes.elementType.isRequired,
-  color: PropTypes.string.isRequired,
-};
-
-const PatientPanel = () => {
-  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState('appointments');
-  const patientId = useSelector(state => state.auth.user.id.toString());
-
-  const handleCreate = () => {
-    //console.log("Yeni randevu eklendi:", values);
-    setIsCreateModalVisible(false);
+  // Örnek kullanıcı bilgileri - API'den gelecek
+  const userInfo = {
+    name: 'Ayşe Kara',
+    tcNo: '78943222350',
+    email: 'ayse.kara1@ornek.com',
+    phone: '+905554567890',
+    address: 'Nilüfer, Bursa, Türkiye',
+    bloodType: '0+',
+    birthDate: '1990-05-15'
   };
 
-  const tabs = [
-    { 
-      id: 'appointments', 
-      label: 'Randevularım', 
-      icon: Calendar, 
-      component: PatientAppointments 
+  // İstatistikler
+  const stats = [
+    {
+      title: 'Toplam Randevu',
+      value: '12',
+      icon: <Calendar className="h-6 w-6 text-white" />,
+      bgColor: 'bg-blue-500'
     },
-    { 
-      id: 'prescriptions', 
-      label: 'Reçetelerim', 
-      icon: FileText, 
-      component: PatientPrescriptions 
+    {
+      title: 'Yaklaşan Randevu',
+      value: '2',
+      icon: <Clock className="h-6 w-6 text-white" />,
+      bgColor: 'bg-green-500'
     },
-    { 
-      id: 'medical-history', 
-      label: 'Sağlık Geçmişim', 
-      icon: Activity, 
-      component: PatientMedicalHistory 
+    {
+      title: 'Aktif Reçete',
+      value: '3',
+      icon: <FileText className="h-6 w-6 text-white" />,
+      bgColor: 'bg-purple-500'
     },
-    { 
-      id: 'profile', 
-      label: 'Profilim', 
-      icon: User, 
-      component: PatientProfile 
-    },
+    {
+      title: 'Sağlık Durumu',
+      value: 'İyi',
+      icon: <User className="h-6 w-6 text-white" />,
+      bgColor: 'bg-rose-500'
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Hasta Portalı</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Randevularınızı yönetin, sağlık geçmişinizi takip edin
-            </p>
-          </div>
-          <button
-            onClick={() => setIsCreateModalVisible(true)}
-            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Randevu Al
-          </button>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Hasta Portalı</h1>
+          <p className="text-gray-500">Randevularınızı yönetin, sağlık geçmişinizi takip edin</p>
         </div>
+        <button 
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+          onClick={() => setFormVisible(true)}
+        >
+          Randevu Oluştur
+        </button>
+      </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title="Toplam Randevu"
-            value="12"
-            icon={Calendar}
-            color="bg-blue-500"
-          />
-          <StatCard
-            title="Yaklaşan Randevu"
-            value="2"
-            icon={Clock}
-            color="bg-green-500"
-          />
-          <StatCard
-            title="Aktif Reçete"
-            value="3"
-            icon={FileText}
-            color="bg-purple-500"
-          />
-          <StatCard
-            title="Sağlık Durumu"
-            value="İyi"
-            icon={Heart}
-            color="bg-rose-500"
-          />
-        </div>
-
-        {/* Main Content with Left Navigation */}
-        <div className="flex gap-8">
-          {/* Left Navigation */}
-          <div className="w-64 bg-white rounded-lg shadow-sm p-4">
-            <nav className="space-y-2">
-              {tabs.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setActiveTab(id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeTab === id
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{label}</span>
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Content Area */}
-          <div className="flex-1 bg-white rounded-lg shadow-sm p-6">
-            {tabs.map(({ id, component: Component }) => (
-              activeTab === id && <Component key={id} patientId={patientId} />
-            ))}
-          </div>
-        </div>
-
-        {/* Reservation Modal */}
-        <CreateReservationForm
-          visible={isCreateModalVisible}
-          onCancel={() => setIsCreateModalVisible(false)}
-          onSubmit={handleCreate}
+      {/* CreateReservationForm bileşeni */}
+      {isFormVisible && (
+        <CreateReservationForm 
+          visible={isFormVisible}
+          onClose={() => setFormVisible(false)}
+          onCancel={() => setFormVisible(false)}
+          onSubmit={(data) => {
+            console.log('Form verileri:', data);
+            setFormVisible(false);
+          }}
         />
+      )}
+
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index} className="border-none shadow-sm">
+            <div className="flex items-center space-x-4">
+              <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                {stat.icon}
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">{stat.title}</p>
+                <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* User Info */}
+        <div className="lg:col-span-2">
+          <Card title="Kişisel Bilgiler" className="h-full">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Ad</p>
+                <p className="font-medium">{userInfo.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">TC Kimlik</p>
+                <p className="font-medium">{userInfo.tcNo}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="font-medium">{userInfo.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Telefon</p>
+                <p className="font-medium">{userInfo.phone}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Adres</p>
+                <p className="font-medium">{userInfo.address}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Kan Grubu</p>
+                <p className="font-medium">{userInfo.bloodType}</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Status Summary */}
+        <div>
+          <Card title="Randevu Özeti" className="mb-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span>Yaklaşan Randevu</span>
+                <span className="text-blue-600 font-medium">1</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Tamamlanan</span>
+                <span className="text-green-600 font-medium">0</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>İptal Edilen</span>
+                <span className="text-red-600 font-medium">0</span>
+              </div>
+            </div>
+          </Card>
+          
+          <Card title="Tıbbi Geçmiş">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span>Son Muayene</span>
+                <span className="text-gray-600">15.12.2024</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Son Tahlil</span>
+                <span className="text-gray-600">10.12.2024</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Son Reçete</span>
+                <span className="text-gray-600">15.12.2024</span>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
 };
 
-export default PatientPanel;
+export default PatientPortal;
