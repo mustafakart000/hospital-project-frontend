@@ -265,7 +265,7 @@ const PatientDashboard = () => {
                   className="shadow-sm"
                   stripedRows
                   showGridlines
-                  responsiveLayout="scroll"
+                  responsiveLayout="scroll" // bunun yerine responsiveLayout="stack" yap
                 >
                   <Column 
                     header="Tarih" 

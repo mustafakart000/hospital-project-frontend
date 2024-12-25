@@ -8,6 +8,12 @@ export const getPatientProfile = async (patientId) => {
     return response.data;
 }
 
+export const createReservation = async (reservation) => {
+    const response = await axios.post(`${baseUrl}/reservation/create`, reservation, { headers: getAuthHeader() });
+    return response.data;
+}
+
+
 
 
 
