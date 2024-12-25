@@ -6,7 +6,7 @@ export const fetchSpecialties = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await getAllSpecialties();
-      //console.log("response1", response);
+      console.log("specialitiesThunk response: ", response);
       return response; // API'den gelen uzmanlık listesi
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Uzmanlıklar alınamadı');
