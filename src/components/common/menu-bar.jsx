@@ -103,7 +103,7 @@ const MenuBar = () => {
           <div
             style={{
               padding: "24px 20px",
-              background: "linear-gradient(145deg, #1a365d 0%, #2563eb 100%)",
+              background: "linear-gradient(145deg, #ffffff 0%, #ffffff 100%)",
               borderBottom: "1px solid rgba(229, 231, 235, 0.1)",
               position: "relative",
               overflow: "hidden",
@@ -125,24 +125,19 @@ const MenuBar = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "12px",
+                
               }}
             >
-              <MedicineBoxOutlined
-                style={{
-                  fontSize: "24px",
-                  color: "#ffffff",
-                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
-                }}
-              />
+              
               <h1
                 style={{
-                  color: "#ffffff",
+                  color: "#161515",
                   fontSize: "20px",
                   fontWeight: "600",
                   letterSpacing: "0.5px",
                   margin: 0,
                   textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  
                 }}
                 onClick={() => navigate("/dashboard")}
                 cursor="pointer"
