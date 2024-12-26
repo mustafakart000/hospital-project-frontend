@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Dropdown, Modal, Form, Select, DatePicker, TimePicker } from 'antd';
-import { MoreVertical, Calendar, Clock, User } from 'lucide-react';
+import { Button, Modal, Form, Select, DatePicker, TimePicker, Table, Dropdown } from 'antd';
+import { Plus, MoreVertical } from 'lucide-react';
 import { getAuthHeader } from '../../services/auth-header';
+import { getDoctorReservations, updateReservation } from '../../services/reservation-service';
+import { useSelector } from 'react-redux';
+import CreateReservationForm from '../patient/CreateReservationForm';
 import moment from 'moment';
-import { getAllDoctorByReservations, updateReservation } from '../../services/reservation-service';
 
 const DoctorAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const doctorId = useSelector(state => state.auth.user.id.toString());
+  const [isFormVisible, setFormVisible] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const response = await getAllDoctorByReservations();
-      setAppointments(response);
+      const response = await getDoctorReservations(doctorId);
+      const uniqueAppointments = response.filter((appointment, index, self) =>
+        index === self.findIndex((a) => (
+          a.id === appointment.id
+        ))
+      );
+      setAppointments(uniqueAppointments);
     } catch (error) {
       console.error('Randevular yüklenirken hata oluştu:', error);
     } finally {
@@ -48,28 +57,6 @@ const DoctorAppointments = () => {
       'COMPLETED': 'Tamamlandı'
     };
     return texts[status] || status;
-  };
-
-  const handleMenuClick = (key, record) => {
-    setSelectedAppointment(record);
-    switch (key) {
-      case '1':
-        setViewModalVisible(true);
-        break;
-      case '2':
-        form.setFieldsValue({
-          ...record,
-          reservationDate: moment(record.reservationDate),
-          reservationTime: moment(record.reservationTime, 'HH:mm')
-        });
-        setEditModalVisible(true);
-        break;
-      case '3':
-        setCancelModalVisible(true);
-        break;
-      default:
-        break;
-    }
   };
 
   const handleUpdate = async (values) => {
@@ -115,82 +102,6 @@ const DoctorAppointments = () => {
       setLoading(false);
     }
   };
-
-  const menuItems = [
-    { key: '1', label: 'Görüntüle' },
-    { key: '2', label: 'Düzenle' },
-    { key: '3', label: 'İptal Et', danger: true }
-  ];
-
-  const columns = [
-    {
-      title: 'Hasta',
-      key: 'patient',
-      render: (record) => (
-        <div className="flex items-center space-x-2">
-          <User className="w-4 h-4 text-gray-400" />
-          <span className="font-medium">{`${record.patientName} ${record.patientSurname}`}</span>
-        </div>
-      ),
-    },
-    {
-      title: 'Tarih',
-      dataIndex: 'reservationDate',
-      key: 'reservationDate',
-      render: (text) => (
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-4 h-4 text-gray-400" />
-          <span>{text}</span>
-        </div>
-      ),
-    },
-    {
-      title: 'Saat',
-      dataIndex: 'reservationTime',
-      key: 'reservationTime',
-      render: (text) => (
-        <div className="flex items-center space-x-2">
-          <Clock className="w-4 h-4 text-gray-400" />
-          <span>{text}</span>
-        </div>
-      ),
-    },
-    {
-      title: 'Uzmanlık',
-      dataIndex: 'speciality',
-      key: 'speciality',
-      render: (text) => (
-        <Tag className="rounded-full px-3 py-1 text-sm">
-          {text}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Durum',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-          {getStatusText(status)}
-        </span>
-      ),
-    },
-    {
-      title: 'İşlemler',
-      key: 'actions',
-      render: (_, record) => (
-        <Dropdown
-          menu={{ 
-            items: menuItems,
-            onClick: ({ key }) => handleMenuClick(key, record)
-          }}
-          trigger={['click']}
-        >
-          <Button type="text" icon={<MoreVertical className="w-4 h-4" />} />
-        </Dropdown>
-      ),
-    },
-  ];
 
   // View Modal Component
   const ViewModal = () => (
@@ -344,6 +255,89 @@ const DoctorAppointments = () => {
     </Modal>
   );
 
+  const columns = [
+    {
+      title: 'Hasta',
+      key: 'patient',
+      render: (record) => (
+        <div className="flex items-center space-x-2">
+          <span className="font-medium">{`${record.patientName} ${record.patientSurname}`}</span>
+        </div>
+      ),
+    },
+    {
+      title: 'Tarih',
+      dataIndex: 'reservationDate',
+      key: 'reservationDate',
+      render: (text) => (
+        <div className="flex items-center space-x-2">
+          <span>{text}</span>
+        </div>
+      ),
+    },
+    {
+      title: 'Saat',
+      dataIndex: 'reservationTime',
+      key: 'reservationTime',
+      render: (text) => (
+        <div className="flex items-center space-x-2">
+          <span>{text}</span>
+        </div>
+      ),
+    },
+    {
+      title: 'Durum',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+          {getStatusText(status)}
+        </span>
+      ),
+    },
+    {
+      title: 'İşlemler',
+      key: 'actions',
+      render: (_, record) => (
+        <Dropdown
+          menu={{ 
+            items: [
+              { key: '1', label: 'Görüntüle' },
+              { key: '2', label: 'Düzenle' },
+              { key: '3', label: 'İptal Et', danger: true }
+            ],
+            onClick: ({ key }) => handleMenuClick(key, record)
+          }}
+          trigger={['click']}
+        >
+          <Button type="text" icon={<MoreVertical className="w-4 h-4" />} />
+        </Dropdown>
+      ),
+    },
+  ];
+
+  const handleMenuClick = (key, record) => {
+    setSelectedAppointment(record);
+    switch (key) {
+      case '1':
+        setViewModalVisible(true);
+        break;
+      case '2':
+        form.setFieldsValue({
+          ...record,
+          reservationDate: moment(record.reservationDate),
+          reservationTime: moment(record.reservationTime, 'HH:mm')
+        });
+        setEditModalVisible(true);
+        break;
+      case '3':
+        setCancelModalVisible(true);
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -359,15 +353,25 @@ const DoctorAppointments = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            type="primary" 
-            className="bg-blue-600"
-            onClick={fetchAppointments}
-          >
-            Yenile
-          </Button>
+        <button 
+          className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 gap-2 w-full sm:w-auto"
+          onClick={() => setFormVisible(true)}
+        >
+          <Plus className="w-5 h-5" />
+          Yeni Randevu Oluştur
+        </button>
         </div>
       </div>
+
+       {/* CreateReservationForm bileşeni */}
+       <CreateReservationForm 
+        visible={isFormVisible}
+        onCancel={() => setFormVisible(false)}
+        onSubmit={(data) => {
+          console.log('Form verileri:', data);
+          setFormVisible(false);
+        }}
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 pb-4">
@@ -378,6 +382,31 @@ const DoctorAppointments = () => {
       </div>
 
       {/* Table */}
+      <style>{`
+        @media (max-width: 610px) {
+          .responsive-table {
+            display: none;
+          }
+          .card-view {
+            display: block;
+          }
+        }
+        @media (min-width: 611px) {
+          .responsive-table {
+            display: block;
+          }
+          .card-view {
+            display: none;
+          }
+        }
+        .card {
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 16px;
+          margin-bottom: 16px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+      `}</style>
       <Table
         columns={columns}
         dataSource={appointments || []}
@@ -389,8 +418,35 @@ const DoctorAppointments = () => {
           showSizeChanger: true,
           showTotal: (total) => `Toplam ${total} randevu`,
         }}
-        className="shadow-sm rounded-lg"
+        className="shadow-sm rounded-lg table-tight compact overflow-x-auto responsive-table"
+        style={{ tableLayout: 'auto', width: '100%', padding: '0', margin: '0' }}
       />
+
+      <div className="card-view hidden">
+        {appointments.map((appointment) => (
+          <div key={appointment.id} className="card p-4 bg-white shadow-md rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-lg font-semibold">{`${appointment.patientName} ${appointment.patientSurname}`}</div>
+              <Dropdown
+                menu={{ 
+                  items: [
+                    { key: '1', label: 'Görüntüle' },
+                    { key: '2', label: 'Düzenle' },
+                    { key: '3', label: 'İptal Et', danger: true }
+                  ],
+                  onClick: ({ key }) => handleMenuClick(key, appointment)
+                }}
+                trigger={['click']}
+              >
+                <Button type="text" icon={<MoreVertical className="w-4 h-4" />} />
+              </Dropdown>
+            </div>
+            <div className="text-sm text-gray-500 mb-1">Tarih: {appointment.reservationDate}</div>
+            <div className="text-sm text-gray-500 mb-1">Saat: {appointment.reservationTime}</div>
+            <div className="text-sm text-gray-500 mb-1">Durum: <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>{getStatusText(appointment.status)}</span></div>
+          </div>
+        ))}
+      </div>
 
       {/* Modals */}
       <ViewModal />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Input, Select } from 'antd';
-import { Calendar, Clock, User, Search, Filter, AlertCircle, Check, X } from 'lucide-react';
+import { Button, Modal, Input, Select, Table } from 'antd';
+import { Calendar, Search, Filter, AlertCircle, Check, X } from 'lucide-react';
 import axios from 'axios';
 import { getAuthHeader } from '../../services/auth-header';
 import { config } from '../../helpers/config';
@@ -94,83 +94,6 @@ const PatientAppointments = () => {
     });
   };
 
-const columns = [
-  {
-    title: 'Doktor',
-    key: 'doctor',
-    render: (record) => (
-      <div className="flex items-center space-x-2">
-        <User className="w-4 h-4 text-gray-400" />
-        <div>
-          <div className="font-medium">{`${record.doctor.ad} ${record.doctor.soyad}`}</div>
-          <div className="text-sm text-gray-500">{record.speciality}</div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: 'Tarih',
-    dataIndex: 'reservationDate',
-    key: 'reservationDate',
-    render: (text) => (
-      <div className="flex items-center space-x-2">
-        <Calendar className="w-4 h-4 text-gray-400" />
-        <span>{text}</span>
-      </div>
-    ),
-  },
-  {
-    title: 'Saat',
-    dataIndex: 'reservationTime',
-    key: 'reservationTime',
-    render: (text) => (
-      <div className="flex items-center space-x-2">
-        <Clock className="w-4 h-4 text-gray-400" />
-        <span>{text}</span>
-      </div>
-    ),
-  },
-  {
-    title: 'Durum',
-    dataIndex: 'status',
-    key: 'status',
-    render: (status) => (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-        {getStatusText(status)}
-      </span>
-    ),
-  },
-  {
-    title: 'İşlemler',
-    key: 'actions',
-    render: (_, record) => (
-      <div className="space-x-2">
-        <Button
-          size="small"
-          onClick={() => {
-            setSelectedAppointment(record);
-            setViewModalVisible(true);
-          }}
-        >
-          Detay
-        </Button>
-        {record.status === 'CONFIRMED' && (
-          <Button
-            size="small"
-            danger
-            onClick={() => {
-              setSelectedAppointment(record);
-              setCancelModalVisible(true);
-            }}
-          >
-            İptal Et
-          </Button>
-        )}
-      </div>
-    ),
-  },
-];
-
   const stats = {
     upcoming: appointments.filter(a => a.status === 'CONFIRMED').length,
     completed: appointments.filter(a => a.status === 'COMPLETED').length,
@@ -180,6 +103,69 @@ const columns = [
   const handleCreateAppointment = () => {
     setFormVisible(true);
   };
+
+  const columns = [
+    {
+      title: 'Doktor',
+      dataIndex: 'doctor',
+      key: 'doctor',
+      render: (text) => `${text.ad} ${text.soyad}`,
+    },
+    {
+      title: 'Uzmanlık',
+      dataIndex: 'speciality',
+      key: 'speciality',
+    },
+    {
+      title: 'Tarih',
+      dataIndex: 'reservationDate',
+      key: 'reservationDate',
+    },
+    {
+      title: 'Saat',
+      dataIndex: 'reservationTime',
+      key: 'reservationTime',
+    },
+    {
+      title: 'Durum',
+      dataIndex: 'status',
+      key: 'status',
+      render: (text) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(text)}`}>
+          {getStatusText(text)}
+        </span>
+      ),
+    },
+    {
+      title: 'İşlemler',
+      key: 'actions',
+      render: (text, record) => (
+        <div>
+          <Button
+            size="small"
+            onClick={() => {
+              setSelectedAppointment(record);
+              setViewModalVisible(true);
+            }}
+          >
+            Detay
+          </Button>
+          {record.status === 'CONFIRMED' && (
+            <Button
+              size="small"
+              danger
+              onClick={() => {
+                setSelectedAppointment(record);
+                setCancelModalVisible(true);
+              }}
+            >
+              İptal Et
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6 px-4 sm:px-6 lg:px-8">
@@ -262,7 +248,32 @@ const columns = [
         </Button>
       </div>
 
-      {/* Randevular Tablosu */}
+      <style>{`
+        @media (max-width: 610px) {
+          .responsive-table {
+            display: none;
+          }
+          .card-view {
+            display: block;
+          }
+        }
+        @media (min-width: 611px) {
+          .responsive-table {
+            display: block;
+          }
+          .card-view {
+            display: none;
+          }
+        }
+        .card {
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 16px;
+          margin-bottom: 16px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+      `}</style>
+
       <div className="responsive-table">
         <Table
           columns={columns}
@@ -277,6 +288,42 @@ const columns = [
           }}
           className="shadow-sm rounded-lg overflow-x-auto"
         />
+      </div>
+
+      <div className="card-view">
+        {getFilteredAppointments().map((appointment) => (
+          <div key={appointment.id} className="card p-4 bg-white shadow-md rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-lg font-semibold">{`${appointment.doctor.ad} ${appointment.doctor.soyad}`}</div>
+              <div className="space-x-2">
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setSelectedAppointment(appointment);
+                    setViewModalVisible(true);
+                  }}
+                >
+                  Detay
+                </Button>
+                {appointment.status === 'CONFIRMED' && (
+                  <Button
+                    size="small"
+                    danger
+                    onClick={() => {
+                      setSelectedAppointment(appointment);
+                      setCancelModalVisible(true);
+                    }}
+                  >
+                    İptal Et
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="text-sm text-gray-500 mb-1">Tarih: {appointment.reservationDate}</div>
+            <div className="text-sm text-gray-500 mb-1">Saat: {appointment.reservationTime}</div>
+            <div className="text-sm text-gray-500 mb-1">Durum: <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>{getStatusText(appointment.status)}</span></div>
+          </div>
+        ))}
       </div>
 
       {/* CreateReservationForm Bileşeni */}

@@ -55,7 +55,7 @@ const DoctorPanel = () => {
           <p className="text-gray-500">Randevularınızı ve hastalarınızı yönetin</p>
         </div>
         <button 
-          className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 gap-2"
+          className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 gap-2 w-full sm:w-auto"
           onClick={() => setFormVisible(true)}
         >
           <Plus className="w-5 h-5" />
@@ -95,7 +95,7 @@ const DoctorPanel = () => {
         {/* Doctor Info */}
         <div className="lg:col-span-2">
           <Card title="Doktor Bilgileri" className="h-full">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Ad Soyad</p>
                 <p className="font-medium">{doctorInfo.name}</p>
@@ -112,7 +112,7 @@ const DoctorPanel = () => {
                 <p className="text-sm text-gray-500">Telefon</p>
                 <p className="font-medium">{doctorInfo.phone}</p>
               </div>
-              <div>
+              <div className="sm:col-span-2">
                 <p className="text-sm text-gray-500">Adres</p>
                 <p className="font-medium">{doctorInfo.address}</p>
               </div>

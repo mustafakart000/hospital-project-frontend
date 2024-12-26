@@ -184,20 +184,56 @@ const PatientPrescriptions = () => {
         </Select>
       </div>
 
-      {/* Reçete Tablosu */}
-      <Table
-        columns={columns}
-        dataSource={getFilteredPrescriptions()}
-        rowKey="id"
-        loading={loading}
-        pagination={{
-          total: getFilteredPrescriptions().length,
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Toplam ${total} reçete`,
-        }}
-        className="bg-white shadow-sm rounded-lg"
-      />
+      {/* Reçete Tablosu ve Kartlar */}
+      <div className="block md:hidden">
+        {/* Kartlar */}
+        {getFilteredPrescriptions().map(prescription => (
+          <Card key={prescription.id} className="bg-white shadow-sm mb-4">
+            <div className="p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="font-medium text-lg">{prescription.doctorName}</div>
+                  <div className="text-sm text-gray-500">{prescription.department}</div>
+                </div>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(prescription.status)}`}>
+                  {getStatusText(prescription.status)}
+                </span>
+              </div>
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">Tanı: {prescription.diagnosis}</p>
+                <p className="text-sm text-gray-500">Tarih: {moment(prescription.prescriptionDate).format('DD.MM.YYYY')}</p>
+              </div>
+              <Button
+                type="link"
+                onClick={() => {
+                  setSelectedPrescription(prescription);
+                  setViewModalVisible(true);
+                }}
+                className="mt-2"
+              >
+                Detay
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <div className="hidden md:block">
+        {/* Reçete Tablosu */}
+        <Table
+          columns={columns}
+          dataSource={getFilteredPrescriptions()}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            total: getFilteredPrescriptions().length,
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Toplam ${total} reçete`,
+          }}
+          className="bg-white shadow-sm rounded-lg"
+        />
+      </div>
 
       {/* Detay Modalı */}
       <Modal
