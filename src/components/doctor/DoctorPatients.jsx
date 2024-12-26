@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Card, Input, Button, Tag, Avatar, Select } from 'antd';
 import { Search, User, Calendar, Phone, Mail, Clock, ArrowUpCircle } from 'lucide-react';
 
@@ -6,7 +6,17 @@ const { Option } = Select;
 
 const DoctorPatients = () => {
   const [loading] = useState(false);
-  
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 745);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 745);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Sample data - replace with actual API data
   const patients = [
     {
@@ -201,20 +211,66 @@ const DoctorPatients = () => {
         </Card>
       </div>
 
-      {/* Table */}
-      <Table
-        columns={columns}
-        dataSource={patients}
-        loading={loading}
-        rowKey="id"
-        pagination={{
-          total: patients.length,
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Toplam ${total} hasta`
-        }}
-        className="bg-white shadow-sm rounded-lg"
-      />
+      {/* Table or Cards */}
+      {isMobileView ? (
+        <div className="grid grid-cols-1 gap-4">
+          {patients.map((patient) => (
+            <Card key={patient.id} className="bg-white shadow-sm">
+              <div className="flex items-center space-x-3">
+                <Avatar icon={<User className="w-4 h-4" />} className="bg-blue-100 text-blue-600" />
+                <div>
+                  <div className="font-medium">{patient.name}</div>
+                  <div className="text-sm text-gray-500">
+                    {patient.age} yaş, {patient.gender}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1 mt-2">
+                <div className="flex items-center space-x-2">
+                  <Phone className="w-4 h-4 text-gray-400" />
+                  <span>{patient.phone}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Mail className="w-4 h-4 text-gray-400" />
+                  <span>{patient.email}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span>{patient.lastVisit}</span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {patient.conditions.map((condition) => (
+                    <Tag key={condition} className="rounded-full">
+                      {condition}
+                    </Tag>
+                  ))}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <span>{patient.visits} ziyaret</span>
+                </div>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
+                  {getStatusText(patient.status)}
+                </span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={patients}
+          loading={loading}
+          rowKey="id"
+          pagination={{
+            total: patients.length,
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Toplam ${total} hasta`
+          }}
+          className="bg-white shadow-sm rounded-lg"
+        />
+      )}
     </div>
   );
 };
