@@ -4,8 +4,9 @@ import { TbUserEdit } from "react-icons/tb";
 import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 import { deleteDoctor, getAllDoctors } from "../../services/doctor-service";
+import PropTypes from "prop-types";
 
-const DoctorTable = () => {
+  const DoctorTable = ({ activeTab }) => {
   const [doctors, setDoctors] = useState([]);
   const [searchText, setSearchText] = useState('');  // Arama metni için state
   const [filteredDoctors, setFilteredDoctors] = useState([]); // Filtrelenmiş doktorlar için state
@@ -32,7 +33,7 @@ const DoctorTable = () => {
     };
 
     fetchDoctors();
-  }, []);
+  }, [activeTab==="list"]);
 
   const handleSearch = (value) => {
     const searchValue = value.toLowerCase();
@@ -152,6 +153,10 @@ const DoctorTable = () => {
       />
     </div>
   );
+};
+
+DoctorTable.propTypes = {
+  activeTab: PropTypes.string.isRequired,
 };
 
 export default DoctorTable;

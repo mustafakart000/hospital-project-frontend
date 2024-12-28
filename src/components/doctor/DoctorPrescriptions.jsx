@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Tag, Button, Input, DatePicker, Select, Card } from 'antd';
 import { FileText, Search, Calendar, User, Activity } from 'lucide-react';
+import PrescriptionForm from './prescription-form';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -149,6 +150,9 @@ const DoctorPrescriptions = () => {
         <Button 
           type="primary"
           className="bg-blue-600"
+          onClick={() => {
+            <PrescriptionForm />
+          }}
         >
           Yeni Reçete Oluştur
         </Button>

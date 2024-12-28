@@ -12,13 +12,13 @@ const DoctorManagement = () => {
     {
       key: 'new',
       label: 'Doktor Oluştur',
-      children: <DoctorRegistration labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} />,
+      children: <DoctorRegistration labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} setActiveTab={setActiveTab} />,
       icon: <UserAddOutlined style={{ fontSize: '18px' }} />
     },
     {
       key: 'list',
       label: 'Doktorlar Listesi',
-      children: <DoctorTable />,
+      children: <DoctorTable activeTab={activeTab}/>,
       icon: <UnorderedListOutlined style={{ fontSize: '18px' }} />
     }
   ];
