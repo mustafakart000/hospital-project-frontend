@@ -14,7 +14,6 @@ import moment from "moment";
 import toast from "react-hot-toast";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
 import { createDoctor } from "../../services/doctor-service";
 import "./floating-label.css";
@@ -23,6 +22,7 @@ import CustomInput from "../common/custom-input";
 import BloodTypeSelector from "../common/blood-type-selector";
 import PhoneInput from "../common/phone-input";
 import SelectApi from "../common/select-api";
+import PropTypes from "prop-types";
 
 const { Title } = Typography;
 
@@ -69,8 +69,8 @@ const initialValues = {
   unvan: "",
 };
 
-const DoctorRegistration = () => {
-  const navigate = useNavigate();
+const DoctorRegistration = ( { setActiveTab } ) => {
+
   const dispatch = useDispatch();
   const handleSubmit = async (
     values,
@@ -87,10 +87,10 @@ const DoctorRegistration = () => {
       };
       //console.log("DoctorRegistration.jsx formattedValues", formattedValues);
       const response = await createDoctor(formattedValues);
-      //console.log("API Yanıtı:", response); // API yanıtını kontrol edin
+      console.log("DoctorRegistration.jsx-response:  ", response); // API yanıtını kontrol edin
       if (response.includes("Doktor başarıyla eklendi")) {
         toast.success("Başarılı bir şekilde kayıt oldunuz.");
-        navigate("/dashboard/doctor-management");
+        setActiveTab("list");
         resetForm();
       }
     } catch (error) {
@@ -471,6 +471,10 @@ const DoctorRegistration = () => {
       </Formik>
     </div>
   );
+};
+
+DoctorRegistration.propTypes = {
+  setActiveTab: PropTypes.func.isRequired,
 };
 
 export default DoctorRegistration;
