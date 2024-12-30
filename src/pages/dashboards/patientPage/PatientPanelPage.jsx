@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from 'antd';
 import { Calendar, Clock, User, FileText } from 'lucide-react';
-import CreateReservationForm from '../../../components/patient/CreateReservationForm';
 
 const PatientPanelPage = () => {
-  const [isFormVisible, setFormVisible] = useState(false);
-
   // Örnek kullanıcı bilgileri - API'den gelecek
   const userInfo = {
     name: 'Ayşe Kara',
@@ -53,26 +50,9 @@ const PatientPanelPage = () => {
           <h1 className="text-2xl font-bold text-gray-800">Hasta Portalı</h1>
           <p className="text-gray-500">Randevularınızı yönetin, sağlık geçmişinizi takip edin</p>
         </div>
-        <button 
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-          onClick={() => setFormVisible(true)}
-        >
-          Randevu Oluştur
-        </button>
       </div>
 
-      {/* CreateReservationForm bileşeni */}
-      {isFormVisible && (
-        <CreateReservationForm 
-          visible={isFormVisible}
-          onClose={() => setFormVisible(false)}
-          onCancel={() => setFormVisible(false)}
-          onSubmit={(data) => {
-            console.log('Form verileri:', data);
-            setFormVisible(false);
-          }}
-        />
-      )}
+
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
