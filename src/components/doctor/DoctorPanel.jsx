@@ -1,10 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from 'antd';
-import { Calendar, Users, FileText, Plus, ClipboardList } from "lucide-react";
-import CreateReservationForm from "../patient/CreateReservationForm";
+import { Calendar, Users, FileText, ClipboardList } from "lucide-react";
+import { getDoctorById } from "../../services/doctor-service";
 
 const DoctorPanel = () => {
-  const [isFormVisible, setFormVisible] = useState(false);
+  const [doctorInfo, setDoctorInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchDoctorInfo = async () => {
+      try {
+        const response = await getDoctorById(11);
+        setDoctorInfo(response);
+      } catch (error) {
+        console.error("Doktor bilgileri alınamadı:", error);
+      }
+    };
+
+    fetchDoctorInfo();
+  }, []);
+
+  if (!doctorInfo) {
+    return <div>Yükleniyor...</div>;
+  }
 
   // İstatistikler
   const stats = [
@@ -34,18 +51,6 @@ const DoctorPanel = () => {
     }
   ];
 
-  // Örnek doktor bilgileri - API'den gelecek
-  const doctorInfo = {
-    name: 'Dr. Ahmet Yılmaz',
-    specialty: 'Kardiyoloji Uzmanı',
-    email: 'dr.ahmet@example.com',
-    phone: '+905554567890',
-    address: 'Merkez Hastanesi, Nilüfer/Bursa',
-    licenseNo: 'DR123456',
-    experience: '15 yıl',
-    department: 'Kardiyoloji'
-  };
-
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -54,24 +59,9 @@ const DoctorPanel = () => {
           <h1 className="text-2xl font-bold text-gray-800">Doktor Portalı</h1>
           <p className="text-gray-500">Randevularınızı ve hastalarınızı yönetin</p>
         </div>
-        <button 
-          className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 gap-2 w-full sm:w-auto"
-          onClick={() => setFormVisible(true)}
-        >
-          <Plus className="w-5 h-5" />
-          Yeni Randevu Oluştur
-        </button>
       </div>
 
-      {/* CreateReservationForm bileşeni */}
-      <CreateReservationForm 
-        visible={isFormVisible}
-        onCancel={() => setFormVisible(false)}
-        onSubmit={(data) => {
-          console.log('Form verileri:', data);
-          setFormVisible(false);
-        }}
-      />
+  
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -98,11 +88,11 @@ const DoctorPanel = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Ad Soyad</p>
-                <p className="font-medium">{doctorInfo.name}</p>
+                <p className="font-medium">{doctorInfo.unvan} {doctorInfo.ad} {doctorInfo.soyad}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Uzmanlık</p>
-                <p className="font-medium">{doctorInfo.specialty}</p>
+                <p className="font-medium">{doctorInfo.speciality}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Email</p>
@@ -118,7 +108,7 @@ const DoctorPanel = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Lisans No</p>
-                <p className="font-medium">{doctorInfo.licenseNo}</p>
+                <p className="font-medium">{doctorInfo.diplomaNo}</p>
               </div>
             </div>
           </Card>
@@ -160,22 +150,6 @@ const DoctorPanel = () => {
             </div>
           </Card>
 
-          <Card title="Hızlı Erişim">
-            <div className="space-y-2">
-              <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-500" />
-                <span>Randevu Takvimi</span>
-              </button>
-              <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-                <Users className="w-4 h-4 text-green-500" />
-                <span>Hasta Listesi</span>
-              </button>
-              <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-purple-500" />
-                <span>Reçeteler</span>
-              </button>
-            </div>
-          </Card>
         </div>
       </div>
     </div>

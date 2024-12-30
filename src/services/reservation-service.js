@@ -24,4 +24,9 @@ export const getDoctorReservations = async (doctorId) => {
     return response.data;
 }
 
+export const cancelReservation = async (reservationId) => {
+    const response = await axios.delete(`${baseUrl}/reservations/cancel/${reservationId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
 

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Input, Select, Table } from 'antd';
 import { Calendar, Search, Filter, AlertCircle, Check, X } from 'lucide-react';
-import axios from 'axios';
-import { getAuthHeader } from '../../services/auth-header';
-import { config } from '../../helpers/config';
 import { getPatientProfile } from '../../services/patient-service';
 import { useSelector } from 'react-redux';
 import CreateReservationForm from './CreateReservationForm';
 import './PatientAppointments.css';
+import { cancelReservation } from '../../services/reservation-service';
 
 const PatientAppointments = () => {
   const [appointments, setAppointments] = useState([]); // Randevuları tutan state
@@ -19,7 +17,6 @@ const PatientAppointments = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null); // Seçili randevuyu tutan state
   const [isFormVisible, setFormVisible] = useState(false); // Formun görünürlüğünü tutan state
   const patientId = useSelector(state => state.auth.user.id.toString()); // Hastanın ID'sini tutan state
-  const BASE_URL = config.api.baseUrl; // API'nin temel URL'sini tutan değişken
   const listRefreshToken = useSelector(state => state.misc.listRefreshToken);
 
   const fetchPatientDetails = async () => {
@@ -76,16 +73,7 @@ const PatientAppointments = () => {
     // Seçili randevuyu iptal eder ve güncellenmiş randevu listesini çeker.
     try {
       setLoading(true);
-      await axios.put(
-        `${BASE_URL}/reservations/update/${selectedAppointment.id}`,
-        {
-          ...selectedAppointment,
-          status: 'CANCELLED'
-        },
-        {
-          headers: getAuthHeader()
-        }
-      );
+      await cancelReservation(selectedAppointment.id);
       await fetchPatientDetails();
       setCancelModalVisible(false);
     } catch (error) {
