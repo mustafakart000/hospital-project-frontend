@@ -26,7 +26,7 @@ export const createReservation = async (reservation) => {
                 headers: getAuthHeader()
             }
         );
-
+        console.log("response123", response.data);
         return response.data;
     } catch (error) {
         if (error.response?.status === 403) {
