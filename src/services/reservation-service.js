@@ -29,4 +29,16 @@ export const cancelReservation = async (reservationId) => {
     return response.data;
 }
 
+export const getReservationById = async (reservationId) => {
+    const response = await axios.get(`${baseUrl}/reservations/get/${reservationId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
+
+export const getReservationsByPatientId = async (patientId) => {
+    const response = await axios.get(`${baseUrl}/reservations/get/patient/${patientId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
+
 
