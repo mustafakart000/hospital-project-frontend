@@ -10,7 +10,6 @@ export const getAllDoctorsBySpecialtyId = async (selectedSpecialtyId) => {
 
 export const getAllDoctorByReservations = async () => {
     const response = await axios.get(`${baseUrl}/reservations/getall`, { headers: getAuthHeader() });
-    console.log("response123", response.data);
     return response.data;
 }
 
@@ -21,7 +20,25 @@ export const updateReservation = async (reservationId, reservationData) => {
 
 export const getDoctorReservations = async (doctorId) => {
     const response = await axios.get(`${baseUrl}/reservations/get/doctor/${doctorId}`, { headers: getAuthHeader() });
+    console.log("getDoctorReservations response", response);
     return response.data;
 }
+
+export const cancelReservation = async (reservationId) => {
+    const response = await axios.delete(`${baseUrl}/reservations/cancel/${reservationId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
+export const getReservationById = async (reservationId) => {
+    const response = await axios.get(`${baseUrl}/reservations/get/${reservationId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
+
+export const getReservationsByPatientId = async (patientId) => {
+    const response = await axios.get(`${baseUrl}/reservations/get/patient/${patientId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
 
 

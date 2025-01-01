@@ -26,7 +26,7 @@ export const createReservation = async (reservation) => {
                 headers: getAuthHeader()
             }
         );
-
+        console.log("response123", response.data);
         return response.data;
     } catch (error) {
         if (error.response?.status === 403) {
@@ -35,6 +35,12 @@ export const createReservation = async (reservation) => {
         throw error;
     }
 };
+
+
+export const updatePatientProfile = async (patientId, patient) => {
+    const response = await axios.put(`${baseUrl}/patient/update/${patientId}`, patient, { headers: getAuthHeader() });
+    return response.data;
+}
 
 
 

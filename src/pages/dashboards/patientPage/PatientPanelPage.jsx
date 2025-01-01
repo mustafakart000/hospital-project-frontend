@@ -1,46 +1,50 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from 'antd';
 import { Calendar, Clock, User, FileText } from 'lucide-react';
-import CreateReservationForm from '../../../components/patient/CreateReservationForm';
+import { getPatientProfile } from '../../../services/patient-service';
+import { useSelector } from 'react-redux';
 
 const PatientPanelPage = () => {
-  const [isFormVisible, setFormVisible] = useState(false);
+  const [userInfo, setUserInfo] = useState({});
+  const [medicalRecords, setMedicalRecords] = useState([]);
+  const patientId = useSelector(state => state.auth.user.id.toString());
 
-  // Örnek kullanıcı bilgileri - API'den gelecek
-  const userInfo = {
-    name: 'Ayşe Kara',
-    tcNo: '78943222350',
-    email: 'ayse.kara1@ornek.com',
-    phone: '+905554567890',
-    address: 'Nilüfer, Bursa, Türkiye',
-    bloodType: '0+',
-    birthDate: '1990-05-15'
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getPatientProfile(patientId);
+        setUserInfo(response);
+        setMedicalRecords(response.medicalRecords);
+      } catch (error) {
+        console.error('Hasta bilgileri yüklenirken hata oluştu:', error);
+      }
+    };
+    fetchData();
+  }, [patientId]);
 
-  // İstatistikler
   const stats = [
     {
       title: 'Toplam Randevu',
-      value: '12',
-      icon: <Calendar className="h-6 w-6 text-white" />,
+      value: userInfo.reservations ? userInfo.reservations.length : 0,
+      icon: <Calendar className="h-6 w-6 text-white" />, 
       bgColor: 'bg-blue-500'
     },
     {
       title: 'Yaklaşan Randevu',
-      value: '2',
-      icon: <Clock className="h-6 w-6 text-white" />,
+      value: userInfo.reservations ? userInfo.reservations.filter(r => new Date(r.date) > new Date()).length : 0,
+      icon: <Clock className="h-6 w-6 text-white" />, 
       bgColor: 'bg-green-500'
     },
     {
       title: 'Aktif Reçete',
       value: '3',
-      icon: <FileText className="h-6 w-6 text-white" />,
+      icon: <FileText className="h-6 w-6 text-white" />, 
       bgColor: 'bg-purple-500'
     },
     {
       title: 'Sağlık Durumu',
       value: 'İyi',
-      icon: <User className="h-6 w-6 text-white" />,
+      icon: <User className="h-6 w-6 text-white" />, 
       bgColor: 'bg-rose-500'
     }
   ];
@@ -53,26 +57,7 @@ const PatientPanelPage = () => {
           <h1 className="text-2xl font-bold text-gray-800">Hasta Portalı</h1>
           <p className="text-gray-500">Randevularınızı yönetin, sağlık geçmişinizi takip edin</p>
         </div>
-        <button 
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-          onClick={() => setFormVisible(true)}
-        >
-          Randevu Oluştur
-        </button>
       </div>
-
-      {/* CreateReservationForm bileşeni */}
-      {isFormVisible && (
-        <CreateReservationForm 
-          visible={isFormVisible}
-          onClose={() => setFormVisible(false)}
-          onCancel={() => setFormVisible(false)}
-          onSubmit={(data) => {
-            console.log('Form verileri:', data);
-            setFormVisible(false);
-          }}
-        />
-      )}
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -99,11 +84,11 @@ const PatientPanelPage = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Ad</p>
-                <p className="font-medium">{userInfo.name}</p>
+                <p className="font-medium">{userInfo.ad} {userInfo.soyad}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">TC Kimlik</p>
-                <p className="font-medium">{userInfo.tcNo}</p>
+                <p className="font-medium">{userInfo.tcKimlik}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Email</p>
@@ -111,53 +96,30 @@ const PatientPanelPage = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Telefon</p>
-                <p className="font-medium">{userInfo.phone}</p>
+                <p className="font-medium">{userInfo.telefon}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Adres</p>
-                <p className="font-medium">{userInfo.address}</p>
+                <p className="font-medium">{userInfo.adres}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Kan Grubu</p>
-                <p className="font-medium">{userInfo.bloodType}</p>
+                <p className="font-medium">{userInfo.kanGrubu}</p>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Status Summary */}
+        {/* Medical Records */}
         <div>
-          <Card title="Randevu Özeti" className="mb-6">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span>Yaklaşan Randevu</span>
-                <span className="text-blue-600 font-medium">1</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Tamamlanan</span>
-                <span className="text-green-600 font-medium">0</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>İptal Edilen</span>
-                <span className="text-red-600 font-medium">0</span>
-              </div>
-            </div>
-          </Card>
-          
           <Card title="Tıbbi Geçmiş">
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span>Son Muayene</span>
-                <span className="text-gray-600">15.12.2024</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Son Tahlil</span>
-                <span className="text-gray-600">10.12.2024</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Son Reçete</span>
-                <span className="text-gray-600">15.12.2024</span>
-              </div>
+              {medicalRecords.map(record => (
+                <div key={record.id} className="flex justify-between items-center">
+                  <span>{record.title}</span>
+                  <span className="text-gray-600">{record.date}</span>
+                </div>
+              ))}
             </div>
           </Card>
         </div>

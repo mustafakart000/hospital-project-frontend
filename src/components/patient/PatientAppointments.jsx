@@ -1,31 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Input, Select, Table } from 'antd';
 import { Calendar, Search, Filter, AlertCircle, Check, X } from 'lucide-react';
-import axios from 'axios';
-import { getAuthHeader } from '../../services/auth-header';
-import { config } from '../../helpers/config';
-import { getPatientProfile } from '../../services/patient-service';
 import { useSelector } from 'react-redux';
 import CreateReservationForm from './CreateReservationForm';
 import './PatientAppointments.css';
+import { getAuthHeader } from '../../services/auth-header';
+import { getReservationsByPatientId, updateReservation } from '../../services/reservation-service';
 
 const PatientAppointments = () => {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [viewModalVisible, setViewModalVisible] = useState(false);
-  const [cancelModalVisible, setCancelModalVisible] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [isFormVisible, setFormVisible] = useState(false);
-  const patientId = useSelector(state => state.auth.user.id.toString());
-  const BASE_URL = config.api.baseUrl;
+  const [appointments, setAppointments] = useState([]); // Randevuları tutan state
+  const [loading, setLoading] = useState(false); // Yüklenme durumunu tutan state
+  const [searchText, setSearchText] = useState(''); // Arama metnini tutan state
+  const [filterStatus, setFilterStatus] = useState('all'); // Filtre durumunu tutan state
+  const [viewModalVisible, setViewModalVisible] = useState(false); // Görüntüleme modalının görünürlüğünü tutan state
+  const [cancelModalVisible, setCancelModalVisible] = useState(false); // İptal modalının görünürlüğünü tutan state
+  const [selectedAppointment, setSelectedAppointment] = useState(null); // Seçili randevuyu tutan state
+  const [isFormVisible, setFormVisible] = useState(false); // Formun görünürlüğünü tutan state
+  const patientId = useSelector(state => state.auth.user.id.toString()); // Hastanın ID'sini tutan state
+  const listRefreshToken = useSelector(state => state.misc.listRefreshToken);
 
   const fetchPatientDetails = async () => {
+    // Hastanın randevu detaylarını API'den çeker ve state'e kaydeder.
     try {
       setLoading(true);
-      const response = await getPatientProfile(patientId);
-      setAppointments(response.reservations);
+      const response = await getReservationsByPatientId(patientId);
+      setAppointments(response.sort((a, b) => {
+        const dateA = new Date(`${a.reservationDate}T${a.reservationTime}`);
+        const dateB = new Date(`${b.reservationDate}T${b.reservationTime}`);
+        return dateB - dateA;
+      }));
     } catch (error) {
       console.error('Hasta bilgileri yüklenirken hata oluştu:', error);
     } finally {
@@ -33,11 +36,19 @@ const PatientAppointments = () => {
     }
   };
 
+  // Hasta ID'si değiştiğinde hastanın randevu detaylarını yeniden getirir.
   useEffect(() => {
     fetchPatientDetails();
   }, [patientId]);
 
+  useEffect(() => {
+    if (listRefreshToken) {
+      fetchPatientDetails();
+    }
+  }, [listRefreshToken]);
+
   const getStatusColor = (status) => {
+    // Randevu durumuna göre uygun renk sınıfını döndürür.
     const colors = {
       'CONFIRMED': 'bg-green-100 text-green-800',
       'PENDING': 'bg-yellow-100 text-yellow-800',
@@ -48,6 +59,7 @@ const PatientAppointments = () => {
   };
 
   const getStatusText = (status) => {
+    // Randevu durumuna göre uygun metni döndürür.
     const texts = {
       'CONFIRMED': 'Onaylandı',
       'PENDING': 'Beklemede',
@@ -58,20 +70,35 @@ const PatientAppointments = () => {
   };
 
   const handleCancel = async () => {
+    // Seçili randevuyu iptal eder ve güncellenmiş randevu listesini çeker.
     try {
       setLoading(true);
-      await axios.put(
-        `${BASE_URL}/reservations/update/${selectedAppointment.id}`,
+      console.log("selectedAppointment", selectedAppointment);
+
+      await updateReservation(selectedAppointment.id, 
         {
-          ...selectedAppointment,
-          status: 'CANCELLED'
-        },
+          reservationDate: selectedAppointment.reservationDate,
+          reservationTime: selectedAppointment.reservationTime,
+          status: 'CANCELLED',
+          speciality: selectedAppointment.speciality,
+          doctor: {
+            id: selectedAppointment.doctorId,
+            ad: selectedAppointment.doctorName,
+            soyad: selectedAppointment.doctorSurname
+          },
+          patient: {
+            id: selectedAppointment.patientId,
+            ad: selectedAppointment.patientName,
+            soyad: selectedAppointment.patientSurname
+          }
+        }, 
         {
           headers: getAuthHeader()
         }
       );
       await fetchPatientDetails();
       setCancelModalVisible(false);
+
     } catch (error) {
       console.error('Randevu iptal edilirken hata oluştu:', error);
     } finally {
@@ -80,8 +107,9 @@ const PatientAppointments = () => {
   };
 
   const getFilteredAppointments = () => {
+    // Arama metni ve durum filtresine göre randevuları filtreler.
     return appointments.filter(appointment => {
-      const doctorName = appointment.doctor.ad || '';
+      const doctorName = appointment.doctorName || '';
       const speciality = appointment.speciality || '';
 
       const matchesSearch = 
@@ -101,62 +129,70 @@ const PatientAppointments = () => {
   };
 
   const handleCreateAppointment = () => {
+    // Yeni randevu oluşturma formunu görünür yapar.
     setFormVisible(true);
   };
 
+  const handleAppointmentSubmit = (data) => {
+    setFormVisible(false);
+    setAppointments(prevAppointments => [data, ...prevAppointments]); // Yeni randevuyu en üste ekle
+    fetchPatientDetails(); // Randevuların güncellenmesi için fetchPatientDetails fonksiyonunu çağır
+  };
+
+  // Tablo sütunlarını tanımlayan yapı
   const columns = [
     {
-      title: 'Doktor',
-      dataIndex: 'doctor',
-      key: 'doctor',
-      render: (text) => `${text.ad} ${text.soyad}`,
+      title: 'Doktor', // Sütun başlığı
+      dataIndex: 'doctorName', // Verinin geldiği alan
+      key: 'doctorName', // Anahtar değeri
+      render: (text, record) => `${record.doctorName} ${record.doctorSurname}`, // Doktor adını ve soyadını birleştirip gösterir
     },
     {
-      title: 'Uzmanlık',
-      dataIndex: 'speciality',
-      key: 'speciality',
+      title: 'Uzmanlık', // Sütun başlığı
+      dataIndex: 'speciality', // Verinin geldiği alan
+      key: 'speciality', // Anahtar değeri
     },
     {
-      title: 'Tarih',
-      dataIndex: 'reservationDate',
-      key: 'reservationDate',
+      title: 'Tarih', // Sütun başlığı
+      dataIndex: 'reservationDate', // Verinin geldiği alan
+      key: 'reservationDate', // Anahtar değeri
     },
     {
-      title: 'Saat',
-      dataIndex: 'reservationTime',
-      key: 'reservationTime',
+      title: 'Saat', // Sütun başlığı
+      dataIndex: 'reservationTime', // Verinin geldiği alan
+      key: 'reservationTime', // Anahtar değeri
     },
     {
-      title: 'Durum',
-      dataIndex: 'status',
-      key: 'status',
+      title: 'Durum', // Sütun başlığı
+      dataIndex: 'status', // Verinin geldiği alan
+      key: 'status', // Anahtar değeri
       render: (text) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(text)}`}>
-          {getStatusText(text)}
+          {getStatusText(text)} {/* Durum metnini ve rengini gösterir */}
         </span>
       ),
     },
     {
-      title: 'İşlemler',
-      key: 'actions',
+      title: 'İşlemler', // Sütun başlığı
+      key: 'actions', // Anahtar değeri
       render: (text, record) => (
         <div>
           <Button
             size="small"
             onClick={() => {
-              setSelectedAppointment(record);
-              setViewModalVisible(true);
+              setSelectedAppointment(record); // Seçili randevuyu ayarlar
+              setViewModalVisible(true); // Görüntüleme modali açar
             }}
           >
             Detay
           </Button>
-          {record.status === 'CONFIRMED' && (
+          {record.status === 'CONFIRMED' && ( // Eğer randevu onaylıysa
             <Button
               size="small"
               danger
               onClick={() => {
-                setSelectedAppointment(record);
-                setCancelModalVisible(true);
+                setSelectedAppointment(record); // Seçili randevuyu ayarlar
+                setCancelModalVisible(true); // İptal modali açar
               }}
             >
               İptal Et
@@ -294,7 +330,7 @@ const PatientAppointments = () => {
         {getFilteredAppointments().map((appointment) => (
           <div key={appointment.id} className="card p-4 bg-white shadow-md rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <div className="text-lg font-semibold">{`${appointment.doctor.ad} ${appointment.doctor.soyad}`}</div>
+              <div className="text-lg font-semibold">{`${appointment.doctor?.ad || 'Bilinmeyen'} ${appointment.doctor?.soyad || 'Doktor'}`}</div>
               <div className="space-x-2">
                 <Button
                   size="small"
@@ -332,11 +368,7 @@ const PatientAppointments = () => {
           visible={isFormVisible}
           onCancel={() => setFormVisible(false)}
           onClose={() => setFormVisible(false)}
-          onSubmit={(data) => {
-            console.log('Yeni randevu verileri:', data);
-            setFormVisible(false);
-            fetchPatientDetails();
-          }}
+          onSubmit={handleAppointmentSubmit}
         />
       )}
 
@@ -357,7 +389,7 @@ const PatientAppointments = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-4">
                 <div className="flex flex-col md:flex-row md:items-center">
                   <p className="text-sm text-gray-500 md:w-1/3">Doktor</p>
-                  <p className="font-medium md:w-2/3 truncate">{`${selectedAppointment.doctor.ad} ${selectedAppointment.doctor.soyad}`}</p>
+                  <p className="font-medium md:w-2/3 truncate">{`${selectedAppointment.doctorName} ${selectedAppointment.doctorSurname}`}</p>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center">
                   <p className="text-sm text-gray-500 md:w-1/3">Uzmanlık</p>
@@ -410,7 +442,7 @@ const PatientAppointments = () => {
           </div>
           {selectedAppointment && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-2">
-              <p><strong>Doktor:</strong> {`${selectedAppointment.doctor.ad} ${selectedAppointment.doctor.soyad}`}</p>
+              <p><strong>Doktor:</strong> {`${selectedAppointment.doctorName || 'Bilinmeyen'} ${selectedAppointment.doctorSurname || 'Doktor'}`}</p>
               <p><strong>Tarih:</strong> {selectedAppointment.reservationDate}</p>
               <p><strong>Saat:</strong> {selectedAppointment.reservationTime}</p>
               <p><strong>Uzmanlık:</strong> {selectedAppointment.speciality}</p>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Skeleton, Avatar, Button, Modal, Form, Input, DatePicker, Select, message } from 'antd';
 import { UserCircle, Mail, Phone, MapPin, Calendar, Activity, Bookmark, Award, Droplet, Edit } from 'lucide-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { getDoctorById, updateDoctor } from '../../services/doctor-service';
@@ -41,7 +41,7 @@ const DoctorProfile = () => {
   const handleEdit = () => {
     form.setFieldsValue({
       ...doctor,
-      birthDate: moment(doctor.birthDate),
+      birthDate: dayjs(doctor.birthDate),
       phone: doctor.phone || doctor.telefon,
       address: doctor.address || doctor.adres
     });
@@ -182,7 +182,15 @@ const DoctorProfile = () => {
             label="Doğum Tarihi"
             rules={[{ required: true, message: 'Doğum tarihi gereklidir' }]}
           >
-            <DatePicker className="w-full" />
+            <DatePicker
+              className="w-full border rounded-md shadow-sm"
+              style={{ width: "100%" }}
+              placeholder="Doğum Tarihi Seçiniz"
+              onChange={(date) => form.setFieldsValue({ birthDate: date })}
+              value={form.getFieldValue('birthDate') ? dayjs(form.getFieldValue('birthDate'), 'YYYY-MM-DD') : null}
+              format="YYYY-MM-DD"
+              popupClassName="bg-white border rounded-md shadow-lg"
+            />
           </Form.Item>
 
           <Form.Item
