@@ -95,7 +95,7 @@ const HomePage = () => {
 
       <footer className="bg-gray-800 text-white py-6 md:py-8">
         <div className="container mx-auto px-4 md:px-6 text-center">
-          <p className="text-sm md:text-base">&copy; 2024 Hastane Yönetim Sistemi. Tüm hakları saklıdır.</p>
+          <p className="text-sm md:text-base">&copy; 2025 Hastane Yönetim Sistemi. Tüm hakları saklıdır.</p>
         </div>
       </footer>
     </div>

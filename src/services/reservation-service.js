@@ -24,4 +24,21 @@ export const getDoctorReservations = async (doctorId) => {
     return response.data;
 }
 
+export const cancelReservation = async (reservationId) => {
+    const response = await axios.delete(`${baseUrl}/reservations/cancel/${reservationId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
+export const getReservationById = async (reservationId) => {
+    const response = await axios.get(`${baseUrl}/reservations/get/${reservationId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
+
+export const getReservationsByPatientId = async (patientId) => {
+    const response = await axios.get(`${baseUrl}/reservations/get/patient/${patientId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
+
 

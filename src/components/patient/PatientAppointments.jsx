@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Input, Select, Table } from 'antd';
 import { Calendar, Search, Filter, AlertCircle, Check, X } from 'lucide-react';
-import axios from 'axios';
-import { getAuthHeader } from '../../services/auth-header';
-import { config } from '../../helpers/config';
-import { getPatientProfile } from '../../services/patient-service';
 import { useSelector } from 'react-redux';
 import CreateReservationForm from './CreateReservationForm';
 import './PatientAppointments.css';
+import { getAuthHeader } from '../../services/auth-header';
+import { getReservationsByPatientId, updateReservation } from '../../services/reservation-service';
 
 const PatientAppointments = () => {
   const [appointments, setAppointments] = useState([]); // Randevuları tutan state
@@ -19,15 +17,14 @@ const PatientAppointments = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null); // Seçili randevuyu tutan state
   const [isFormVisible, setFormVisible] = useState(false); // Formun görünürlüğünü tutan state
   const patientId = useSelector(state => state.auth.user.id.toString()); // Hastanın ID'sini tutan state
-  const BASE_URL = config.api.baseUrl; // API'nin temel URL'sini tutan değişken
   const listRefreshToken = useSelector(state => state.misc.listRefreshToken);
 
   const fetchPatientDetails = async () => {
     // Hastanın randevu detaylarını API'den çeker ve state'e kaydeder.
     try {
       setLoading(true);
-      const response = await getPatientProfile(patientId);
-      setAppointments(response.reservations.sort((a, b) => {
+      const response = await getReservationsByPatientId(patientId);
+      setAppointments(response.sort((a, b) => {
         const dateA = new Date(`${a.reservationDate}T${a.reservationTime}`);
         const dateB = new Date(`${b.reservationDate}T${b.reservationTime}`);
         return dateB - dateA;
@@ -76,18 +73,32 @@ const PatientAppointments = () => {
     // Seçili randevuyu iptal eder ve güncellenmiş randevu listesini çeker.
     try {
       setLoading(true);
-      await axios.put(
-        `${BASE_URL}/reservations/update/${selectedAppointment.id}`,
+      console.log("selectedAppointment", selectedAppointment);
+
+      await updateReservation(selectedAppointment.id, 
         {
-          ...selectedAppointment,
-          status: 'CANCELLED'
-        },
+          reservationDate: selectedAppointment.reservationDate,
+          reservationTime: selectedAppointment.reservationTime,
+          status: 'CANCELLED',
+          speciality: selectedAppointment.speciality,
+          doctor: {
+            id: selectedAppointment.doctorId,
+            ad: selectedAppointment.doctorName,
+            soyad: selectedAppointment.doctorSurname
+          },
+          patient: {
+            id: selectedAppointment.patientId,
+            ad: selectedAppointment.patientName,
+            soyad: selectedAppointment.patientSurname
+          }
+        }, 
         {
           headers: getAuthHeader()
         }
       );
       await fetchPatientDetails();
       setCancelModalVisible(false);
+
     } catch (error) {
       console.error('Randevu iptal edilirken hata oluştu:', error);
     } finally {
@@ -98,7 +109,7 @@ const PatientAppointments = () => {
   const getFilteredAppointments = () => {
     // Arama metni ve durum filtresine göre randevuları filtreler.
     return appointments.filter(appointment => {
-      const doctorName = appointment.doctor.ad || '';
+      const doctorName = appointment.doctorName || '';
       const speciality = appointment.speciality || '';
 
       const matchesSearch = 
@@ -132,9 +143,9 @@ const PatientAppointments = () => {
   const columns = [
     {
       title: 'Doktor', // Sütun başlığı
-      dataIndex: 'doctor', // Verinin geldiği alan
-      key: 'doctor', // Anahtar değeri
-      render: (text) => `${text.ad} ${text.soyad}`, // Doktor adını ve soyadını birleştirip gösterir
+      dataIndex: 'doctorName', // Verinin geldiği alan
+      key: 'doctorName', // Anahtar değeri
+      render: (text, record) => `${record.doctorName} ${record.doctorSurname}`, // Doktor adını ve soyadını birleştirip gösterir
     },
     {
       title: 'Uzmanlık', // Sütun başlığı
@@ -319,7 +330,7 @@ const PatientAppointments = () => {
         {getFilteredAppointments().map((appointment) => (
           <div key={appointment.id} className="card p-4 bg-white shadow-md rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <div className="text-lg font-semibold">{`${appointment.doctor.ad} ${appointment.doctor.soyad}`}</div>
+              <div className="text-lg font-semibold">{`${appointment.doctor?.ad || 'Bilinmeyen'} ${appointment.doctor?.soyad || 'Doktor'}`}</div>
               <div className="space-x-2">
                 <Button
                   size="small"
@@ -378,7 +389,7 @@ const PatientAppointments = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-4">
                 <div className="flex flex-col md:flex-row md:items-center">
                   <p className="text-sm text-gray-500 md:w-1/3">Doktor</p>
-                  <p className="font-medium md:w-2/3 truncate">{`${selectedAppointment.doctor.ad} ${selectedAppointment.doctor.soyad}`}</p>
+                  <p className="font-medium md:w-2/3 truncate">{`${selectedAppointment.doctorName} ${selectedAppointment.doctorSurname}`}</p>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center">
                   <p className="text-sm text-gray-500 md:w-1/3">Uzmanlık</p>
@@ -431,7 +442,7 @@ const PatientAppointments = () => {
           </div>
           {selectedAppointment && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-2">
-              <p><strong>Doktor:</strong> {`${selectedAppointment.doctor.ad} ${selectedAppointment.doctor.soyad}`}</p>
+              <p><strong>Doktor:</strong> {`${selectedAppointment.doctorName || 'Bilinmeyen'} ${selectedAppointment.doctorSurname || 'Doktor'}`}</p>
               <p><strong>Tarih:</strong> {selectedAppointment.reservationDate}</p>
               <p><strong>Saat:</strong> {selectedAppointment.reservationTime}</p>
               <p><strong>Uzmanlık:</strong> {selectedAppointment.speciality}</p>

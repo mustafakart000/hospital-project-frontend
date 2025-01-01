@@ -131,6 +131,27 @@ const PatientProfile = () => {
           </div>
         </Card>
 
+        {/* Tıbbi Kayıtlar */}
+        <Card title="Tıbbi Kayıtlar" className="shadow-sm">
+          <div className="space-y-4">
+            {patient.medicalRecords.map(record => (
+              <div key={record.id} className="p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-gray-700 mb-2">{record.title}</h4>
+                <p className="text-sm text-gray-600">{record.description}</p>
+                <p className="text-sm text-gray-600">Doktor Notları: {record.doctorNotes}</p>
+                <p className="text-sm text-gray-600">Ek Bilgi: {record.additionalInfo}</p>
+                <div className="flex space-x-2 mt-2">
+                  {record.attachments && Object.entries(JSON.parse(record.attachments)).map(([key, url]) => (
+                    <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                      {key.toUpperCase()}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
         {/* Özet Bilgiler */}
         <Card title="Özet" className="shadow-sm">
           <div className="space-y-4">

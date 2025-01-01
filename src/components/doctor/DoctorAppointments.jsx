@@ -83,11 +83,22 @@ const DoctorAppointments = () => {
   const handleCancel = async () => {
     try {
       setLoading(true);
-      // Randevunun durumunu "CANCELLED" olarak güncelle
       await updateReservation(selectedAppointment.id, 
         {
-          ...selectedAppointment,
-          status: 'CANCELLED'
+          reservationDate: selectedAppointment.reservationDate,
+          reservationTime: selectedAppointment.reservationTime,
+          status: 'CANCELLED',
+          speciality: selectedAppointment.speciality,
+          doctor: {
+            id: doctorId,
+            ad: selectedAppointment.doctorName,
+            soyad: selectedAppointment.doctorSurname
+          },
+          patient: {
+            id: selectedAppointment.patientId,
+            ad: selectedAppointment.patientName,
+            soyad: selectedAppointment.patientSurname
+          }
         }, 
         {
           headers: getAuthHeader()
