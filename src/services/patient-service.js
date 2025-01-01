@@ -37,6 +37,12 @@ export const createReservation = async (reservation) => {
 };
 
 
+export const updatePatientProfile = async (patientId, patient) => {
+    const response = await axios.put(`${baseUrl}/patient/update/${patientId}`, patient, { headers: getAuthHeader() });
+    return response.data;
+}
+
+
 
 
 
