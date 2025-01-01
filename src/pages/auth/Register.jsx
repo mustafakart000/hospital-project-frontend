@@ -25,7 +25,7 @@ import {
 } from "antd"; // Ant Design bileşenleri
 import moment from "moment"; // Tarih formatlama için moment (Doğum tarihi seçimi)
 import toast from "react-hot-toast";
-
+import { config } from "../../helpers/config";
 // Ant Design tipografi ayarı (Daha iyi başlıklar):
 const { Title, Text } = Typography;
 
@@ -85,7 +85,7 @@ const Register = () => {
       };
 
       // API isteği
-      const response = await axios.post("http://localhost:8080/auth/register", formattedValues);
+      const response = await axios.post( config.api.baseUrl + "/auth/register", formattedValues);
       //console.log("response: ",response);
       // Başarılıysa login sayfasına yönlendir
       if (response.data.includes("Başarılı bir şekilde kayıt oldunuz.")) {

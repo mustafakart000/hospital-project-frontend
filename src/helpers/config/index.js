@@ -1,6 +1,6 @@
 export const config = {
     api: {
-        baseUrl: "http://localhost:8080",
+        baseUrl: "https://hospitalproject53.onrender.com",
       },
       pageRoles: {
         dashboard: ["ADMIN", "DOCTOR", "SECRETARY" ],
