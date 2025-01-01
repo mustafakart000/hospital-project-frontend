@@ -7,7 +7,6 @@ import HomePage from "../pages/HomePage.jsx";
 import PrivateRoute from "./private-route.jsx";
 import AuthRoutes from "./routes/auth-routes.jsx";
 
-import DoctorPanel from "../components/doctor/DoctorPanel.jsx";
 import { removeFromLocalStorage } from "../helpers/functions/encrypted-storage.js";
 import PatientPanelPage from "../pages/dashboards/patientPage/PatientPanelPage.jsx";
 import Error401Page from "../pages/errors/error-401.jsx";
@@ -24,6 +23,8 @@ import DoctorProfile from "../components/doctor/DoctorProfile.jsx";
 import DoctorPatients from "../components/doctor/DoctorPatients.jsx";
 import DoctorPrescriptions from "../components/doctor/DoctorPrescriptions.jsx";
 import DoctorAppointments from "../components/doctor/DoctorAppointments.jsx";
+import TreatmentPanel from "../components/doctor/hasta paneli/TreatmentPanel.jsx";
+import DoctorDashboard from "../pages/dashboards/DoctorDashboardPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -109,7 +110,7 @@ const router = createBrowserRouter([
         path: "",
         element: (
           <PrivateRoute roles={config.pageRoles.doctorManagement}>
-            <DoctorPanel />
+            <DoctorDashboard/>
           </PrivateRoute>
         ),
       },
@@ -145,6 +146,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute roles={config.pageRoles.doctorManagement}>
             <DoctorProfile />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/doctor-dashboard/doctor-treatment",
+        element: (
+          <PrivateRoute roles={config.pageRoles.doctorManagement}>
+            <TreatmentPanel />
           </PrivateRoute>
         ),
       },

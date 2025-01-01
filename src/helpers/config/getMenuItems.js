@@ -14,6 +14,7 @@ export const getMenuItems = (role) => {
       { title: "Reçete Yönetimi", link: "/doctor-dashboard/doctor-prescriptions" },
       { title: "Hasta Yönetimi", link: "/doctor-dashboard/doctor-patients" },
       { title: "Doktor Profili", link: "/doctor-dashboard/doctor-profile" },
+       { title: "Tedavi Paneli", link: "/doctor-dashboard/doctor-treatment" },
     ],
     PATIENT: [
       { title: "Ana Sayfa", link: "/patient-dashboard" },
