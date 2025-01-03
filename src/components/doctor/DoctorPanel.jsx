@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Card } from 'antd';
 import { Calendar, Users, FileText, ClipboardList } from "lucide-react";
 import { getDoctorById } from "../../services/doctor-service";
+import { useSelector } from "react-redux";
 
 const DoctorPanel = () => {
   const [doctorInfo, setDoctorInfo] = useState(null);
+  const doctorId = useSelector(state => state.auth.user.id.toString());
 
   useEffect(() => {
     const fetchDoctorInfo = async () => {
       try {
-        const response = await getDoctorById(11);
+        const response = await getDoctorById(doctorId);
         setDoctorInfo(response);
       } catch (error) {
         console.error("Doktor bilgileri alınamadı:", error);
