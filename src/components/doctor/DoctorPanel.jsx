@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 const DoctorPanel = () => {
   const [doctorInfo, setDoctorInfo] = useState(null);
   const doctorId = useSelector(state => state.auth.user.id.toString());
+  const doctorId = useSelector(state => state.auth.user.id);
 
   useEffect(() => {
     const fetchDoctorInfo = async () => {
