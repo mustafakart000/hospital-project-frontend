@@ -6,7 +6,7 @@ import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
 
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { getAllDoctorsBySpecialtyId, getDoctorReservations } from "../../services/reservation-service";
+import { getAllDoctorsBySpecialtyId, getDoctorReservations, getReservationsByPatientId } from "../../services/reservation-service";
 import { createReservation } from "../../services/patient-service";
 import { setOperation, setListRefreshToken } from "../../redux/slices/misc-slice";
 import { ChevronUp, ChevronDown } from "lucide-react";
@@ -187,9 +187,16 @@ const CreateReservationForm = ({ visible, onCancel }) => {
   // Seçilen uzmanlığa göre doktorları getirir
   const handleSpecialtyChange = async (selectedSpecialtyId) => {
     try {
-     const response = await getAllDoctorsBySpecialtyId(selectedSpecialtyId);
-     console.log("createReservationForm.jsx response", response);
+      const response = await getAllDoctorsBySpecialtyId(selectedSpecialtyId);
+      console.log("createReservationForm.jsx response", response);
       setDoctors(response);
+      // Uzmanlık değiştiğinde formu tamamen sıfırla
+      formik.setFieldValue("speciality", selectedSpecialtyId);
+      formik.setFieldValue("doctor", "");
+      formik.setFieldValue("reservationDate", "");
+      formik.setFieldValue("reservationTime", "");
+      form.resetFields(["doctor", "reservationDate", "reservationTime"]);
+      console.log("Form tamamen sıfırlandı.");
     } catch (error) {
       console.error("Doktorlar getirilirken hata oluştu:", error);
     }
@@ -197,11 +204,15 @@ const CreateReservationForm = ({ visible, onCancel }) => {
 
   const handleDoctorChange = async (doctorId) => {
     try {
-      const reservations = await getDoctorReservations(doctorId);
-      const bookedTimes = reservations.map(res => ({
-        date: res.reservationDate,
-        time: res.reservationTime.substring(0, 5) // 'HH:mm:ss' formatından 'HH:mm' formatına dönüştür
-      }));
+      const doctorReservations = await getDoctorReservations(doctorId);
+      const patientReservations = await getReservationsByPatientId(user.id);
+      const allReservations = [...doctorReservations, ...patientReservations];
+      const bookedTimes = allReservations
+        .filter(res => res.status !== 'CANCELLED')
+        .map(res => ({
+          date: res.reservationDate,
+          time: res.reservationTime.substring(0, 5) // 'HH:mm:ss' formatından 'HH:mm' formatına dönüştür
+        }));
       setBookedSlots(bookedTimes);
     } catch (error) {
       console.error("Randevular getirilirken hata oluştu:", error);
