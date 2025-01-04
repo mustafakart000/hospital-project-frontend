@@ -196,7 +196,6 @@ const CreateReservationForm = ({ visible, onCancel }) => {
       formik.setFieldValue("reservationDate", "");
       formik.setFieldValue("reservationTime", "");
       form.resetFields(["doctor", "reservationDate", "reservationTime"]);
-      console.log("Form tamamen sıfırlandı.");
     } catch (error) {
       console.error("Doktorlar getirilirken hata oluştu:", error);
     }
