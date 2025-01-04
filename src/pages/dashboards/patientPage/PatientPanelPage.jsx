@@ -25,7 +25,7 @@ const PatientPanelPage = () => {
   const stats = [
     {
       title: 'Toplam Randevu',
-      value: userInfo.reservations ? userInfo.reservations.length : 0,
+      value: userInfo.reservations ? userInfo.reservations.filter(r => r.status !== 'CANCELLED').length : 0,
       icon: <Calendar className="h-6 w-6 text-white" />, 
       bgColor: 'bg-blue-500'
     },
