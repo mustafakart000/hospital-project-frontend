@@ -61,7 +61,7 @@ export const createPatient = async (patientData) => {
 
 
 export const updatePatientProfile = async (patientId, patient) => {
-    const response = await axios.put(`${baseUrl}/patient/update/${patientId}`, patient, { headers: getAuthHeader() });
+    const response = await axios.put(`${baseUrl}/patient/admin/update/${patientId}`, patient, { headers: getAuthHeader() });
     return response.data;
 }
 
@@ -78,7 +78,6 @@ export const deletePatient = async (patientId) => {
 export const getAllPatients = async (page = 0, size = 10) => {
     try {
         const response = await axios.get(`${baseUrl}/patient/getall?page=${page}&size=${size}`, { headers: getAuthHeader() });
-        console.log("getAllPatients response", response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching patients:', error);

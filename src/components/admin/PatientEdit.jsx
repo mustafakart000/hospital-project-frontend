@@ -73,12 +73,14 @@ const PatientEdit = () => {
   }, [id, navigate]);
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    console.log("handleSubmit tetiklendi", values);
     try {
       const formattedValues = {
         ...values,
         birthDate: values.birthDate ? dayjs(values.birthDate).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
       };
-      const response = await updatePatientProfile(id, formattedValues);
+      console.log("formattedValues", formattedValues);
+      const response = await updatePatientProfile(id, formattedValues); 
       if (response === "OK") {
         toast.success("Hasta bilgileri başarıyla güncellendi");
         navigate("/dashboard/patient-management");
