@@ -176,7 +176,7 @@ const PatientAppointments = () => {
       title: 'İşlemler', // Sütun başlığı
       key: 'actions', // Anahtar değeri
       render: (text, record) => (
-        <div>
+        <div className='space-x-2'>
           <Button
             size="small"
             onClick={() => {

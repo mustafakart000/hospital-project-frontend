@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card } from 'antd';
 import { Calendar, Users, FileText, ClipboardList } from "lucide-react";
 import { getDoctorById } from "../../services/doctor-service";
+import { getDoctorReservations } from "../../services/reservation-service";
 import { useSelector } from "react-redux";
 
 const DoctorPanel = () => {
@@ -12,7 +13,8 @@ const DoctorPanel = () => {
     const fetchDoctorInfo = async () => {
       try {
         const response = await getDoctorById(doctorId);
-        setDoctorInfo(response);
+        const reservations = await getDoctorReservations(doctorId);
+        setDoctorInfo({ ...response, reservations });
       } catch (error) {
         console.error("Doktor bilgileri alınamadı:", error);
       }
@@ -29,19 +31,19 @@ const DoctorPanel = () => {
   const stats = [
     {
       title: 'Toplam Randevu',
-      value: '128',
+      value: doctorInfo.reservations ? doctorInfo.reservations.filter(r => r.status !== 'CANCELLED').length : 0,
       icon: <Calendar className="h-6 w-6 text-white" />,
       bgColor: 'bg-blue-500'
     },
     {
       title: 'Bugünkü Randevular',
-      value: '12',
+      value: doctorInfo.reservations ? doctorInfo.reservations.filter(r => r.reservationDate === new Date().toISOString().split('T')[0] && r.status !== 'CANCELLED').length : 0,
       icon: <ClipboardList className="h-6 w-6 text-white" />,
       bgColor: 'bg-green-500'
     },
     {
       title: 'Toplam Hasta',
-      value: '84',
+      value: doctorInfo.reservations ? new Set(doctorInfo.reservations.map(r => r.patientId)).size : 0,
       icon: <Users className="h-6 w-6 text-white" />,
       bgColor: 'bg-purple-500'
     },
@@ -122,15 +124,15 @@ const DoctorPanel = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span>Bekleyen</span>
-                <span className="text-blue-600 font-medium">5</span>
+                <span className="text-blue-600 font-medium">{doctorInfo.reservations ? doctorInfo.reservations.filter(r => r.status === 'PENDING').length : 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Tamamlanan</span>
-                <span className="text-green-600 font-medium">3</span>
+                <span className="text-green-600 font-medium">{doctorInfo.reservations ? doctorInfo.reservations.filter(r => r.status === 'COMPLETED').length : 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>İptal Edilen</span>
-                <span className="text-red-600 font-medium">1</span>
+                <span className="text-red-600 font-medium">{doctorInfo.reservations ? doctorInfo.reservations.filter(r => r.status === 'CANCELLED').length : 0}</span>
               </div>
             </div>
           </Card>
@@ -139,15 +141,15 @@ const DoctorPanel = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span>Haftalık Randevu</span>
-                <span className="text-gray-600">45</span>
+                <span className="text-gray-600">{doctorInfo.reservations ? doctorInfo.reservations.filter(r => r.reservationDate >= new Date().setDate(new Date().getDate() - 7)).length : 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Aylık Randevu</span>
-                <span className="text-gray-600">180</span>
+                <span className="text-gray-600">{doctorInfo.reservations ? doctorInfo.reservations.filter(r => r.reservationDate >= new Date().setDate(new Date().getDate() - 30)).length : 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Aktif Hasta</span>
-                <span className="text-gray-600">84</span>
+                <span className="text-gray-600">{doctorInfo.reservations ? new Set(doctorInfo.reservations.map(r => r.patientId)).size : 0}</span>
               </div>
             </div>
           </Card>

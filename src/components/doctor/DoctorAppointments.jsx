@@ -17,12 +17,35 @@ const DoctorAppointments = () => {
   const doctorId = useSelector(state => state.auth.user.id.toString());
   const [isFormVisible, setFormVisible] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState('today');
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
       const response = await getDoctorReservations(doctorId);
-      const uniqueAppointments = response.filter((appointment, index, self) =>
+      const today = new Date();
+      const todayDateString = today.toISOString().split('T')[0];
+      let filteredAppointments = response;
+
+      if (selectedFilter === 'today') {
+        filteredAppointments = response.filter(appointment => appointment.reservationDate === todayDateString);
+      } else if (selectedFilter === 'week') {
+        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+        const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+        filteredAppointments = response.filter(appointment => {
+          const appointmentDate = new Date(appointment.reservationDate);
+          return appointmentDate >= startOfWeek && appointmentDate <= endOfWeek;
+        });
+      } else if (selectedFilter === 'month') {
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        filteredAppointments = response.filter(appointment => {
+          const appointmentDate = new Date(appointment.reservationDate);
+          return appointmentDate >= startOfMonth && appointmentDate <= endOfMonth;
+        });
+      }
+
+      const uniqueAppointments = filteredAppointments.filter((appointment, index, self) =>
         index === self.findIndex((a) => (
           a.id === appointment.id
         ))
@@ -37,7 +60,7 @@ const DoctorAppointments = () => {
 
   useEffect(() => {
     fetchAppointments();
-  }, []);
+  }, [selectedFilter]);
 
   const getStatusColor = (status) => {
     const colors = {
@@ -378,10 +401,10 @@ const DoctorAppointments = () => {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 pb-4">
-        <Button className="bg-white">Tüm Randevular</Button>
-        <Button className="bg-white">Bugün</Button>
-        <Button className="bg-white">Bu Hafta</Button>
-        <Button className="bg-white">Bu Ay</Button>
+        <Button className={`${selectedFilter === 'today' ? 'bg-blue-600 text-white font-bold' : 'bg-white text-gray-700'}`} onClick={() => setSelectedFilter('today')}>Bugün</Button>
+        <Button className={`${selectedFilter === 'week' ? 'bg-blue-600 text-white font-bold' : 'bg-white text-gray-700'}`} onClick={() => setSelectedFilter('week')}>Bu Hafta</Button>
+        <Button className={`${selectedFilter === 'month' ? 'bg-blue-600 text-white font-bold' : 'bg-white text-gray-700'}`} onClick={() => setSelectedFilter('month')}>Bu Ay</Button>
+        <Button className={`${selectedFilter === 'all' ? 'bg-blue-600 text-white font-bold' : 'bg-white text-gray-700'}`} onClick={() => setSelectedFilter('all')}>Tüm Randevular</Button>
       </div>
 
       {/* Table */}
