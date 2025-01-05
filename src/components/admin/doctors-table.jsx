@@ -74,6 +74,7 @@ import PropTypes from "prop-types";
       title: "İsim",
       dataIndex: "name",
       key: "name",
+      width: 200,
       responsive: ["xs", "sm", "md", "lg"],
       sorter: (a, b) => a.name.localeCompare(b.name),
       filterSearch: true,
@@ -87,6 +88,7 @@ import PropTypes from "prop-types";
       title: "Uzmanlık",
       dataIndex: "speciality",
       key: "specialty",
+      width: 150,
       responsive: ["sm", "md", "lg"],
       filters: getSpecialties(),
       onFilter: (value, record) => record.speciality === value,
@@ -96,12 +98,14 @@ import PropTypes from "prop-types";
       title: "Telefon",
       dataIndex: "phone",
       key: "phone",
+      width: 150,
       responsive: ["md", "lg"],
       sorter: (a, b) => a.phone.localeCompare(b.phone),
     },
     {
       title: "Aksiyonlar",
       key: "action",
+      width: 100,
       render: (text, record) => (
         <Space size="small">
           <Button
