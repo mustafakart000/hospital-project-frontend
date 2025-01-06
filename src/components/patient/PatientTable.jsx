@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Popconfirm, Input, Card } from 'antd';
+import { Table, Button, Space, Modal, Input, Card } from 'antd';
 import { TbUserEdit } from 'react-icons/tb';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { deletePatient, getAllPatients } from '../../services/patient-service';
@@ -9,6 +10,8 @@ const PatientTable = () => {
   const [patients, setPatients] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [filteredPatients, setFilteredPatients] = useState([]);
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -50,29 +53,45 @@ const PatientTable = () => {
     setSize(newSize);
   };
 
-  const handleSearch = (value) => {
-    const searchValue = value.toLowerCase();
-    const filtered = patients.filter((patient) =>
-      Object.values(patient).some(
-        (val) =>
-          val &&
-          val.toString().toLowerCase().includes(searchValue)
-      )
-    );
-    setFilteredPatients(filtered);
-    setSearchText(value);
+  const handleSearch = async (value) => {
+    try {
+      const response = await getAllPatients(page, size, value);
+      const formattedPatients = response.content.map((patient) => {
+        const { ad, soyad, telefon, id } = patient;
+        return {
+          name: `${ad} ${soyad}`,
+          phone: telefon,
+          id: id,
+        };
+      });
+      setPatients(formattedPatients);
+      setFilteredPatients(formattedPatients);
+      setTotal(response.totalElements);
+      setSearchText(value);
+    } catch (error) {
+      console.error('Hasta arama sırasında hata oluştu:', error);
+      toast.error('Hasta arama sırasında bir hata oluştu');
+    }
   };
 
   const handleEdit = (record) => {
     navigate(`/dashboard/patient-management/edit/${record.id}`);
   };
 
-  const handleDelete = (key) => {
-    deletePatient(key);
-    toast.success('Hasta başarıyla silindi');
-    const updatedPatients = patients.filter((pat) => pat.id !== key);
-    setPatients(updatedPatients);
-    setFilteredPatients(updatedPatients);
+  const showDeleteConfirm = (patientId) => {
+    setSelectedPatientId(patientId);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedPatientId) {
+      deletePatient(selectedPatientId);
+      toast.success('Hasta başarıyla silindi');
+      const updatedPatients = patients.filter((pat) => pat.id !== selectedPatientId);
+      setPatients(updatedPatients);
+      setFilteredPatients(updatedPatients);
+      setIsDeleteModalVisible(false);
+    }
   };
 
   const columns = [
@@ -107,22 +126,15 @@ const PatientTable = () => {
             <TbUserEdit />
           </Button>
 
-          <Popconfirm
-            title="Bu hastayı silmek istediğinizden emin misiniz?"
-            description="Silme işlemini tamamlamak için onaylayın."
-            okText="Sil"
-            cancelText="Vazgeç"
-            onConfirm={() => handleDelete(record.id)}
+          <Button
+            type="default"
+            size="small"
+            danger
+            className="text-red-500 hover:text-yellow-400 hover:border-red-600"
+            onClick={() => showDeleteConfirm(record.id)}
           >
-            <Button
-              type="default"
-              size="small"
-              danger
-              className="text-red-500 hover:text-yellow-400 hover:border-red-600"
-            >
-              Sil
-            </Button>
-          </Popconfirm>
+            Sil
+          </Button>
         </Space>
       ),
       responsive: ['xs', 'sm', 'md', 'lg'],
@@ -158,7 +170,7 @@ const PatientTable = () => {
                 <Button type="primary" onClick={() => handleEdit(patient)}>Düzenle</Button>
                 <Button
                   className="bg-red-500 hover:bg-red-700 text-white"
-                  onClick={() => handleDelete(patient.id)}
+                  onClick={() => showDeleteConfirm(patient.id)}
                 >
                   Sil
                 </Button>
@@ -180,6 +192,44 @@ const PatientTable = () => {
           scroll={{ x: true }}
         />
       )}
+
+      <Modal
+        title={<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: '22px' }} />
+          <span style={{ color: '#faad14', fontSize: '18px' }}>Hastayı Sil</span>
+        </div>}
+        open={isDeleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        okText="Sil"
+        cancelText="Vazgeç"
+        centered
+        width={500}
+        okButtonProps={{ 
+          danger: true,
+          style: { 
+            backgroundColor: '#ff4d4f', 
+            borderColor: '#ff4d4f',
+            transition: 'all 0.3s'
+          },
+          onMouseEnter: (e) => {
+            e.currentTarget.style.backgroundColor = '#ff1f1f';
+            e.currentTarget.style.borderColor = '#ff1f1f';
+          },
+          onMouseLeave: (e) => {
+            e.currentTarget.style.backgroundColor = '#ff4d4f';
+            e.currentTarget.style.borderColor = '#ff4d4f';
+          }
+        }}
+        cancelButtonProps={{
+          style: { marginRight: '8px' }
+        }}
+      >
+        <div style={{ fontSize: '16px', marginTop: '16px' }}>
+          <p>Bu hastayı silmek istediğinizden emin misiniz?</p>
+          <p style={{ color: '#8c8c8c', marginTop: '8px' }}>Not: Silinen hasta kaydı sistem tarafından kalıcı olarak silinecektir ve geri alınamaz.</p>
+        </div>
+      </Modal>
     </div>
   );
 };

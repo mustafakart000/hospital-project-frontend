@@ -19,19 +19,17 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { getPatientProfile, updatePatientProfile } from "../../services/patient-service";
 
 const validationSchema = Yup.object({
-  ad: Yup.string().required("Ad zorunludur"),
-  soyad: Yup.string().required("Soyad zorunludur"),
+  ad: Yup.string(),
+  soyad: Yup.string(),
   email: Yup.string()
-    .email("Geçerli bir email giriniz")
-    .required("Email zorunludur"),
+    .email("Geçerli bir email giriniz"),
   telefon: Yup.string()
-    .matches(/^\+?[0-9]{10,13}$/, "Geçerli bir telefon numarası giriniz")
-    .required("Telefon zorunludur"),
-  adres: Yup.string().required("Adres zorunludur"),
-  birthDate: Yup.date().required("Doğum tarihi zorunludur"),
-  kanGrubu: Yup.string().required("Kan grubu zorunludur"),
-  tcKimlik: Yup.string().required("TC Kimlik numarası zorunludur"),
-  password: Yup.string().required("Şifre zorunludur"),
+    .matches(/^\+?[0-9]{10,13}$/, "Geçerli bir telefon numarası giriniz"),
+  adres: Yup.string(),
+  birthDate: Yup.date(),
+  kanGrubu: Yup.string(),
+  tcKimlik: Yup.string(),
+  password: Yup.string(),
 });
 
 const PatientEdit = () => {
@@ -73,7 +71,6 @@ const PatientEdit = () => {
   }, [id, navigate]);
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    console.log("handleSubmit tetiklendi", values);
     try {
       const formattedValues = {
         ...values,
@@ -81,7 +78,7 @@ const PatientEdit = () => {
       };
       console.log("formattedValues", formattedValues);
       const response = await updatePatientProfile(id, formattedValues); 
-      if (response === "OK") {
+      if (response === "Updated successfully") {
         toast.success("Hasta bilgileri başarıyla güncellendi");
         navigate("/dashboard/patient-management");
       }

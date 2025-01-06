@@ -24,22 +24,22 @@ import { useDispatch, useSelector } from "react-redux";
 // DEĞİŞİKLİK YAPILDI: Validation schema alan adları backend ile aynı olacak şekilde düzenlendi.
 // Burada phone -> telefon, address -> adres, speciality -> uzmanlik vb.
 const validationSchema = Yup.object({
-  ad: Yup.string().required("Ad zorunludur"),
-  soyad: Yup.string().required("Soyad zorunludur"),
+  ad: Yup.string(),
+  soyad: Yup.string(),
   email: Yup.string()
     .email("Geçerli bir email giriniz")
-    .required("Email zorunludur"),
+    ,
   // telefon alanı numeric kontrol istenirse regex kullanılabilir.
   telefon: Yup.string()
     .matches(/^[0-9]{10,11}$/, "Geçerli bir telefon numarası giriniz")
-    .required("Telefon zorunludur"),
-  adres: Yup.string().required("Adres zorunludur"),
-  birthDate: Yup.date().required("Doğum tarihi zorunludur"),
-  kanGrubu: Yup.string().required("Kan grubu zorunludur"),
-  tcKimlik: Yup.string().required("TC Kimlik numarası zorunludur"),
+    ,
+  adres: Yup.string(),
+  birthDate: Yup.date(),
+  kanGrubu: Yup.string(),
+  tcKimlik: Yup.string(),
   // speciality yerine uzmanlik kullanıyoruz
-  uzmanlik: Yup.string().required("Uzmanlık zorunludur"),
-  password: Yup.string().required("Şifre zorunludur"),
+  uzmanlik: Yup.string(),
+  password: Yup.string(),
 });
 
 const DoctorEdit = () => {
