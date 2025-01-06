@@ -82,3 +82,16 @@ export const getAllDoctors = async () => {
     }
 }
 
+// /doctor/admin/update/{id}
+export const updateAdminByDoctor = async (id, doctorData) => {
+    try {
+        const response = await axios.put(`${baseUrl}/doctor/admin/update/${id}`, doctorData, { headers: getAuthHeader() });
+        console.log("response:  ", response);
+        return response.data;
+    } catch (error) {
+        console.error("Service Error:", error);
+        throw error;
+    }
+}
+
+

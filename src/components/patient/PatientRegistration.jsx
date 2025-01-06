@@ -1,11 +1,13 @@
 import React from 'react';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { Button, Col, Row, Typography, Select, DatePicker } from 'antd';
+import { Button, Col, Row, Typography, Select, DatePicker, Form as AntdForm } from 'antd';
 import CustomInput from '../common/custom-input';
 import PropTypes from 'prop-types';
 import { createPatient } from '../../services/patient-service';
 import { toast } from 'react-hot-toast';
+import TcInput from '../common/tc-input';
+import PhoneInput from '../common/phone-input';
 
 const { Title } = Typography;
 
@@ -150,16 +152,20 @@ const PatientRegistration = ({ setActiveTab }) => {
                   </div>
                 </Col>
                 <Col xs={24} sm={12}>
-                  <div className="mb-2">
-                    <CustomInput
-                      id="telefon"
-                      label="Telefon"
-                      onChange={(e) => setFieldValue('telefon', e.target.value)}
-                      onBlur={() => setFieldTouched('telefon', true)}
+                  <AntdForm.Item
+                    className="w-full"
+                    validateStatus={errors.telefon && touched.telefon ? "error" : "success"}
+                    help={errors.telefon && touched.telefon ? errors.telefon : null}
+                  >
+                    <PhoneInput
+                      name="telefon"
+                      placeholder="Telefon"
+                      onChange={(e) => setFieldValue("telefon", e.target.value)}
+                      onBlur={() => setFieldTouched("telefon", true)}
                       value={values.telefon}
                       className="w-full"
                     />
-                  </div>
+                  </AntdForm.Item>
                 </Col>
                 <Col xs={24}>
                   <div className="mb-2">
@@ -174,16 +180,23 @@ const PatientRegistration = ({ setActiveTab }) => {
                   </div>
                 </Col>
                 <Col xs={24} sm={12}>
-                  <div className="mb-2">
-                    <CustomInput
-                      id="tcKimlik"
-                      label="TC Kimlik No"
-                      onChange={(e) => setFieldValue('tcKimlik', e.target.value)}
-                      onBlur={() => setFieldTouched('tcKimlik', true)}
+                  <AntdForm.Item
+                    className="w-full"
+                    validateStatus={errors.tcKimlik && touched.tcKimlik ? "error" : "success"}
+                    help={errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : null}
+                  >
+                    <TcInput
                       value={values.tcKimlik}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d{0,11}$/.test(value)) {
+                          setFieldValue("tcKimlik", value);
+                        }
+                      }}
                       className="w-full"
+                      onBlur={() => setFieldTouched("tcKimlik", true)}
                     />
-                  </div>
+                  </AntdForm.Item>
                 </Col>
                 <Col xs={24} sm={12}>
                   <div className="mb-2">

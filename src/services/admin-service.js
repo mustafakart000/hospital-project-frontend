@@ -57,4 +57,13 @@ export const getAdminById = async (id) => {
     }
 };
 
+export const updateAdmin = async (id, adminData) => {
+    try {
+        const response = await axios.put(`${baseUrl}/admin/update/${id}`, adminData, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        console.error("Service Error:", error);
+        throw error;
+    }
+};
 

@@ -11,35 +11,35 @@ import {
     Input,
     Select,
 } from "antd";
-import moment from "moment";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { updateDoctor } from "../../services/doctor-service";
+import TcInput from "../common/tc-input";
+import PhoneInput from "../common/phone-input";
 
 import { useDispatch } from "react-redux";
 import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
-import { getAdminById } from "../../services/admin-service";
+import { getAdminById, updateAdmin } from "../../services/admin-service";
+import dayjs from "dayjs";
 
 // DEĞİŞİKLİK YAPILDI: Validation schema alan adları backend ile aynı olacak şekilde düzenlendi.
 // Burada phone -> telefon, address -> adres, speciality -> uzmanlik vb.
 const validationSchema = Yup.object({
-  ad: Yup.string().required("Ad zorunludur"),
-  soyad: Yup.string().required("Soyad zorunludur"),
+  username: Yup.string().nullable(),
+  ad: Yup.string().nullable(),
+  soyad: Yup.string().nullable(),
   email: Yup.string()
     .email("Geçerli bir email giriniz")
-    .required("Email zorunludur"),
-  // telefon alanı numeric kontrol istenirse regex kullanılabilir.
-  telefon: Yup.string()
+    .nullable(),
+  phoneNumber: Yup.string()
     .matches(/^[0-9]{10,11}$/, "Geçerli bir telefon numarası giriniz")
-    .required("Telefon zorunludur"),
-  adres: Yup.string().required("Adres zorunludur"),
-  birthDate: Yup.date().required("Doğum tarihi zorunludur"),
-  kanGrubu: Yup.string().required("Kan grubu zorunludur"),
-  tcKimlik: Yup.string().required("TC Kimlik numarası zorunludur"),
-
-  password: Yup.string().required("Şifre zorunludur"),
+    .nullable(),
+  address: Yup.string().nullable(),
+  birthDate: Yup.date().nullable(),
+  kanGrubu: Yup.string().nullable(),
+  tcKimlik: Yup.string().nullable(),
+  password: Yup.string().nullable(),
 });
 
 const AdminEdit = () => {
@@ -48,8 +48,8 @@ const AdminEdit = () => {
     ad: "",
     soyad: "",
     email: "",
-    telefon: "",
-    adres: "",
+    phoneNumber: "",
+    address: "",
     birthDate: "",
     tcKimlik: "",
     kanGrubu: "",
@@ -69,12 +69,13 @@ const AdminEdit = () => {
       try {
         //console.log("id", id);
         const response = await getAdminById(id);
+        console.log("response:  ", response);
         const adminData = response;
         //console.log("adminData", adminData);
-        // DEĞİŞİKLİK YAPILDI: Burada backend’den dönen alanlar ile initialValues alanları aynı isimde olmalı.
+        // DEĞİŞİKLİK YAPILDI: Burada backend'den dönen alanlar ile initialValues alanları aynı isimde olmalı.
         setInitialValues({
           ...adminData,
-          birthDate: adminData.birthDate ? moment(adminData.birthDate) : null,
+          birthDate: adminData.birthDate ? dayjs(adminData.birthDate) : null,
         });
         setIsLoading(false);
       } catch (error) {
@@ -90,19 +91,17 @@ const AdminEdit = () => {
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     try {
-      // DEĞİŞİKLİK YAPILDI: values içindeki alanlar backend ile aynı isimde zaten.
       const formattedValues = {
         ...values,
+        phone: values.phoneNumber?.replace(/\s/g, ''),
         birthDate: values.birthDate
           ? values.birthDate.format("YYYY-MM-DD")
           : "",
       };
-      //console.log("doctor-edit.jsx-values: ", values);
-      //console.log("doctor-edit.jsx-formattedValues: ", formattedValues);
-      const response = await updateDoctor(id, formattedValues);
-      //console.log("response:  ", response);
+      const response = await updateAdmin(id, formattedValues);
+      console.log("response123:  ", response);
       if (response === "OK") {
-        toast.success("Doktor bilgileri başarıyla güncellendi");
+        toast.success("Admin bilgileri başarıyla güncellendi");
         navigate("/dashboard/admin-management");
       }
     } catch (error) {
@@ -200,15 +199,16 @@ const AdminEdit = () => {
                       errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : ""
                     }
                   >
-                    <Input
-                      name="tcKimlik"
-                      placeholder="TC Kimlik"
-                      onChange={(e) =>
-                        setFieldValue("tcKimlik", e.target.value)
-                      }
-                      onBlur={() => setFieldTouched("tcKimlik", true)}
+                    <TcInput
                       value={values.tcKimlik}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d{0,11}$/.test(value)) {
+                          setFieldValue("tcKimlik", value);
+                        }
+                      }}
                       className="w-full"
+                      onBlur={() => setFieldTouched("tcKimlik", true)}
                     />
                   </AntdForm.Item>
 
@@ -236,18 +236,18 @@ const AdminEdit = () => {
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
                     validateStatus={
-                      errors.telefon && touched.telefon ? "error" : ""
+                      errors.phoneNumber && touched.phoneNumber ? "error" : ""
                     }
                     help={
-                      errors.telefon && touched.telefon ? errors.telefon : ""
+                      errors.phoneNumber && touched.phoneNumber ? errors.phoneNumber : ""
                     }
                   >
-                    <Input
-                      name="telefon"
+                    <PhoneInput
+                      name="phoneNumber"
                       placeholder="Telefon"
-                      onChange={(e) => setFieldValue("telefon", e.target.value)}
-                      onBlur={() => setFieldTouched("telefon", true)}
-                      value={values.telefon}
+                      onChange={(e) => setFieldValue("phoneNumber", e.target.value)}
+                      onBlur={() => setFieldTouched("phoneNumber", true)}
+                      value={values.phoneNumber}
                       className="w-full"
                     />
                   </AntdForm.Item>
@@ -314,16 +314,16 @@ const AdminEdit = () => {
                   label="Adres"
                   labelCol={{ span: 4 }}
                   wrapperCol={{ span: 20 }}
-                  validateStatus={errors.adres && touched.adres ? "error" : ""}
-                  help={errors.adres && touched.adres ? errors.adres : ""}
+                  validateStatus={errors.address && touched.address ? "error" : ""}
+                  help={errors.address && touched.address ? errors.address : ""}
                 >
                   <Input.TextArea
-                    name="adres"
+                    name="address"
                     placeholder="Adres"
                     rows={3}
-                    onChange={(e) => setFieldValue("adres", e.target.value)}
-                    onBlur={() => setFieldTouched("adres", true)}
-                    value={values.adres}
+                    onChange={(e) => setFieldValue("address", e.target.value)}
+                    onBlur={() => setFieldTouched("address", true)}
+                    value={values.address}
                     className="w-full"
                   />
                 </AntdForm.Item>

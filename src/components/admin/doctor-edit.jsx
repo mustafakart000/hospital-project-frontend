@@ -11,44 +11,45 @@ import {
   Input,
   Select
 } from "antd";
-import moment from "moment";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { getDoctorById, updateDoctor } from "../../services/doctor-service";
+import { getDoctorById, updateAdminByDoctor } from "../../services/doctor-service";
 
 import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
 import { useDispatch, useSelector } from "react-redux";
+import dayjs from "dayjs";
 
 // DEĞİŞİKLİK YAPILDI: Validation schema alan adları backend ile aynı olacak şekilde düzenlendi.
 // Burada phone -> telefon, address -> adres, speciality -> uzmanlik vb.
 const validationSchema = Yup.object({
-  ad: Yup.string(),
-  soyad: Yup.string(),
+  username: Yup.string().nullable(),
+  password: Yup.string().nullable(),
+  ad: Yup.string().nullable(),
+  soyad: Yup.string().nullable(),
+  speciality: Yup.string().nullable(),
   email: Yup.string()
     .email("Geçerli bir email giriniz")
-    ,
-  // telefon alanı numeric kontrol istenirse regex kullanılabilir.
+    .nullable(),
   telefon: Yup.string()
     .matches(/^[0-9]{10,11}$/, "Geçerli bir telefon numarası giriniz")
-    ,
-  adres: Yup.string(),
-  birthDate: Yup.date(),
-  kanGrubu: Yup.string(),
-  tcKimlik: Yup.string(),
-  // speciality yerine uzmanlik kullanıyoruz
-  uzmanlik: Yup.string(),
-  password: Yup.string(),
+    .nullable(),
+  adres: Yup.string().nullable(),
+  birthDate: Yup.date().nullable(),
+  kanGrubu: Yup.string().nullable(),
+  tcKimlik: Yup.string().nullable(),
+  diplomaNo: Yup.string().nullable(),
+  unvan: Yup.string().nullable(),
 });
 
 const DoctorEdit = () => {
   const [initialValues, setInitialValues] = useState({
-    // DEĞİŞİKLİK YAPILDI: Field isimleri backend ile aynı
     username: "",
+    password: "",
     ad: "",
     soyad: "",
-    uzmanlik: "", // Başlangıçta boş verebiliriz, ya da default 'NEUROLOGIST' idi
+    speciality: "",
     email: "",
     telefon: "",
     adres: "",
@@ -57,7 +58,6 @@ const DoctorEdit = () => {
     kanGrubu: "",
     diplomaNo: "",
     unvan: "",
-    password: ""
   });
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -76,10 +76,12 @@ const DoctorEdit = () => {
         const response = await getDoctorById(id);
         const doctorData = response;
         //console.log("doctorData", doctorData);
-        // DEĞİŞİKLİK YAPILDI: Burada backend’den dönen alanlar ile initialValues alanları aynı isimde olmalı.
+        // DEĞİŞİKLİK YAPILDI: Burada backend'den dönen alanlar ile initialValues alanları aynı isimde olmalı.
         setInitialValues({
           ...doctorData,
-          birthDate: doctorData.birthDate ? moment(doctorData.birthDate) : null,
+          telefon: doctorData.phone,
+          adres: doctorData.address,
+          birthDate: doctorData.birthDate ? dayjs(doctorData.birthDate) : null,
         });
         setIsLoading(false);
       } catch (error) {
@@ -102,9 +104,9 @@ const DoctorEdit = () => {
       };
       //console.log("doctor-edit.jsx-values: ", values);
       //console.log("doctor-edit.jsx-formattedValues: ", formattedValues);
-      const response = await updateDoctor(id, formattedValues);
+      const response = await updateAdminByDoctor(id, formattedValues);
       //console.log("response:  ", response);
-      if (response === "OK") {
+      if (response === "Updated successfully") {
         toast.success("Doktor bilgileri başarıyla güncellendi");
         navigate("/dashboard/doctor-management");
       }
@@ -147,6 +149,23 @@ const DoctorEdit = () => {
               <div className="space-y-4">
                 {/* Kişisel Bilgiler */}
                 <AntdForm.Item
+                  label="Kullanıcı Adı"
+                  labelCol={{ span: 8 }}
+                  wrapperCol={{ span: 16 }}
+                  validateStatus={errors.username && touched.username ? "error" : ""}
+                  help={errors.username && touched.username ? errors.username : ""}
+                >
+                  <Input
+                    name="username"
+                    placeholder="Kullanıcı Adı"
+                    onChange={(e) => setFieldValue("username", e.target.value)}
+                    onBlur={() => setFieldTouched("username", true)}
+                    value={values.username}
+                    className="w-full"
+                  />
+                </AntdForm.Item>
+
+                <AntdForm.Item
                   label="Ad"
                   labelCol={{ span: 8 }}
                   wrapperCol={{ span: 16 }}
@@ -176,23 +195,6 @@ const DoctorEdit = () => {
                     onChange={(e) => setFieldValue("soyad", e.target.value)}
                     onBlur={() => setFieldTouched("soyad", true)}
                     value={values.soyad}
-                    className="w-full"
-                  />
-                </AntdForm.Item>
-
-                <AntdForm.Item
-                  label="TC Kimlik"
-                  labelCol={{ span: 8 }}
-                  wrapperCol={{ span: 16 }}
-                  validateStatus={errors.tcKimlik && touched.tcKimlik ? "error" : ""}
-                  help={errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : ""}
-                >
-                  <Input
-                    name="tcKimlik"
-                    placeholder="TC Kimlik"
-                    onChange={(e) => setFieldValue("tcKimlik", e.target.value)}
-                    onBlur={() => setFieldTouched("tcKimlik", true)}
-                    value={values.tcKimlik}
                     className="w-full"
                   />
                 </AntdForm.Item>
@@ -268,15 +270,15 @@ const DoctorEdit = () => {
                   label="Uzmanlık"
                   labelCol={{ span: 8 }}
                   wrapperCol={{ span: 16 }}
-                  validateStatus={errors.uzmanlik && touched.uzmanlik ? "error" : ""}
-                  help={errors.uzmanlik && touched.uzmanlik ? errors.uzmanlik : ""}
+                  validateStatus={errors.speciality && touched.speciality ? "error" : ""}
+                  help={errors.speciality && touched.speciality ? errors.speciality : ""}
                 >
                   <Select
                     placeholder="Uzmanlık Seçiniz"
                     showSearch
-                    onChange={(value) => setFieldValue("uzmanlik", value)}
-                    onBlur={() => setFieldTouched("uzmanlik", true)}
-                    value={values.uzmanlik || undefined}
+                    onChange={(value) => setFieldValue("speciality", value)}
+                    onBlur={() => setFieldTouched("speciality", true)}
+                    value={values.speciality || undefined}
                     className="w-full"
                   >
                     {specialties.map((specialty) => (
