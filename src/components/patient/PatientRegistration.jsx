@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { Button, Col, Row, Typography } from 'antd';
+import { Button, Col, Row, Typography, Select, DatePicker } from 'antd';
 import CustomInput from '../common/custom-input';
 import PropTypes from 'prop-types';
 import { createPatient } from '../../services/patient-service';
@@ -12,17 +12,21 @@ const { Title } = Typography;
 const validationSchema = Yup.object({
   ad: Yup.string().required('Ad zorunludur'),
   soyad: Yup.string().required('Soyad zorunludur'),
+  username: Yup.string().required('Kullanıcı adı zorunludur'),
+  password: Yup.string().required('Şifre zorunludur'),
   email: Yup.string().email('Geçerli bir email giriniz').required('Email zorunludur'),
-  telefon: Yup.string().matches(/^[0-9]{10,11}$/, 'Geçerli bir telefon numarası giriniz').required('Telefon zorunludur'),
+  telefon: Yup.string().matches(/^[0-9]{10,11}$/, 'Geçerli bir telefon numarası giriniz'),
   adres: Yup.string().required('Adres zorunludur'),
   tcKimlik: Yup.string().required('TC Kimlik numarası zorunludur').matches(/^\d{11}$/, 'TC Kimlik 11 haneli olmalıdır'),
   birthDate: Yup.date().required('Doğum tarihi zorunludur'),
-  kanGrubu: Yup.string().required('Kan grubu zorunludur'),
+  kanGrubu: Yup.string(),
 });
 
 const initialValues = {
   ad: '',
   soyad: '',
+  username: '',
+  password: '',
   email: '',
   telefon: '',
   adres: '',
@@ -33,6 +37,7 @@ const initialValues = {
 
 const PatientRegistration = ({ setActiveTab }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
+    console.log("PatientRegistration.jsx-values:  ", values);
     try {
       const formattedValues = {
         ...values,
@@ -40,7 +45,7 @@ const PatientRegistration = ({ setActiveTab }) => {
         birthDate: values.birthDate ? values.birthDate.format('YYYY-MM-DD') : '',
       };
       const response = await createPatient(formattedValues);
-      if (response.includes('Hasta başarıyla eklendi')) {
+      if (response.includes('Başarılı bir şekilde kayıt oldunuz.')) { 
         toast.success('Başarılı bir şekilde kayıt oldunuz.');
         setActiveTab('list');
         resetForm();
@@ -76,44 +81,177 @@ const PatientRegistration = ({ setActiveTab }) => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ values, setFieldValue, setFieldTouched, isSubmitting }) => (
-          <Form>
-            <Row gutter={[16, 8]}>
-              <Col xs={24} sm={12}>
-                <CustomInput
-                  id="ad"
-                  label="Ad"
-                  onChange={(e) => setFieldValue('ad', e.target.value)}
-                  onBlur={() => setFieldTouched('ad', true)}
-                  value={values.ad}
-                  className="w-full"
-                />
-              </Col>
-              <Col xs={24} sm={12}>
-                <CustomInput
-                  id="soyad"
-                  label="Soyad"
-                  onChange={(e) => setFieldValue('soyad', e.target.value)}
-                  onBlur={() => setFieldTouched('soyad', true)}
-                  value={values.soyad}
-                  className="w-full"
-                />
-              </Col>
-              {/* Add more fields as needed */}
-              <Col xs={24}>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={isSubmitting}
-                  disabled={isSubmitting}
-                  className="w-full max-w-xs"
-                >
-                  Kaydet
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-        )}
+        {({ values, setFieldValue, setFieldTouched, isSubmitting, errors, touched }) => {
+          console.log('Form Errors:', errors);
+          console.log('Form Values:', values);
+          return (
+            <Form noValidate>
+              <Row gutter={[16, 24]}>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="ad"
+                      label="Ad"
+                      onChange={(e) => setFieldValue('ad', e.target.value)}
+                      onBlur={() => setFieldTouched('ad', true)}
+                      value={values.ad}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="soyad"
+                      label="Soyad"
+                      onChange={(e) => setFieldValue('soyad', e.target.value)}
+                      onBlur={() => setFieldTouched('soyad', true)}
+                      value={values.soyad}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="username"
+                      label="Kullanıcı Adı"
+                      onChange={(e) => setFieldValue('username', e.target.value)}
+                      onBlur={() => setFieldTouched('username', true)}
+                      value={values.username}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="password"
+                      label="Şifre"
+                      type="password"
+                      onChange={(e) => setFieldValue('password', e.target.value)}
+                      onBlur={() => setFieldTouched('password', true)}
+                      value={values.password}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="email"
+                      label="E-posta"
+                      type="email"
+                      onChange={(e) => setFieldValue('email', e.target.value)}
+                      onBlur={() => setFieldTouched('email', true)}
+                      value={values.email}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="telefon"
+                      label="Telefon"
+                      onChange={(e) => setFieldValue('telefon', e.target.value)}
+                      onBlur={() => setFieldTouched('telefon', true)}
+                      value={values.telefon}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="adres"
+                      label="Adres"
+                      onChange={(e) => setFieldValue('adres', e.target.value)}
+                      onBlur={() => setFieldTouched('adres', true)}
+                      value={values.adres}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="tcKimlik"
+                      label="TC Kimlik No"
+                      onChange={(e) => setFieldValue('tcKimlik', e.target.value)}
+                      onBlur={() => setFieldTouched('tcKimlik', true)}
+                      value={values.tcKimlik}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">
+                      Doğum Tarihi
+                    </label>
+                    <DatePicker
+                      id="birthDate"
+                      className="w-full"
+                      onChange={(date) => setFieldValue('birthDate', date)}
+                      onBlur={() => setFieldTouched('birthDate', true)}
+                      value={values.birthDate}
+                      format="YYYY-MM-DD"
+                      disabledDate={(current) => current && current.isAfter(new Date(), 'day')}
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <label htmlFor="kanGrubu" className="block text-sm font-medium text-gray-700 mb-1">
+                      Kan Grubu
+                    </label>
+                    <Select
+                      id="kanGrubu"
+                      className="w-full"
+                      onChange={(value) => setFieldValue('kanGrubu', value)}
+                      onBlur={() => setFieldTouched('kanGrubu', true)}
+                      value={values.kanGrubu}
+                    >
+                      <Select.Option value="">Seçiniz</Select.Option>
+                      <Select.Option value="A+">A+</Select.Option>
+                      <Select.Option value="A-">A-</Select.Option>
+                      <Select.Option value="B+">B+</Select.Option>
+                      <Select.Option value="B-">B-</Select.Option>
+                      <Select.Option value="AB+">AB+</Select.Option>
+                      <Select.Option value="AB-">AB-</Select.Option>
+                      <Select.Option value="0+">0+</Select.Option>
+                      <Select.Option value="0-">0-</Select.Option>
+                    </Select>
+                  </div>
+                </Col>
+                <Col xs={24} className="mt-6">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={isSubmitting}
+                    disabled={isSubmitting}
+                    className="w-full"
+                    onClick={() => console.log('Button Clicked', values, errors)}
+                  >
+                    Kaydet
+                  </Button>
+                  {Object.keys(errors).length > 0 && (
+                    <div className="text-red-500 mt-2">
+                      {Object.keys(errors).map((fieldName) => (
+                        touched[fieldName] && (
+                          <div key={fieldName} className="mb-1">
+                            {errors[fieldName]}
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  )}
+                </Col>
+              </Row>
+            </Form>
+          );
+        }}
       </Formik>
     </div>
   );

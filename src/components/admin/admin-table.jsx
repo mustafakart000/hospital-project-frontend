@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Popconfirm, Input } from "antd";
+import { Table, Button, Space, Modal, Input } from "antd";
 import { TbUserEdit } from "react-icons/tb";
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 import { deleteAdmin, getAllAdmins } from "../../services/admin-service";
 
 const AdminTable = () => {
   const [admins, setAdmins] = useState([]);
-  const [searchText, setSearchText] = useState('');  // Arama metni için state
-    const [filteredAdmins, setFilteredAdmins] = useState([]); // Filtrelenmiş doktorlar için state
+  const [searchText, setSearchText] = useState('');
+  const [filteredAdmins, setFilteredAdmins] = useState([]);
+  const [selectedAdminId, setSelectedAdminId] = useState(null);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,7 +28,7 @@ const AdminTable = () => {
           };
         });
         setAdmins(formattedAdmins);
-        setFilteredAdmins(formattedAdmins); // Başlangıçta tüm doktorları filtered state'e de ata
+        setFilteredAdmins(formattedAdmins);
       } catch (error) {
         console.error("Doktorları çekerken hata oluştu:", error);
       }
@@ -51,15 +54,22 @@ const AdminTable = () => {
     navigate(`/dashboard/admin-management/edit/${record.id}`);
   };
 
-  const handleDelete = (key) => {
-    deleteAdmin(key);
-    toast.success("Admin başarıyla silindi");
-    const updatedAdmins = admins.filter((admin) => admin.id !== key);
-    setAdmins(updatedAdmins);
-    setFilteredAdmins(updatedAdmins); // Filtrelenmiş listeyi de güncelle
+  const showDeleteConfirm = (adminId) => {
+    setSelectedAdminId(adminId);
+    setIsDeleteModalVisible(true);
   };
 
-  // Uzmanlık alanları için benzersiz değerleri al
+  const handleDeleteConfirm = () => {
+    if (selectedAdminId) {
+      deleteAdmin(selectedAdminId);
+      toast.success("Admin başarıyla silindi");
+      const updatedAdmins = admins.filter((admin) => admin.id !== selectedAdminId);
+      setAdmins(updatedAdmins);
+      setFilteredAdmins(updatedAdmins);
+      setIsDeleteModalVisible(false);
+    }
+  };
+
   const getSpecialties = () => {
     const specialties = [...new Set(admins.map(admin => admin.speciality))];
     return specialties.map(specialty => ({
@@ -79,7 +89,7 @@ const AdminTable = () => {
       filterSearch: true,
       filters: admins.map(admin => ({
         text: admin.name,
-        value: admin.id, // id'yi value olarak kullan
+        value: admin.id,
       })),
       onFilter: (value, record) => record.id === value,
     },
@@ -116,22 +126,15 @@ const AdminTable = () => {
             <TbUserEdit />
           </Button>
 
-          <Popconfirm
-            title="Bu admini silmek istediğinizden emin misiniz?"
-            description="Silme işlemini tamamlamak için onaylayın."
-            okText="Sil"
-            cancelText="Vazgeç"
-            onConfirm={() => handleDelete(record.id)}
+          <Button
+            type="default"
+            size="small"
+            danger
+            className="text-red-500 hover:text-yellow-400 hover:border-red-600"
+            onClick={() => showDeleteConfirm(record.id)}
           >
-            <Button
-              type="default"
-              size="small"
-              danger
-              className="text-red-500 hover:text-yellow-400 hover:border-red-600"
-            >
-              Sil
-            </Button>
-          </Popconfirm>
+            Sil
+          </Button>
         </Space>
       ),
       responsive: ["xs", "sm", "md", "lg"],
@@ -141,7 +144,7 @@ const AdminTable = () => {
   return (
     <div>
       <Input.Search
-        placeholder="Doktor ara..."
+        placeholder="Admin ara..."
         allowClear
         value={searchText}
         onChange={(e) => handleSearch(e.target.value)}
@@ -154,6 +157,44 @@ const AdminTable = () => {
         pagination={{ pageSize: 10 }}
         scroll={{ x: true }}
       />
+
+      <Modal
+        title={<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: '22px' }} />
+          <span style={{ color: '#faad14', fontSize: '18px' }}>Admini Sil</span>
+        </div>}
+        open={isDeleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        okText="Sil"
+        cancelText="Vazgeç"
+        centered
+        width={500}
+        okButtonProps={{ 
+          danger: true,
+          style: { 
+            backgroundColor: '#ff4d4f', 
+            borderColor: '#ff4d4f',
+            transition: 'all 0.3s'
+          },
+          onMouseEnter: (e) => {
+            e.currentTarget.style.backgroundColor = '#ff1f1f';
+            e.currentTarget.style.borderColor = '#ff1f1f';
+          },
+          onMouseLeave: (e) => {
+            e.currentTarget.style.backgroundColor = '#ff4d4f';
+            e.currentTarget.style.borderColor = '#ff4d4f';
+          }
+        }}
+        cancelButtonProps={{
+          style: { marginRight: '8px' }
+        }}
+      >
+        <div style={{ fontSize: '16px', marginTop: '16px' }}>
+          <p>Bu admini silmek istediğinizden emin misiniz?</p>
+          <p style={{ color: '#8c8c8c', marginTop: '8px' }}>Not: Silinen admin kaydı sistem tarafından kalıcı olarak silinecektir ve geri alınamaz.</p>
+        </div>
+      </Modal>
     </div>
   );
 };
