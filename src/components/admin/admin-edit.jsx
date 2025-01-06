@@ -32,10 +32,10 @@ const validationSchema = Yup.object({
   email: Yup.string()
     .email("Geçerli bir email giriniz")
     .nullable(),
-  phoneNumber: Yup.string()
+  telefon: Yup.string()
     .matches(/^[0-9]{10,11}$/, "Geçerli bir telefon numarası giriniz")
     .nullable(),
-  address: Yup.string().nullable(),
+  adres: Yup.string().nullable(),
   birthDate: Yup.date().nullable(),
   kanGrubu: Yup.string().nullable(),
   tcKimlik: Yup.string().nullable(),
@@ -48,8 +48,8 @@ const AdminEdit = () => {
     ad: "",
     soyad: "",
     email: "",
-    phoneNumber: "",
-    address: "",
+    telefon: "",
+    adres: "",
     birthDate: "",
     tcKimlik: "",
     kanGrubu: "",
@@ -67,21 +67,26 @@ const AdminEdit = () => {
   useEffect(() => {
     const fetchAdminDetails = async () => {
       try {
-        //console.log("id", id);
         const response = await getAdminById(id);
         console.log("response:  ", response);
         const adminData = response;
-        //console.log("adminData", adminData);
-        // DEĞİŞİKLİK YAPILDI: Burada backend'den dönen alanlar ile initialValues alanları aynı isimde olmalı.
+        // Backend'den gelen verileri initialValues formatına dönüştürüyoruz
         setInitialValues({
-          ...adminData,
+          username: adminData.username || "",
+          ad: adminData.ad || "",
+          soyad: adminData.soyad || "",
+          email: adminData.email || "",
+          telefon: adminData.phoneNumber || "",  // phoneNumber'ı telefon olarak alıyoruz
+          adres: adminData.address || "",        // address'i adres olarak alıyoruz
           birthDate: adminData.birthDate ? dayjs(adminData.birthDate) : null,
+          tcKimlik: adminData.tcKimlik || "",
+          kanGrubu: adminData.kanGrubu || "",
+          password: adminData.password || "",
         });
         setIsLoading(false);
       } catch (error) {
         console.log("AdminEdit.jsx fetchAdminDetails error: ", error);
         toast.error("Admin bilgileri yüklenemedi");
-        //console.log("error", error);
         navigate("/dashboard/admin-management");
       }
     };
@@ -93,7 +98,8 @@ const AdminEdit = () => {
     try {
       const formattedValues = {
         ...values,
-        phone: values.phoneNumber?.replace(/\s/g, ''),
+        phoneNumber: values.telefon,    // telefon'u phoneNumber olarak gönderiyoruz
+        address: values.adres,          // adres'i address olarak gönderiyoruz
         birthDate: values.birthDate
           ? values.birthDate.format("YYYY-MM-DD")
           : "",
@@ -152,6 +158,23 @@ const AdminEdit = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   {/* Kişisel Bilgiler */}
+                  <AntdForm.Item
+                    label="Kullanıcı Adı"
+                    labelCol={{ span: 8 }}
+                    wrapperCol={{ span: 16 }}
+                    validateStatus={errors.username && touched.username ? "error" : ""}
+                    help={errors.username && touched.username ? errors.username : ""}
+                  >
+                    <Input
+                      name="username"
+                      placeholder="Kullanıcı Adı"
+                      onChange={(e) => setFieldValue("username", e.target.value)}
+                      onBlur={() => setFieldTouched("username", true)}
+                      value={values.username}
+                      className="w-full"
+                    />
+                  </AntdForm.Item>
+
                   <AntdForm.Item
                     label="Ad"
                     labelCol={{ span: 8 }}
@@ -236,18 +259,18 @@ const AdminEdit = () => {
                     labelCol={{ span: 8 }}
                     wrapperCol={{ span: 16 }}
                     validateStatus={
-                      errors.phoneNumber && touched.phoneNumber ? "error" : ""
+                      errors.telefon && touched.telefon ? "error" : ""
                     }
                     help={
-                      errors.phoneNumber && touched.phoneNumber ? errors.phoneNumber : ""
+                      errors.telefon && touched.telefon ? errors.telefon : ""
                     }
                   >
                     <PhoneInput
-                      name="phoneNumber"
+                      name="telefon"
                       placeholder="Telefon"
-                      onChange={(e) => setFieldValue("phoneNumber", e.target.value)}
-                      onBlur={() => setFieldTouched("phoneNumber", true)}
-                      value={values.phoneNumber}
+                      onChange={(e) => setFieldValue("telefon", e.target.value)}
+                      onBlur={() => setFieldTouched("telefon", true)}
+                      value={values.telefon}
                       className="w-full"
                     />
                   </AntdForm.Item>
@@ -314,16 +337,16 @@ const AdminEdit = () => {
                   label="Adres"
                   labelCol={{ span: 4 }}
                   wrapperCol={{ span: 20 }}
-                  validateStatus={errors.address && touched.address ? "error" : ""}
-                  help={errors.address && touched.address ? errors.address : ""}
+                  validateStatus={errors.adres && touched.adres ? "error" : ""}
+                  help={errors.adres && touched.adres ? errors.adres : ""}
                 >
                   <Input.TextArea
-                    name="address"
+                    name="adres"
                     placeholder="Adres"
                     rows={3}
-                    onChange={(e) => setFieldValue("address", e.target.value)}
-                    onBlur={() => setFieldTouched("address", true)}
-                    value={values.address}
+                    onChange={(e) => setFieldValue("adres", e.target.value)}
+                    onBlur={() => setFieldTouched("adres", true)}
+                    value={values.adres}
                     className="w-full"
                   />
                 </AntdForm.Item>

@@ -2,6 +2,7 @@ import { Form, Formik } from "formik";
 import React from "react";
 import * as Yup from "yup";
 
+
 import {
   Form as AntdForm,
   Button,
@@ -10,11 +11,9 @@ import {
   Col,
   Row,
 } from "antd";
-import moment from "moment";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
 
-
-import { useNavigate } from "react-router-dom";
 
 import { createAdmin } from "../../services/admin-service";
 import "./floating-label.css";
@@ -22,7 +21,7 @@ import TcInput from "../common/tc-input";
 import CustomInput from "../common/custom-input";
 import BloodTypeSelector from "../common/blood-type-selector";
 import PhoneInput from "../common/phone-input";
-
+import PropTypes from 'prop-types';
 
 const { Title } = Typography;
 
@@ -63,14 +62,12 @@ const initialValues = {
     "tcKimlik":""
   }
 
-const AdminNew = () => {
-  const navigate = useNavigate();
+const AdminNew = ({setActiveTab}) => {
   const handleSubmit = async (
     values,
     { setSubmitting, setErrors, resetForm }
   ) => {
     try {
-      //console.log("Gönderilen veriler:", values); // Form verilerini kontrol edin
       const formattedValues = {
         ...values,
         username: values.username.replace(/\s/g, ""),
@@ -80,18 +77,40 @@ const AdminNew = () => {
       };
       console.log("admin-new.jsx formattedValues", formattedValues);
       const response = await createAdmin(formattedValues);
-      console.log("API Yanıtı:", response); // API yanıtını kontrol edin
+      console.log("API Yanıtı:", response);
       if (response.includes("Admin başarıyla eklendi")) {
         toast.success("Başarılı bir şekilde kayıt oldunuz.");
-        navigate("/dashboard/admin-management");
+        setActiveTab("list");
         resetForm();
       }
     } catch (error) {
-      console.error("Hata:", error); // Hataları konsolda göster
-
-      setErrors({
-        submit: error.response?.data?.message || "Kayıt işlemi başarısız...",
-      });
+      console.error("Hata:", error);
+      
+      if (error.response?.data?.message) {
+        const errorMessage = error.response.data.message;
+        
+        if (errorMessage.includes("username")) {
+          setErrors({
+            username: "Bu kullanıcı adı zaten kullanılmaktadır.",
+          });
+          toast.error("Bu kullanıcı adı zaten kullanılmaktadır.");
+        } else if (errorMessage.includes("email")) {
+          setErrors({
+            email: "Bu email adresi zaten kullanılmaktadır.",
+          });
+          toast.error("Bu email adresi zaten kullanılmaktadır.");
+        } else {
+          setErrors({
+            submit: errorMessage,
+          });
+          toast.error(errorMessage);
+        }
+      } else {
+        setErrors({
+          submit: "Kayıt işlemi başarısız...",
+        });
+        toast.error("Kayıt işlemi başarısız...");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -280,8 +299,9 @@ const AdminNew = () => {
                     placeholder="Doğum Tarihi"
                     onChange={(date) => setFieldValue("birthDate", date)}
                     onBlur={() => setFieldTouched("birthDate", true)}
-                    value={values.birthDate ? moment(values.birthDate) : null}
+                    value={values.birthDate ? dayjs(values.birthDate) : null}
                     className="w-full h-9 border-gray-400 focus:border-blue-500 focus:ring-0"
+                    disabledDate={(current) => current && current > dayjs().endOf('day')}
                   />
                 </AntdForm.Item>
               </Col>
@@ -401,6 +421,10 @@ const AdminNew = () => {
       </Formik>
     </div>
   );
+};
+
+AdminNew.propTypes = {
+  setActiveTab: PropTypes.func.isRequired
 };
 
 export default AdminNew;

@@ -87,7 +87,6 @@ const DoctorRegistration = ( { setActiveTab } ) => {
       };
       //console.log("DoctorRegistration.jsx formattedValues", formattedValues);
       const response = await createDoctor(formattedValues);
-      console.log("DoctorRegistration.jsx-response:  ", response); // API yanıtını kontrol edin
       if (response.includes("Doktor başarıyla eklendi")) {
         toast.success("Başarılı bir şekilde kayıt oldunuz.");
         setActiveTab("list");
