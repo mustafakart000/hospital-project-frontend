@@ -5,8 +5,9 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 import { deleteAdmin, getAllAdmins } from "../../services/admin-service";
+import PropTypes from 'prop-types';
 
-const AdminTable = () => {
+const AdminTable = ({ activeTab }) => {
   const [admins, setAdmins] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [filteredAdmins, setFilteredAdmins] = useState([]);
@@ -35,7 +36,7 @@ const AdminTable = () => {
     };
 
     fetchDoctors();
-  }, []);
+  }, [activeTab==="list"]);
 
   const handleSearch = (value) => {
     const searchValue = value.toLowerCase();
@@ -197,6 +198,10 @@ const AdminTable = () => {
       </Modal>
     </div>
   );
+};
+
+AdminTable.propTypes = {
+  activeTab: PropTypes.string
 };
 
 export default AdminTable;

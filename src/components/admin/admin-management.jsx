@@ -12,13 +12,13 @@ const AdminManagement = () => {
     {
       key: 'new',
       label: 'Admin Oluştur',
-      children: <AdminNew labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} />,
+      children: <AdminNew setActiveTab={setActiveTab} labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} />,
       icon: <UserAddOutlined style={{ fontSize: '18px' }} />
     },
     {
       key: 'list',
       label: 'Adminler Listesi',
-      children: <AdminTable />,
+      children: <AdminTable activeTab={activeTab} />,
       icon: <UnorderedListOutlined style={{ fontSize: '18px' }} />
     }
   ];
