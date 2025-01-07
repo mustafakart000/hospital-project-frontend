@@ -15,6 +15,9 @@ import {
   ContainerOutlined,
   AlertOutlined,
   BankOutlined,
+  UserAddOutlined,
+  HeartOutlined,
+  FormOutlined,
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -53,6 +56,12 @@ const MenuBar = () => {
       Klinikler: <BankOutlined />,
       "Admin Yönetimi": <UserOutlined />,
       "Hasta Yönetimi": <FaHospitalUser />,
+      "Doktor Profili": <UserAddOutlined />,
+      "Reçete Yönetimi": <FormOutlined  />,
+      "Randevu Yönetimi": <CalendarOutlined />,
+      "Hasta Geçmişi": <TeamOutlined />,
+      "Hasta Profili": <UserOutlined />,
+      "Tedavi Paneli": < HeartOutlined/>,
 
     };
     return icons[title] || <FileTextOutlined />;
@@ -162,25 +171,11 @@ const MenuBar = () => {
                 key: item.link,
                 icon: getIcon(item.title),
                 label: item.title,
-                style: {
-                  margin: "4px 0",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  backgroundColor: selectedKeys.includes(item.link)
-                    ? "#e0f2fe"
-                    : "transparent",
-                  color: selectedKeys.includes(item.link)
-                    ? "#0369a1"
-                    : "#475569",
-                  fontWeight: selectedKeys.includes(item.link) ? "600" : "500",
-                  fontSize: "14px",
-                  transition: "all 0.3s ease",
-                  border: selectedKeys.includes(item.link)
-                    ? "1px solid #bae6fd"
-                    : "1px solid transparent",
-                  position: "relative",
-                  overflow: "hidden",
-                },
+                className: `flex items-center p-3 rounded-lg transition-all duration-300 ${
+                  selectedKeys.includes(item.link)
+                    ? "bg-blue-100 text-blue-700 font-semibold"
+                    : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                }`,
               }))}
             />
           </div>

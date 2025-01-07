@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Tag, Button, Modal, Input, Select } from 'antd';
+import { Table, Card, Tag, Button, Modal, Input, Select, Pagination } from 'antd';
 import { Calendar, Search, Filter } from 'lucide-react';
+import { useMediaQuery } from 'react-responsive';
 import axios from 'axios';
 import { getAuthHeader } from '../../services/auth-header';
 import { config } from '../../helpers/config';
@@ -15,6 +16,9 @@ const PatientPrescriptions = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const isMobile = useMediaQuery({ maxWidth: 768 });
   const BASE_URL = config.api.baseUrl;
   const patientId = useSelector(state => state.auth.user.id.toString());
 
@@ -137,10 +141,16 @@ const PatientPrescriptions = () => {
     expired: prescriptions.filter(p => p.status === 'EXPIRED').length,
   };
 
+  // Pagination için veri hesaplama
+  const paginatedData = getFilteredPrescriptions().slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
     <div className="space-y-6">
       {/* İstatistikler */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-3 gap-6'}`}>
         <Card className="bg-white shadow-sm">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{stats.active}</div>
@@ -162,19 +172,19 @@ const PatientPrescriptions = () => {
       </div>
 
       {/* Filtreler */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className={`${isMobile ? 'flex flex-col space-y-4' : 'flex items-center'} gap-4`}>
         <Input
           placeholder="Doktor veya Tanı Ara"
           prefix={<Search className="w-4 h-4 text-gray-400" />}
           value={searchText}
           onChange={e => setSearchText(e.target.value)}
-          className="flex-1"
+          className={`${isMobile ? 'w-full' : 'flex-1'}`}
         />
         <Select
           placeholder="Durum Filtrele"
           value={filterStatus}
           onChange={setFilterStatus}
-          className="w-full sm:w-48"
+          className={`${isMobile ? 'w-full' : 'w-48'}`}
           suffixIcon={<Filter className="w-4 h-4" />}
         >
           <Select.Option value="all">Tümü</Select.Option>
@@ -184,56 +194,84 @@ const PatientPrescriptions = () => {
         </Select>
       </div>
 
-      {/* Reçete Tablosu ve Kartlar */}
-      <div className="block md:hidden">
-        {/* Kartlar */}
-        {getFilteredPrescriptions().map(prescription => (
-          <Card key={prescription.id} className="bg-white shadow-sm mb-4">
-            <div className="p-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="font-medium text-lg">{prescription.doctorName}</div>
-                  <div className="text-sm text-gray-500">{prescription.department}</div>
+      {/* Reçete Listesi */}
+      {isMobile ? (
+        <div className="space-y-4">
+          {paginatedData.map(prescription => (
+            <Card key={prescription.id} className="bg-white shadow-sm">
+              <div className="space-y-4">
+                {/* Doktor Bilgileri */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-medium">{prescription.doctorName}</div>
+                    <div className="text-sm text-gray-500">{prescription.department}</div>
+                  </div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(prescription.status)}`}>
+                    {getStatusText(prescription.status)}
+                  </span>
                 </div>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(prescription.status)}`}>
-                  {getStatusText(prescription.status)}
-                </span>
-              </div>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">Tanı: {prescription.diagnosis}</p>
-                <p className="text-sm text-gray-500">Tarih: {moment(prescription.prescriptionDate).format('DD.MM.YYYY')}</p>
-              </div>
-              <Button
-                type="link"
-                onClick={() => {
-                  setSelectedPrescription(prescription);
-                  setViewModalVisible(true);
-                }}
-                className="mt-2"
-              >
-                Detay
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
 
-      <div className="hidden md:block">
-        {/* Reçete Tablosu */}
+                {/* Reçete Detayları */}
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{moment(prescription.prescriptionDate).format('DD.MM.YYYY')}</span>
+                  </div>
+                  <div>
+                    <Tag className="rounded-full">{prescription.diagnosis}</Tag>
+                  </div>
+                </div>
+
+                {/* İşlem Butonu */}
+                <div className="flex justify-end pt-2 border-t">
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      setSelectedPrescription(prescription);
+                      setViewModalVisible(true);
+                    }}
+                  >
+                    Detay
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+
+          {/* Mobil Pagination */}
+          <div className="flex justify-center mt-6">
+            <Pagination
+              current={currentPage}
+              total={getFilteredPrescriptions().length}
+              pageSize={pageSize}
+              onChange={setCurrentPage}
+              size="small"
+              showSizeChanger={false}
+              showTotal={(total) => (
+                <span className="text-sm text-gray-500">
+                  Toplam {total} reçete
+                </span>
+              )}
+            />
+          </div>
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={getFilteredPrescriptions()}
           rowKey="id"
           loading={loading}
           pagination={{
+            current: currentPage,
             total: getFilteredPrescriptions().length,
-            pageSize: 10,
+            pageSize: pageSize,
+            onChange: setCurrentPage,
             showSizeChanger: true,
             showTotal: (total) => `Toplam ${total} reçete`,
           }}
           className="bg-white shadow-sm rounded-lg"
         />
-      </div>
+      )}
 
       {/* Detay Modalı */}
       <Modal
@@ -323,7 +361,7 @@ const PatientPrescriptions = () => {
 };
 
 PatientPrescriptions.propTypes = {
-  patientId: PropTypes.string.isRequired,
+  patientId: PropTypes.string,
 };
 
 export default PatientPrescriptions;
