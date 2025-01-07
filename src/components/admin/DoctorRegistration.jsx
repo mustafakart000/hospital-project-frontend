@@ -9,6 +9,8 @@ import {
   Typography,
   Col,
   Row,
+  Input,
+  Select
 } from "antd";
 import moment from "moment";
 import toast from "react-hot-toast";
@@ -19,10 +21,10 @@ import { createDoctor } from "../../services/doctor-service";
 import "./floating-label.css";
 import TcInput from "../common/tc-input";
 import CustomInput from "../common/custom-input";
-import BloodTypeSelector from "../common/blood-type-selector";
 import PhoneInput from "../common/phone-input";
 import SelectApi from "../common/select-api";
 import PropTypes from "prop-types";
+import { EyeTwoTone, EyeInvisibleTwoTone } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -256,14 +258,19 @@ const DoctorRegistration = ( { setActiveTab } ) => {
                   }
                   help={errors.unvan && touched.unvan ? errors.unvan : null}
                 >
-                  <CustomInput
+                  <Select
                     id="unvan"
-                    label="Unvan"
-                    onChange={(e) => setFieldValue("unvan", e.target.value)}
-                    onBlur={() => setFieldTouched("unvan", true)}
-                    value={values.unvan}
                     className="w-full"
-                  />
+                    placeholder="Unvan"
+                    onChange={(value) => setFieldValue('unvan', value)}
+                    onBlur={() => setFieldTouched('unvan', true)}
+                    value={values.unvan}
+                  >
+                    <Select.Option value="" disabled>Unvan</Select.Option>
+                    <Select.Option value="Dr">Dr</Select.Option>
+                    <Select.Option value="Doç">Doç</Select.Option>
+                    <Select.Option value="Prof">Prof</Select.Option>
+                  </Select>
                 </AntdForm.Item>
               </Col>
 
@@ -322,7 +329,10 @@ const DoctorRegistration = ( { setActiveTab } ) => {
                   <PhoneInput
                     name="telefon"
                     placeholder="Telefon"
-                    onChange={(e) => setFieldValue("telefon", e.target.value)}
+                    onChange={(e) => {
+                      const cleanNumber = e.target.value.replace(/\s/g, '');
+                      setFieldValue("telefon", cleanNumber);
+                    }}
                     onBlur={() => setFieldTouched("telefon", true)}
                     value={values.telefon}
                     className="w-full"
@@ -332,45 +342,52 @@ const DoctorRegistration = ( { setActiveTab } ) => {
 
               {/* Doğum Tarihi ve Kan Grubu */}
               <Col xs={24} sm={12}>
-                <AntdForm.Item
-                  className="w-full"
-                  validateStatus={
-                    errors.birthDate && touched.birthDate ? "error" : "success"
-                  }
-                  help={
-                    errors.birthDate && touched.birthDate
-                      ? errors.birthDate
-                      : null
-                  }
-                >
+                <div className="mb-2">
+                  <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">
+                    Doğum Tarihi
+                  </label>
                   <DatePicker
-                    showLabel={true}
-                    label="Doğum Tarihi"
-                    placeholder="Doğum Tarihi"
+                    id="birthDate"
+                    placeholder="Select date"
                     onChange={(date) => setFieldValue("birthDate", date)}
                     onBlur={() => setFieldTouched("birthDate", true)}
                     value={values.birthDate ? moment(values.birthDate) : null}
-                    className="w-full h-9 border-gray-400 focus:border-blue-500 focus:ring-0"
+                    className="w-full h-9"
+                    disabledDate={(current) => current && current > moment().endOf('day')}
                   />
-                </AntdForm.Item>
+                  {touched.birthDate && errors.birthDate && (
+                    <div className="text-red-500 text-sm mt-1">{errors.birthDate}</div>
+                  )}
+                </div>
               </Col>
 
               <Col xs={24} sm={12}>
-                <AntdForm.Item
-                  className="w-full"
-                  validateStatus={
-                    errors.kanGrubu && touched.kanGrubu ? "error" : "success"
-                  }
-                  help={
-                    errors.kanGrubu && touched.kanGrubu ? errors.kanGrubu : null
-                  }
-                >
-                  <BloodTypeSelector
-                    value={values.kanGrubu}
-                    onChange={(newValue) => setFieldValue("kanGrubu", newValue)}
+                <div className="mb-2">
+                  <label htmlFor="kanGrubu" className="block text-sm font-medium text-gray-700 mb-1">
+                    Kan Grubu
+                  </label>
+                  <Select
+                    id="kanGrubu"
                     className="w-full"
-                  />
-                </AntdForm.Item>
+                    placeholder="Seçiniz"
+                    onChange={(value) => setFieldValue('kanGrubu', value)}
+                    onBlur={() => setFieldTouched('kanGrubu', true)}
+                    value={values.kanGrubu}
+                  >
+                    <Select.Option value="">Seçiniz</Select.Option>
+                    <Select.Option value="A+">A+</Select.Option>
+                    <Select.Option value="A-">A-</Select.Option>
+                    <Select.Option value="B+">B+</Select.Option>
+                    <Select.Option value="B-">B-</Select.Option>
+                    <Select.Option value="AB+">AB+</Select.Option>
+                    <Select.Option value="AB-">AB-</Select.Option>
+                    <Select.Option value="0+">0+</Select.Option>
+                    <Select.Option value="0-">0-</Select.Option>
+                  </Select>
+                  {touched.kanGrubu && errors.kanGrubu && (
+                    <div className="text-red-500 text-sm mt-1">{errors.kanGrubu}</div>
+                  )}
+                </div>
               </Col>
 
               {/* Adres - Tam Genişlik */}
@@ -404,14 +421,14 @@ const DoctorRegistration = ( { setActiveTab } ) => {
                     errors.password && touched.password ? errors.password : null
                   }
                 >
-                  <CustomInput
+                  <Input.Password
                     id="password"
-                    label="Şifre"
-                    type="password"
+                    placeholder="Şifre"
                     onChange={(e) => setFieldValue("password", e.target.value)}
                     onBlur={() => setFieldTouched("password", true)}
                     value={values.password}
-                    className="w-full"
+                    className="w-full h-9"
+                    iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleTwoTone />)}
                   />
                 </AntdForm.Item>
               </Col>
@@ -430,16 +447,14 @@ const DoctorRegistration = ( { setActiveTab } ) => {
                       : null
                   }
                 >
-                  <CustomInput
+                  <Input.Password
                     id="confirmPassword"
-                    label="Şifre Tekrar"
-                    type="password"
-                    onChange={(e) =>
-                      setFieldValue("confirmPassword", e.target.value)
-                    }
+                    placeholder="Şifre Tekrar"
+                    onChange={(e) => setFieldValue("confirmPassword", e.target.value)}
                     onBlur={() => setFieldTouched("confirmPassword", true)}
                     value={values.confirmPassword}
-                    className="w-full"
+                    className="w-full h-9"
+                    iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleTwoTone />)}
                   />
                 </AntdForm.Item>
               </Col>

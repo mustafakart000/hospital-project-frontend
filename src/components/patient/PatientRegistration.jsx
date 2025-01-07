@@ -1,7 +1,8 @@
 import React from 'react';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { Button, Col, Row, Typography, Select, DatePicker, Form as AntdForm } from 'antd';
+import { Button, Col, Row, Typography, Select, DatePicker, Form as AntdForm, Input } from 'antd';
+import { EyeTwoTone, EyeInvisibleTwoTone } from "@ant-design/icons";
 import CustomInput from '../common/custom-input';
 import PropTypes from 'prop-types';
 import { createPatient } from '../../services/patient-service';
@@ -15,7 +16,12 @@ const validationSchema = Yup.object({
   ad: Yup.string().required('Ad zorunludur'),
   soyad: Yup.string().required('Soyad zorunludur'),
   username: Yup.string().required('Kullanıcı adı zorunludur'),
-  password: Yup.string().required('Şifre zorunludur'),
+  password: Yup.string()
+    .min(6, "Şifre en az 6 karakter olmalıdır")
+    .required('Şifre zorunludur'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password"), null], "Şifreler eşleşmiyor")
+    .required("Şifre tekrarı zorunludur"),
   email: Yup.string().email('Geçerli bir email giriniz').required('Email zorunludur'),
   telefon: Yup.string().matches(/^[0-9]{10,11}$/, 'Geçerli bir telefon numarası giriniz'),
   adres: Yup.string().required('Adres zorunludur'),
@@ -29,6 +35,7 @@ const initialValues = {
   soyad: '',
   username: '',
   password: '',
+  confirmPassword: '',
   email: '',
   telefon: '',
   adres: '',
@@ -84,8 +91,6 @@ const PatientRegistration = ({ setActiveTab }) => {
         onSubmit={handleSubmit}
       >
         {({ values, setFieldValue, setFieldTouched, isSubmitting, errors, touched }) => {
-          console.log('Form Errors:', errors);
-          console.log('Form Values:', values);
           return (
             <Form noValidate>
               <Row gutter={[16, 24]}>
@@ -114,29 +119,23 @@ const PatientRegistration = ({ setActiveTab }) => {
                   </div>
                 </Col>
                 <Col xs={24} sm={12}>
-                  <div className="mb-2">
-                    <CustomInput
-                      id="username"
-                      label="Kullanıcı Adı"
-                      onChange={(e) => setFieldValue('username', e.target.value)}
-                      onBlur={() => setFieldTouched('username', true)}
-                      value={values.username}
+                  <AntdForm.Item
+                    className="w-full"
+                    validateStatus={errors.tcKimlik && touched.tcKimlik ? "error" : "success"}
+                    help={errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : null}
+                  >
+                    <TcInput
+                      value={values.tcKimlik}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d{0,11}$/.test(value)) {
+                          setFieldValue("tcKimlik", value);
+                        }
+                      }}
                       className="w-full"
+                      onBlur={() => setFieldTouched("tcKimlik", true)}
                     />
-                  </div>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <div className="mb-2">
-                    <CustomInput
-                      id="password"
-                      label="Şifre"
-                      type="password"
-                      onChange={(e) => setFieldValue('password', e.target.value)}
-                      onBlur={() => setFieldTouched('password', true)}
-                      value={values.password}
-                      className="w-full"
-                    />
-                  </div>
+                  </AntdForm.Item>
                 </Col>
                 <Col xs={24} sm={12}>
                   <div className="mb-2">
@@ -167,36 +166,17 @@ const PatientRegistration = ({ setActiveTab }) => {
                     />
                   </AntdForm.Item>
                 </Col>
-                <Col xs={24}>
+                <Col xs={24} sm={12}>
                   <div className="mb-2">
                     <CustomInput
-                      id="adres"
-                      label="Adres"
-                      onChange={(e) => setFieldValue('adres', e.target.value)}
-                      onBlur={() => setFieldTouched('adres', true)}
-                      value={values.adres}
+                      id="username"
+                      label="Kullanıcı Adı"
+                      onChange={(e) => setFieldValue('username', e.target.value)}
+                      onBlur={() => setFieldTouched('username', true)}
+                      value={values.username}
                       className="w-full"
                     />
                   </div>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <AntdForm.Item
-                    className="w-full"
-                    validateStatus={errors.tcKimlik && touched.tcKimlik ? "error" : "success"}
-                    help={errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : null}
-                  >
-                    <TcInput
-                      value={values.tcKimlik}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d{0,11}$/.test(value)) {
-                          setFieldValue("tcKimlik", value);
-                        }
-                      }}
-                      className="w-full"
-                      onBlur={() => setFieldTouched("tcKimlik", true)}
-                    />
-                  </AntdForm.Item>
                 </Col>
                 <Col xs={24} sm={12}>
                   <div className="mb-2">
@@ -236,6 +216,56 @@ const PatientRegistration = ({ setActiveTab }) => {
                       <Select.Option value="0+">0+</Select.Option>
                       <Select.Option value="0-">0-</Select.Option>
                     </Select>
+                  </div>
+                </Col>
+                <Col xs={24}>
+                  <div className="mb-2">
+                    <CustomInput
+                      id="adres"
+                      label="Adres"
+                      onChange={(e) => setFieldValue('adres', e.target.value)}
+                      onBlur={() => setFieldTouched('adres', true)}
+                      value={values.adres}
+                      className="w-full"
+                    />
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                      Şifre
+                    </label>
+                    <Input.Password
+                      id="password"
+                      placeholder="Şifre"
+                      onChange={(e) => setFieldValue('password', e.target.value)}
+                      onBlur={() => setFieldTouched('password', true)}
+                      value={values.password}
+                      className="w-full h-9"
+                      iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleTwoTone />)}
+                    />
+                    {touched.password && errors.password && (
+                      <div className="text-red-500 text-sm mt-1">{errors.password}</div>
+                    )}
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div className="mb-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                      Şifre Tekrar
+                    </label>
+                    <Input.Password
+                      id="confirmPassword"
+                      placeholder="Şifre Tekrar"
+                      onChange={(e) => setFieldValue('confirmPassword', e.target.value)}
+                      onBlur={() => setFieldTouched('confirmPassword', true)}
+                      value={values.confirmPassword}
+                      className="w-full h-9"
+                      iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleTwoTone />)}
+                    />
+                    {touched.confirmPassword && errors.confirmPassword && (
+                      <div className="text-red-500 text-sm mt-1">{errors.confirmPassword}</div>
+                    )}
                   </div>
                 </Col>
                 <Col xs={24} className="mt-6">

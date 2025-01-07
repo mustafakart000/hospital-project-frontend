@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Modal, Input } from "antd";
+import { Table, Button, Space, Modal, Input, Card } from "antd";
 import { TbUserEdit } from "react-icons/tb";
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 import { deleteAdmin, getAllAdmins } from "../../services/admin-service";
 import PropTypes from 'prop-types';
+import { useMediaQuery } from 'react-responsive';
 
 const AdminTable = ({ activeTab }) => {
   const [admins, setAdmins] = useState([]);
@@ -13,29 +14,29 @@ const AdminTable = ({ activeTab }) => {
   const [filteredAdmins, setFilteredAdmins] = useState([]);
   const [selectedAdminId, setSelectedAdminId] = useState(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const isMobile = useMediaQuery({ maxWidth: 580 });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDoctors = async () => {
+    const fetchAdmins = async () => {
       try {
         const response = await getAllAdmins();
         const formattedAdmins = response.map((admin) => {
-          const { ad, soyad, phone, speciality, id } = admin;
+          const { ad, soyad, phoneNumber, id } = admin;
           return {
             name: `${ad} ${soyad}`,
-            phone,
-            speciality,
+            phone: phoneNumber,
             id: id,
           };
         });
         setAdmins(formattedAdmins);
         setFilteredAdmins(formattedAdmins);
       } catch (error) {
-        console.error("Doktorları çekerken hata oluştu:", error);
+        console.error("Adminleri çekerken hata oluştu:", error);
       }
     };
 
-    fetchDoctors();
+    fetchAdmins();
   }, [activeTab==="list"]);
 
   const handleSearch = (value) => {
@@ -71,14 +72,6 @@ const AdminTable = ({ activeTab }) => {
     }
   };
 
-  const getSpecialties = () => {
-    const specialties = [...new Set(admins.map(admin => admin.speciality))];
-    return specialties.map(specialty => ({
-      text: specialty,
-      value: specialty,
-    }));
-  };
-
   const columns = [
     {
       title: "İsim",
@@ -95,21 +88,11 @@ const AdminTable = ({ activeTab }) => {
       onFilter: (value, record) => record.id === value,
     },
     {
-      title: "Uzmanlık",
-      dataIndex: "speciality",
-      key: "specialty",
-      width: 150,
-      responsive: ["sm", "md", "lg"],
-      filters: getSpecialties(),
-      onFilter: (value, record) => record.speciality === value,
-      sorter: (a, b) => a.speciality.localeCompare(b.speciality),
-    },
-    {
       title: "Telefon",
       dataIndex: "phone",
       key: "phone",
       width: 150,
-      responsive: ["md", "lg"],
+      responsive: isMobile ? [] : ["xs", "sm", "md", "lg"],
       sorter: (a, b) => a.phone.localeCompare(b.phone),
     },
     {
@@ -151,13 +134,50 @@ const AdminTable = ({ activeTab }) => {
         onChange={(e) => handleSearch(e.target.value)}
         style={{ marginBottom: 16, width: 200 }}
       />
-      <Table
-        columns={columns}
-        dataSource={filteredAdmins}
-        rowKey={(record) => record.id}
-        pagination={{ pageSize: 10 }}
-        scroll={{ x: true }}
-      />
+      {isMobile ? (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredAdmins.map((admin) => (
+            <Card key={admin.id} size="small" className="shadow-sm">
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-lg">{admin.name}</span>
+                  <Space size="small">
+                    <Button
+                      type="default"
+                      size="small"
+                      className="text-emerald-500 hover:text-yellow-400 hover:border-emerald-600"
+                      onClick={() => handleEdit(admin)}
+                    >
+                      <TbUserEdit />
+                    </Button>
+                    <Button
+                      type="default"
+                      size="small"
+                      danger
+                      className="text-red-500 hover:text-yellow-400 hover:border-red-600"
+                      onClick={() => showDeleteConfirm(admin.id)}
+                    >
+                      Sil
+                    </Button>
+                  </Space>
+                </div>
+                <div className="text-gray-600">
+                  <span className="font-medium">Telefon: </span>
+                  {admin.phone}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={filteredAdmins}
+          rowKey={(record) => record.id}
+          pagination={{ pageSize: 10 }}
+          scroll={{ x: 580 }}
+        />
+      )}
 
       <Modal
         title={<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
