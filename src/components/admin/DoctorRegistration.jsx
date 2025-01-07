@@ -488,7 +488,7 @@ const DoctorRegistration = ( { setActiveTab } ) => {
 };
 
 DoctorRegistration.propTypes = {
-  setActiveTab: PropTypes.func.isRequired,
+  setActiveTab: PropTypes.func,
 };
 
 export default DoctorRegistration;

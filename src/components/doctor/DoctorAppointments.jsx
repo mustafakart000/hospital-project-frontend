@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Form, Select, DatePicker, TimePicker, Table, Dropdown } from 'antd';
-import {  MoreVertical } from 'lucide-react';
+import { Button, Modal, Select, Table, Card, Pagination } from 'antd';
+import { Calendar, Clock, User } from 'lucide-react';
+import { useMediaQuery } from 'react-responsive';
 import { getAuthHeader } from '../../services/auth-header';
 import { getDoctorReservations, updateReservation } from '../../services/reservation-service';
 import { useSelector } from 'react-redux';
-import CreateReservationForm from '../patient/CreateReservationForm';
-import moment from 'moment';
 
 const DoctorAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const doctorId = useSelector(state => state.auth.user.id.toString());
-  const [isFormVisible, setFormVisible] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState('today');
+  const [currentPage, setCurrentPage] = useState(1);
+  const doctorId = useSelector(state => state.auth.user.id.toString());
+  const isMobile = useMediaQuery({ maxWidth: 610 });
+  const pageSize = 10;
 
   const fetchAppointments = async () => {
     try {
@@ -80,27 +79,6 @@ const DoctorAppointments = () => {
       'COMPLETED': 'Tamamlandı'
     };
     return texts[status] || status;
-  };
-
-  const handleUpdate = async (values) => {
-    try {
-      setLoading(true);
-      await updateReservation(selectedAppointment.id, {
-        ...values,
-        reservationDate: values.reservationDate.format('YYYY-MM-DD'),
-        reservationTime: values.reservationTime.format('HH:mm')
-      }, {
-        headers: getAuthHeader()
-      });
-      
-      await fetchAppointments();
-      setEditModalVisible(false);
-      form.resetFields();
-    } catch (error) {
-      console.error('Randevu güncellenirken hata oluştu:', error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleCancel = async () => {
@@ -175,68 +153,6 @@ const DoctorAppointments = () => {
           </div>
         </div>
       )}
-    </Modal>
-  );
-
-  // Edit Modal Component
-  const EditModal = () => (
-    <Modal
-      title="Randevu Düzenle"
-      open={editModalVisible}
-      onCancel={() => {
-        setEditModalVisible(false);
-        form.resetFields();
-      }}
-      footer={[
-        <Button key="cancel" onClick={() => {
-          setEditModalVisible(false);
-          form.resetFields();
-        }}>
-          İptal
-        </Button>,
-        <Button 
-          key="submit" 
-          type="primary" 
-          loading={loading}
-          onClick={() => form.submit()}
-        >
-          Güncelle
-        </Button>
-      ]}
-    >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleUpdate}
-      >
-        <Form.Item
-          name="reservationDate"
-          label="Randevu Tarihi"
-          rules={[{ required: true, message: 'Lütfen tarih seçiniz' }]}
-        >
-          <DatePicker className="w-full" />
-        </Form.Item>
-
-        <Form.Item
-          name="reservationTime"
-          label="Randevu Saati"
-          rules={[{ required: true, message: 'Lütfen saat seçiniz' }]}
-        >
-          <TimePicker format="HH:mm" className="w-full" />
-        </Form.Item>
-
-        <Form.Item
-          name="status"
-          label="Durum"
-          rules={[{ required: true, message: 'Lütfen durum seçiniz' }]}
-        >
-          <Select>
-            <Select.Option value="CONFIRMED">Onaylandı</Select.Option>
-            <Select.Option value="PENDING">Beklemede</Select.Option>
-            <Select.Option value="COMPLETED">Tamamlandı</Select.Option>
-          </Select>
-        </Form.Item>
-      </Form>
     </Modal>
   );
 
@@ -333,19 +249,21 @@ const DoctorAppointments = () => {
       title: 'İşlemler',
       key: 'actions',
       render: (_, record) => (
-        <Dropdown
-          menu={{ 
-            items: [
-              { key: '1', label: 'Görüntüle' },
-              { key: '2', label: 'Düzenle' },
-              { key: '3', label: 'İptal Et', danger: true }
-            ],
-            onClick: ({ key }) => handleMenuClick(key, record)
-          }}
-          trigger={['click']}
-        >
-          <Button type="text" icon={<MoreVertical className="w-4 h-4" />} />
-        </Dropdown>
+        <div className="flex space-x-2">
+          <Button 
+            size="small"
+            onClick={() => handleMenuClick('1', record)}
+          >
+            Görüntüle
+          </Button>
+          <Button 
+            size="small"
+            danger
+            onClick={() => handleMenuClick('3', record)}
+          >
+            İptal Et
+          </Button>
+        </div>
       ),
     },
   ];
@@ -356,14 +274,6 @@ const DoctorAppointments = () => {
       case '1':
         setViewModalVisible(true);
         break;
-      case '2':
-        form.setFieldsValue({
-          ...record,
-          reservationDate: moment(record.reservationDate),
-          reservationTime: moment(record.reservationTime, 'HH:mm')
-        });
-        setEditModalVisible(true);
-        break;
       case '3':
         setCancelModalVisible(true);
         break;
@@ -373,110 +283,108 @@ const DoctorAppointments = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Randevu Listesi</h3>
-          <p className="text-sm text-gray-500">
-            {new Date().toLocaleDateString('tr-TR', { 
-              day: 'numeric', 
-              month: 'long', 
-              year: 'numeric' 
-            })}
-          </p>
-        </div>
-   
-      </div>
-
-       {/* CreateReservationForm bileşeni */}
-       <CreateReservationForm 
-        visible={isFormVisible}
-        onCancel={() => setFormVisible(false)}
-        onSubmit={(data) => {
-          console.log('Form verileri:', data);
-          setFormVisible(false);
-        }}
-      />
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 pb-4">
-        <Button className={`${selectedFilter === 'today' ? 'bg-blue-600 text-white font-bold' : 'bg-white text-gray-700'}`} onClick={() => setSelectedFilter('today')}>Bugün</Button>
-        <Button className={`${selectedFilter === 'week' ? 'bg-blue-600 text-white font-bold' : 'bg-white text-gray-700'}`} onClick={() => setSelectedFilter('week')}>Bu Hafta</Button>
-        <Button className={`${selectedFilter === 'month' ? 'bg-blue-600 text-white font-bold' : 'bg-white text-gray-700'}`} onClick={() => setSelectedFilter('month')}>Bu Ay</Button>
-        <Button className={`${selectedFilter === 'all' ? 'bg-blue-600 text-white font-bold' : 'bg-white text-gray-700'}`} onClick={() => setSelectedFilter('all')}>Tüm Randevular</Button>
-      </div>
-
-      {/* Table */}
-      <style>{`
-        @media (max-width: 610px) {
-          .responsive-table {
-            display: none;
-          }
-          .card-view {
-            display: block;
-          }
-        }
-        @media (min-width: 611px) {
-          .responsive-table {
-            display: block;
-          }
-          .card-view {
-            display: none;
-          }
-        }
-        .card {
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 16px;
-          margin-bottom: 16px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-      `}</style>
-      <Table
-        columns={columns}
-        dataSource={appointments || []}
-        rowKey="id"
-        loading={loading}
-        pagination={{
-          total: appointments ? appointments.length : 0,
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Toplam ${total} randevu`,
-        }}
-        className="shadow-sm rounded-lg table-tight compact overflow-x-auto responsive-table"
-        style={{ tableLayout: 'auto', width: '100%', padding: '0', margin: '0' }}
-      />
-
-      <div className="card-view hidden">
-        {appointments.map((appointment) => (
-          <div key={appointment.id} className="card p-4 bg-white shadow-md rounded-lg">
-            <div className="flex justify-between items-center mb-2">
-              <div className="text-lg font-semibold">{`${appointment.patientName} ${appointment.patientSurname}`}</div>
-              <Dropdown
-                menu={{ 
-                  items: [
-                    { key: '1', label: 'Görüntüle' },
-                    { key: '2', label: 'Düzenle' },
-                    { key: '3', label: 'İptal Et', danger: true }
-                  ],
-                  onClick: ({ key }) => handleMenuClick(key, appointment)
-                }}
-                trigger={['click']}
-              >
-                <Button type="text" icon={<MoreVertical className="w-4 h-4" />} />
-              </Dropdown>
-            </div>
-            <div className="text-sm text-gray-500 mb-1">Tarih: {appointment.reservationDate}</div>
-            <div className="text-sm text-gray-500 mb-1">Saat: {appointment.reservationTime}</div>
-            <div className="text-sm text-gray-500 mb-1">Durum: <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>{getStatusText(appointment.status)}</span></div>
+      <div className={`${isMobile ? 'flex flex-col space-y-4' : 'flex justify-between items-center'}`}>
+        <div className="flex items-center space-x-3">
+          <Calendar className="w-6 h-6 text-blue-600" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Randevular</h3>
+            <p className="text-sm text-gray-500">Randevu listesi ve detaylar</p>
           </div>
-        ))}
+        </div>
+        <Select
+          value={selectedFilter}
+          onChange={setSelectedFilter}
+          className={`${isMobile ? 'w-full' : 'w-40'}`}
+        >
+          <Select.Option value="today">Bugün</Select.Option>
+          <Select.Option value="week">Bu Hafta</Select.Option>
+          <Select.Option value="month">Bu Ay</Select.Option>
+        </Select>
       </div>
+
+      {/* Appointments List */}
+      {isMobile ? (
+        <div className="space-y-4">
+          {appointments.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((appointment) => (
+            <Card key={appointment.id} className="bg-white shadow-sm">
+              <div className="space-y-4">
+                {/* Hasta Bilgileri */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <User className="w-5 h-5 text-gray-400" />
+                    <div>
+                      <p className="font-medium">{`${appointment.patientName} ${appointment.patientSurname}`}</p>
+                      <p className="text-sm text-gray-500">{appointment.speciality}</p>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                    {getStatusText(appointment.status)}
+                  </span>
+                </div>
+
+                {/* Randevu Zamanı */}
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{appointment.reservationDate}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{appointment.reservationTime}</span>
+                  </div>
+                </div>
+
+                {/* İşlem Butonları */}
+                <div className="flex justify-end space-x-2 pt-2 border-t">
+                  <Button size="small" onClick={() => handleMenuClick('1', appointment)}>
+                    Görüntüle
+                  </Button>
+                  <Button 
+                    size="small" 
+                    danger 
+                    onClick={() => handleMenuClick('3', appointment)}
+                  >
+                    İptal Et
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+
+          {/* Mobile Pagination */}
+          <div className="flex justify-center mt-6">
+            <Pagination
+              current={currentPage}
+              total={appointments.length}
+              pageSize={pageSize}
+              onChange={setCurrentPage}
+              size="small"
+              showSizeChanger={false}
+            />
+          </div>
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={appointments}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            current: currentPage,
+            total: appointments.length,
+            pageSize: pageSize,
+            onChange: setCurrentPage,
+            showSizeChanger: true,
+            showTotal: (total) => `Toplam ${total} randevu`
+          }}
+          className="bg-white shadow-sm rounded-lg"
+        />
+      )}
 
       {/* Modals */}
       <ViewModal />
-      <EditModal />
       <CancelModal />
     </div>
   );

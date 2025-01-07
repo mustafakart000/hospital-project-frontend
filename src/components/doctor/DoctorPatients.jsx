@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Card, Input, Button, Tag, Avatar, Select } from 'antd';
+import React, { useState } from 'react';
+import { Table, Card, Input, Button, Tag, Avatar, Select, Pagination } from 'antd';
 import { Search, User, Calendar, Phone, Mail, Clock, ArrowUpCircle } from 'lucide-react';
+import { useMediaQuery } from 'react-responsive';
 
 const { Option } = Select;
 
 const DoctorPatients = () => {
-  const [loading] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 745);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth < 745);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const isMobile = useMediaQuery({ maxWidth: 745 });
+  const pageSize = 10;
 
   // Sample data - replace with actual API data
   const patients = [
@@ -45,6 +38,11 @@ const DoctorPatients = () => {
     },
     // Add more sample data
   ];
+
+  const paginatedData = patients.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const getStatusColor = (status) => {
     const colors = {
@@ -143,9 +141,9 @@ const DoctorPatients = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className={`${isMobile ? 'flex flex-col space-y-4' : 'flex justify-between items-center'}`}>
         <div className="flex items-center space-x-3">
           <ArrowUpCircle className="w-6 h-6 text-blue-600" />
           <div>
@@ -164,7 +162,7 @@ const DoctorPatients = () => {
 
       {/* Filters */}
       <Card className="bg-white shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-3 gap-4'}`}>
           <Input
             placeholder="Hasta Ara (Ad, Email, Telefon)"
             prefix={<Search className="w-4 h-4 text-gray-400" />}
@@ -184,7 +182,7 @@ const DoctorPatients = () => {
       </Card>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4`}>
         <Card className="bg-white shadow-sm">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">156</div>
@@ -197,74 +195,100 @@ const DoctorPatients = () => {
             <div className="text-sm text-gray-500">Aktif Hasta</div>
           </div>
         </Card>
-        <Card className="bg-white shadow-sm">
+        <Card className={`bg-white shadow-sm ${isMobile ? 'col-span-2' : ''}`}>
           <div className="text-center">
             <div className="text-2xl font-bold text-yellow-600">12</div>
             <div className="text-sm text-gray-500">Bugünkü Randevu</div>
           </div>
         </Card>
-        <Card className="bg-white shadow-sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">89%</div>
-            <div className="text-sm text-gray-500">Memnuniyet Oranı</div>
-          </div>
-        </Card>
+        {!isMobile && (
+          <Card className="bg-white shadow-sm">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">89%</div>
+              <div className="text-sm text-gray-500">Memnuniyet Oranı</div>
+            </div>
+          </Card>
+        )}
       </div>
 
-      {/* Table or Cards */}
-      {isMobileView ? (
-        <div className="grid grid-cols-1 gap-4">
-          {patients.map((patient) => (
+      {/* Patients List */}
+      {isMobile ? (
+        <div className="space-y-4">
+          {paginatedData.map((patient) => (
             <Card key={patient.id} className="bg-white shadow-sm">
-              <div className="flex items-center space-x-3">
-                <Avatar icon={<User className="w-4 h-4" />} className="bg-blue-100 text-blue-600" />
-                <div>
-                  <div className="font-medium">{patient.name}</div>
-                  <div className="text-sm text-gray-500">
-                    {patient.age} yaş, {patient.gender}
+              <div className="space-y-4">
+                {/* Hasta Başlığı */}
+                <div className="flex items-center space-x-3">
+                  <Avatar icon={<User className="w-4 h-4" />} className="bg-blue-100 text-blue-600" />
+                  <div>
+                    <div className="font-medium">{patient.name}</div>
+                    <div className="text-sm text-gray-500">
+                      {patient.age} yaş, {patient.gender}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="space-y-1 mt-2">
-                <div className="flex items-center space-x-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
-                  <span>{patient.phone}</span>
+
+                {/* İletişim Bilgileri */}
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Phone className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{patient.phone}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Mail className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{patient.email}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{patient.lastVisit}</span>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                  <span>{patient.email}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span>{patient.lastVisit}</span>
-                </div>
-                <div className="flex flex-wrap gap-1">
+
+                {/* Durumlar */}
+                <div className="flex flex-wrap gap-2">
                   {patient.conditions.map((condition) => (
                     <Tag key={condition} className="rounded-full">
                       {condition}
                     </Tag>
                   ))}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span>{patient.visits} ziyaret</span>
+
+                {/* Alt Bilgiler */}
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{patient.visits} ziyaret</span>
+                  </div>
+                  <Tag color={patient.status === 'active' ? 'success' : 'default'}>
+                    {patient.status === 'active' ? 'Aktif' : 'İnaktif'}
+                  </Tag>
                 </div>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
-                  {getStatusText(patient.status)}
-                </span>
               </div>
             </Card>
           ))}
+
+          {/* Mobile Pagination */}
+          <div className="flex justify-center mt-6">
+            <Pagination
+              current={currentPage}
+              total={patients.length}
+              pageSize={pageSize}
+              onChange={setCurrentPage}
+              size="small"
+              showSizeChanger={false}
+            />
+          </div>
         </div>
       ) : (
         <Table
           columns={columns}
           dataSource={patients}
-          loading={loading}
           rowKey="id"
           pagination={{
+            current: currentPage,
             total: patients.length,
-            pageSize: 10,
+            pageSize: pageSize,
+            onChange: setCurrentPage,
             showSizeChanger: true,
             showTotal: (total) => `Toplam ${total} hasta`
           }}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Avatar, Button, Form, Input, DatePicker, Select, Modal } from 'antd';
 import { User, Mail, Phone, MapPin, Heart, AlertTriangle, Clock, Edit } from 'lucide-react';
+import { useMediaQuery } from 'react-responsive';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import { getPatientProfile, updatePatientProfile } from '../../services/patient-service';
@@ -13,7 +14,8 @@ const PatientProfile = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [form] = Form.useForm();
   const patientId = useSelector(state => state.auth.user.id.toString());
-
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+  const isTablet = useMediaQuery({ maxWidth: 1510 });
 
   const fetchPatientProfile = async () => {
     try {
@@ -78,8 +80,8 @@ const PatientProfile = () => {
 
   return (
     <div className="space-y-6 px-4 md:px-0">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+      {/* Header - Mobilde gizlenecek */}
+      <div className={`${isMobile ? 'hidden' : 'flex flex-col md:flex-row items-start md:items-center justify-between mb-6'}`}>
         <h2 className="text-xl font-semibold text-gray-900 mb-4 md:mb-0">Profil Bilgilerim</h2>
         <Button
           type="primary"
@@ -91,29 +93,40 @@ const PatientProfile = () => {
             });
             setIsEditModalVisible(true);
           }}
-          className="bg-blue-600"
+          className="bg-blue-600 w-full md:w-auto"
         >
           Profili Düzenle
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Ana Grid */}
+      <div className={`grid gap-6 ${
+        isMobile ? 'grid-cols-1' : 
+        isTablet ? 'grid-cols-2' : 
+        'grid-cols-3'
+      }`}>
         {/* Kişisel Bilgiler */}
         <Card title="Kişisel Bilgiler" className="shadow-sm">
           <div className="space-y-4">
             <div className="flex flex-col md:flex-row items-center space-x-0 md:space-x-4 mb-6">
-              <Avatar size={64} icon={<User />} className="bg-blue-100 text-blue-600 mb-4 md:mb-0" />
+              <Avatar 
+                size={64} 
+                icon={<User />} 
+                className="bg-blue-100 text-blue-600 mb-4 md:mb-0" 
+              />
               <div>
-                <h3 className="text-lg font-medium text-center md:text-left">{`${patient.ad} ${patient.soyad}`}</h3>
+                <h3 className="text-lg font-medium text-center md:text-left">
+                  {`${patient?.ad} ${patient?.soyad}`}
+                </h3>
               </div>
             </div>
-            <InfoItem icon={Mail} label="E-posta" value={patient.email} />
-            <InfoItem icon={Phone} label="Telefon" value={patient.telefon} />
-            <InfoItem icon={MapPin} label="Adres" value={patient.adres} />
+            <InfoItem icon={Mail} label="E-posta" value={patient?.email} />
+            <InfoItem icon={Phone} label="Telefon" value={patient?.telefon} />
+            <InfoItem icon={MapPin} label="Adres" value={patient?.adres} />
             <InfoItem
               icon={Clock}
               label="Doğum Tarihi"
-              value={dayjs(patient.birthDate).format('DD/MM/YYYY')}
+              value={dayjs(patient?.birthDate).format('DD/MM/YYYY')}
             />
           </div>
         </Card>
@@ -121,51 +134,108 @@ const PatientProfile = () => {
         {/* Sağlık Bilgileri */}
         <Card title="Sağlık Bilgileri" className="shadow-sm">
           <div className="space-y-4">
-            <InfoItem icon={Heart} label="Kan Grubu" value={patient.kanGrubu} />
-            <InfoItem icon={AlertTriangle} label="Alerjiler" value={patient.allergies || "Belirtilmemiş"} />
-            <InfoItem icon={Clock} label="Son Muayene" value={patient.lastCheckup || "Belirtilmemiş"} />
-            <InfoItem icon={Clock} label="Tıbbi Geçmiş" value={patient.medicalHistory || "Belirtilmemiş"} />
+            <InfoItem icon={Heart} label="Kan Grubu" value={patient?.kanGrubu} />
+            <InfoItem 
+              icon={AlertTriangle} 
+              label="Alerjiler" 
+              value={patient?.allergies || "Belirtilmemiş"} 
+            />
+            <InfoItem 
+              icon={Clock} 
+              label="Son Muayene" 
+              value={patient?.lastCheckup || "Belirtilmemiş"} 
+            />
           </div>
         </Card>
+
+        {/* Mobilde görünecek Profili Düzenle butonu */}
+        {isMobile && (
+          <div className="flex justify-center">
+            <Button
+              type="primary"
+              onClick={() => {
+                form.setFieldsValue({
+                  ...patient,
+                  birthDate: dayjs(patient.birthDate, 'YYYY-MM-DD'),
+                });
+                setIsEditModalVisible(true);
+              }}
+              className="
+                bg-blue-600 
+                w-[200px]
+                h-12 
+                text-base 
+                font-medium 
+                shadow-sm 
+                hover:bg-blue-700 
+                hover:shadow
+                transition-all 
+                duration-200
+                flex 
+                items-center 
+                justify-center 
+                gap-2
+              "
+            >
+              <Edit className="w-4 h-4" />
+              <span>Profili Düzenle</span>
+            </Button>
+          </div>
+        )}
 
         {/* Tıbbi Kayıtlar */}
-        <Card title="Tıbbi Kayıtlar" className="shadow-sm">
-          <div className="space-y-4">
-            {patient.medicalRecords.map(record => (
-              <div key={record.id} className="p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-700 mb-2">{record.title}</h4>
-                <p className="text-sm text-gray-600">{record.description}</p>
-                <p className="text-sm text-gray-600">Doktor Notları: {record.doctorNotes}</p>
-                <p className="text-sm text-gray-600">Ek Bilgi: {record.additionalInfo}</p>
-                <div className="flex space-x-2 mt-2">
-                  {record.attachments && Object.entries(JSON.parse(record.attachments)).map(([key, url]) => (
-                    <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-                      {key.toUpperCase()}
-                    </a>
-                  ))}
+        <div className={`${isTablet && !isMobile ? 'col-span-2' : ''}`}>
+          <Card title="Tıbbi Kayıtlar" className="shadow-sm h-full">
+            <div className="space-y-4">
+              {patient?.medicalRecords.map(record => (
+                <div key={record.id} className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-gray-700 mb-2">{record.title}</h4>
+                  <p className="text-sm text-gray-600">{record.description}</p>
+                  <p className="text-sm text-gray-600">
+                    Doktor Notları: {record.doctorNotes}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {record.attachments && 
+                      Object.entries(JSON.parse(record.attachments)).map(([key, url]) => (
+                        <a 
+                          key={key} 
+                          href={url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline text-sm"
+                        >
+                          {key.toUpperCase()}
+                        </a>
+                      ))
+                    }
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+              ))}
+            </div>
+          </Card>
+        </div>
 
         {/* Özet Bilgiler */}
-        <Card title="Özet" className="shadow-sm">
-          <div className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-700 mb-2">Yaklaşan Randevu</h4>
-              <p className="text-sm text-blue-600">
-                {patient.reservations.length > 0 ? `${dayjs(patient.reservations[0].reservationDate).format('DD/MM/YYYY')} - ${patient.reservations[0].reservationTime}` : "Planlanmış randevu bulunmuyor"}
-              </p>
+        <div className={`${isTablet && !isMobile ? 'col-span-2' : ''}`}>
+          <Card title="Özet" className="shadow-sm h-full">
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-700 mb-2">Yaklaşan Randevu</h4>
+                <p className="text-sm text-blue-600">
+                  {patient?.reservations?.length > 0 
+                    ? `${dayjs(patient.reservations[0].reservationDate).format('DD/MM/YYYY')} - ${patient.reservations[0].reservationTime}` 
+                    : "Planlanmış randevu bulunmuyor"}
+                </p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg">
+                <h4 className="font-medium text-green-700 mb-2">Aktif Reçete</h4>
+                <p className="text-sm text-green-600">
+                  {patient?.activePrescription || "Aktif reçete bulunmuyor"}
+                </p>
+              </div>
             </div>
-            <div className="p-4 bg-green-50 rounded-lg">
-              <h4 className="font-medium text-green-700 mb-2">Aktif Reçete</h4>
-              <p className="text-sm text-green-600">
-                {patient.activePrescription || "Aktif reçete bulunmuyor"}
-              </p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       {/* Edit Modal */}
@@ -272,10 +342,6 @@ const PatientProfile = () => {
       </Modal>
     </div>
   );
-};
-
-PatientProfile.propTypes = {
-  patientId: PropTypes.string.isRequired,
 };
 
 export default PatientProfile;

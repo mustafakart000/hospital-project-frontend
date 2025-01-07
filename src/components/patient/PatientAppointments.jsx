@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Input, Select, Table } from 'antd';
-import { Calendar, Search, Filter, AlertCircle, Check, X } from 'lucide-react';
+import { Button, Modal, Input, Select, Table, Card, Pagination } from 'antd';
+import { Calendar, Search, Filter, Check, X, User, Clock } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { useMediaQuery } from 'react-responsive';
 import CreateReservationForm from './CreateReservationForm';
 import './PatientAppointments.css';
 import { getAuthHeader } from '../../services/auth-header';
@@ -18,6 +19,10 @@ const PatientAppointments = () => {
   const [isFormVisible, setFormVisible] = useState(false); // Formun görünürlüğünü tutan state
   const patientId = useSelector(state => state.auth.user.id.toString()); // Hastanın ID'sini tutan state
   const listRefreshToken = useSelector(state => state.misc.listRefreshToken);
+  const isMobile = useMediaQuery({ maxWidth: 610 });
+  const isTablet = useMediaQuery({ maxWidth: 1310 });
+  const [pageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchPatientDetails = async () => {
     // Hastanın randevu detaylarını API'den çeker ve state'e kaydeder.
@@ -139,6 +144,12 @@ const PatientAppointments = () => {
     fetchPatientDetails(); // Randevuların güncellenmesi için fetchPatientDetails fonksiyonunu çağır
   };
 
+  // Pagination için veri hesaplama
+  const paginatedData = getFilteredAppointments().slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   // Tablo sütunlarını tanımlayan yapı
   const columns = [
     {
@@ -203,10 +214,75 @@ const PatientAppointments = () => {
     },
   ];
 
+  // Modal bileşenleri
+  const ViewModal = () => {
+    return (
+      <Modal
+        title="Randevu Detayları"
+        open={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        footer={[
+          <Button key="back" onClick={() => setViewModalVisible(false)}>
+            Kapat
+          </Button>
+        ]}
+      >
+        {selectedAppointment && (
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-500">Doktor</p>
+              <p className="font-medium">{`${selectedAppointment.doctorName} ${selectedAppointment.doctorSurname}`}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Uzmanlık</p>
+              <p className="font-medium">{selectedAppointment.speciality}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Tarih ve Saat</p>
+              <p className="font-medium">{`${selectedAppointment.reservationDate} ${selectedAppointment.reservationTime}`}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Durum</p>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedAppointment.status)}`}>
+                {getStatusText(selectedAppointment.status)}
+              </span>
+            </div>
+          </div>
+        )}
+      </Modal>
+    );
+  };
+
+  const CancelModal = () => {
+    return (
+      <Modal
+        title="Randevu İptali"
+        open={cancelModalVisible}
+        onCancel={() => setCancelModalVisible(false)}
+        footer={[
+          <Button key="back" onClick={() => setCancelModalVisible(false)}>
+            Vazgeç
+          </Button>,
+          <Button 
+            key="submit" 
+            type="primary" 
+            danger
+            onClick={handleCancel}
+            loading={loading}
+          >
+            İptal Et
+          </Button>
+        ]}
+      >
+        <p>Bu randevuyu iptal etmek istediğinizden emin misiniz?</p>
+      </Modal>
+    );
+  };
+
   return (
     <div className="space-y-6 px-4 sm:px-6 lg:px-8">
       {/* İstatistik Kartları */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-3'} gap-4 mb-6`}>
         <div className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-blue-50">
@@ -237,7 +313,7 @@ const PatientAppointments = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className={`bg-white rounded-lg shadow-sm p-4 ${isTablet && !isMobile ? 'col-span-2' : ''}`}>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-red-50">
               <X className="w-5 h-5 text-red-600" />
@@ -254,19 +330,19 @@ const PatientAppointments = () => {
       </div>
 
       {/* Arama, Filtre ve Randevu Oluştur Butonu */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
+      <div className={`${isMobile || isTablet ? 'flex flex-col space-y-4' : 'flex items-center'} gap-4`}>
         <Input
           placeholder="Doktor veya Uzmanlık Ara"
           prefix={<Search className="w-4 h-4 text-gray-400" />}
           value={searchText}
           onChange={e => setSearchText(e.target.value)}
-          className="flex-1"
+          className={`${isMobile || isTablet ? 'w-full' : 'flex-1'}`}
         />
         <Select
           placeholder="Durum Filtrele"
           value={filterStatus}
           onChange={setFilterStatus}
-          className="w-full md:w-48"
+          className={`${isMobile || isTablet ? 'w-full' : 'w-48'}`}
           suffixIcon={<Filter className="w-4 h-4" />}
         >
           <Select.Option value="all">Tümü</Select.Option>
@@ -277,92 +353,123 @@ const PatientAppointments = () => {
         </Select>
         <Button
           type="primary"
-          className="bg-blue-500 text-white"
           onClick={handleCreateAppointment}
+          className={`
+            ${isMobile || isTablet ? 'w-[200px] mx-auto' : 'w-[180px]'}
+            bg-blue-500 hover:bg-blue-600 
+            text-white font-medium
+            shadow-sm hover:shadow
+            transition-all duration-200
+            flex items-center justify-center gap-2
+            ${isMobile ? 'py-4' : 'py-2'}
+          `}
         >
-          Randevu Oluştur
+          <Calendar className="w-4 h-4" />
+          <span>Randevu Oluştur</span>
         </Button>
       </div>
 
-      <style>{`
-        @media (max-width: 610px) {
-          .responsive-table {
-            display: none;
-          }
-          .card-view {
-            display: block;
-          }
-        }
-        @media (min-width: 611px) {
-          .responsive-table {
-            display: block;
-          }
-          .card-view {
-            display: none;
-          }
-        }
-        .card {
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 16px;
-          margin-bottom: 16px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-      `}</style>
+      {/* Randevu Listesi */}
+      {isMobile || isTablet ? (
+        <div className="space-y-4">
+          {/* Kart listesi */}
+          {paginatedData.map((appointment) => (
+            <Card key={appointment.id} className="bg-white shadow-sm">
+              <div className="space-y-4">
+                {/* Doktor Bilgileri */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <User className="w-5 h-5 text-gray-400" />
+                    <div>
+                      <p className="font-medium">{`${appointment.doctorName} ${appointment.doctorSurname}`}</p>
+                      <p className="text-sm text-gray-500">{appointment.speciality}</p>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                    {getStatusText(appointment.status)}
+                  </span>
+                </div>
 
-      <div className="responsive-table">
+                {/* Randevu Zamanı */}
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{appointment.reservationDate}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm">{appointment.reservationTime}</span>
+                  </div>
+                </div>
+
+                {/* İşlem Butonları */}
+                <div className="flex justify-end space-x-2 pt-2 border-t">
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setSelectedAppointment(appointment);
+                      setViewModalVisible(true);
+                    }}
+                  >
+                    Detay
+                  </Button>
+                  {appointment.status === 'CONFIRMED' && (
+                    <Button
+                      size="small"
+                      danger
+                      onClick={() => {
+                        setSelectedAppointment(appointment);
+                        setCancelModalVisible(true);
+                      }}
+                    >
+                      İptal Et
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+
+          {/* Mobil Pagination */}
+          <div className="flex justify-center mt-6">
+            <Pagination
+              current={currentPage}
+              total={getFilteredAppointments().length}
+              pageSize={pageSize}
+              onChange={(page) => setCurrentPage(page)}
+              size={isMobile ? "small" : "default"}
+              showSizeChanger={false}
+              showTotal={(total) => (
+                <span className="text-sm text-gray-500">
+                  Toplam {total} randevu
+                </span>
+              )}
+            />
+          </div>
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={getFilteredAppointments()}
           rowKey="id"
           loading={loading}
           pagination={{
+            current: currentPage,
             total: getFilteredAppointments().length,
-            pageSize: 10,
+            pageSize: pageSize,
+            onChange: (page) => setCurrentPage(page),
             showSizeChanger: true,
             showTotal: (total) => `Toplam ${total} randevu`,
           }}
           className="shadow-sm rounded-lg overflow-x-auto"
         />
-      </div>
+      )}
 
-      <div className="card-view">
-        {getFilteredAppointments().map((appointment) => (
-          <div key={appointment.id} className="card p-4 bg-white shadow-md rounded-lg">
-            <div className="flex justify-between items-center mb-2">
-              <div className="text-lg font-semibold">{`${appointment.doctor?.ad || 'Bilinmeyen'} ${appointment.doctor?.soyad || 'Doktor'}`}</div>
-              <div className="space-x-2">
-                <Button
-                  size="small"
-                  onClick={() => {
-                    setSelectedAppointment(appointment);
-                    setViewModalVisible(true);
-                  }}
-                >
-                  Detay
-                </Button>
-                {appointment.status === 'CONFIRMED' && (
-                  <Button
-                    size="small"
-                    danger
-                    onClick={() => {
-                      setSelectedAppointment(appointment);
-                      setCancelModalVisible(true);
-                    }}
-                  >
-                    İptal Et
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div className="text-sm text-gray-500 mb-1">Tarih: {appointment.reservationDate}</div>
-            <div className="text-sm text-gray-500 mb-1">Saat: {appointment.reservationTime}</div>
-            <div className="text-sm text-gray-500 mb-1">Durum: <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>{getStatusText(appointment.status)}</span></div>
-          </div>
-        ))}
-      </div>
-
-      {/* CreateReservationForm Bileşeni */}
+      {/* Modals */}
+      <ViewModal />
+      <CancelModal />
+      
+      {/* CreateReservationForm */}
       {isFormVisible && (
         <CreateReservationForm 
           visible={isFormVisible}
@@ -371,89 +478,6 @@ const PatientAppointments = () => {
           onSubmit={handleAppointmentSubmit}
         />
       )}
-
-      {/* Detay Modalı */}
-      <Modal
-        title="Randevu Detayları"
-        open={viewModalVisible}
-        onCancel={() => setViewModalVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setViewModalVisible(false)}>
-            Kapat
-          </Button>
-        ]}
-      >
-        {selectedAppointment && (
-          <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-4">
-                <div className="flex flex-col md:flex-row md:items-center">
-                  <p className="text-sm text-gray-500 md:w-1/3">Doktor</p>
-                  <p className="font-medium md:w-2/3 truncate">{`${selectedAppointment.doctorName} ${selectedAppointment.doctorSurname}`}</p>
-                </div>
-                <div className="flex flex-col md:flex-row md:items-center">
-                  <p className="text-sm text-gray-500 md:w-1/3">Uzmanlık</p>
-                  <p className="font-medium md:w-2/3 truncate">{selectedAppointment.speciality}</p>
-                </div>
-                <div className="flex flex-col md:flex-row md:items-center">
-                  <p className="text-sm text-gray-500 md:w-1/3">Tarih</p>
-                  <p className="font-medium md:w-2/3 truncate">{selectedAppointment.reservationDate}</p>
-                </div>
-                <div className="flex flex-col md:flex-row md:items-center">
-                  <p className="text-sm text-gray-500 md:w-1/3">Saat</p>
-                  <p className="font-medium md:w-2/3 truncate">{selectedAppointment.reservationTime}</p>
-                </div>
-                <div className="flex flex-col md:flex-row md:items-center col-span-1 md:col-span-2">
-                  <p className="text-sm text-gray-500 md:w-1/3">Durum</p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium md:w-2/3 truncate ${getStatusColor(selectedAppointment.status)}`}>
-                    {getStatusText(selectedAppointment.status)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* İptal Modalı */}
-      <Modal
-        title="Randevu İptali"
-        open={cancelModalVisible}
-        onCancel={() => setCancelModalVisible(false)}
-        footer={[
-          <Button key="back" onClick={() => setCancelModalVisible(false)}>
-            Vazgeç
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            danger
-            loading={loading}
-            onClick={handleCancel}
-          >
-            İptal Et
-          </Button>
-        ]}
-      >
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2 text-yellow-600">
-            <AlertCircle className="w-5 h-5" />
-            <span className="font-medium">Bu randevuyu iptal etmek istediğinizden emin misiniz?</span>
-          </div>
-          {selectedAppointment && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-2">
-              <p><strong>Doktor:</strong> {`${selectedAppointment.doctorName || 'Bilinmeyen'} ${selectedAppointment.doctorSurname || 'Doktor'}`}</p>
-              <p><strong>Tarih:</strong> {selectedAppointment.reservationDate}</p>
-              <p><strong>Saat:</strong> {selectedAppointment.reservationTime}</p>
-              <p><strong>Uzmanlık:</strong> {selectedAppointment.speciality}</p>
-            </div>
-          )}
-          <p className="text-sm text-gray-500">
-            Not: İptal edilen randevular sistem tarafından otomatik olarak kapatılır ve tekrar aktif edilemez.
-            Yeni bir randevu almanız gerekebilir.
-          </p>
-        </div>
-      </Modal>
     </div>
   );
 };
