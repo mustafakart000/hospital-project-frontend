@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Modal, Input } from "antd";
+import { Table, Button, Space, Modal, Input, List, Card } from "antd";
 import { TbUserEdit } from "react-icons/tb";
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 import { deleteDoctor, getAllDoctors } from "../../services/doctor-service";
 import PropTypes from "prop-types";
+import { useMediaQuery } from 'react-responsive';
 
 const DoctorTable = ({ activeTab }) => {
   const [doctors, setDoctors] = useState([]);
@@ -14,6 +15,7 @@ const DoctorTable = ({ activeTab }) => {
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: 580 });
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -151,13 +153,65 @@ const DoctorTable = ({ activeTab }) => {
         onChange={(e) => handleSearch(e.target.value)}
         style={{ marginBottom: 16, width: 200 }}
       />
-      <Table
-        columns={columns}
-        dataSource={filteredDoctors}
-        rowKey={(record) => record.id}
-        pagination={{ pageSize: 10 }}
-        scroll={{ x: true }}
-      />
+      {!isMobile ? (
+        <Table
+          columns={columns}
+          dataSource={filteredDoctors}
+          rowKey={(record) => record.id}
+          pagination={{ pageSize: 10 }}
+          scroll={{ x: true }}
+        />
+      ) : (
+        <List
+          grid={{ gutter: 16, column: 1 }}
+          dataSource={filteredDoctors}
+          pagination={{
+            onChange: () => {
+              window.scrollTo(0, 0);
+            },
+            pageSize: 10,
+            total: filteredDoctors.length,
+            showTotal: (total) => `Toplam ${total} kayıt`,
+            showQuickJumper: true,
+            showSizeChanger: true,
+            pageSizeOptions: ['5', '10', '20', '50'],
+          }}
+          renderItem={(doctor) => (
+            <List.Item>
+              <Card>
+                <div className="flex flex-col gap-2">
+                  <div className="font-medium text-lg">{doctor.name}</div>
+                  <div>
+                    <span className="text-gray-500">Uzmanlık:</span> {doctor.speciality}
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Telefon:</span> {doctor.phone}
+                  </div>
+                  <Space size="small" className="mt-2">
+                    <Button
+                      type="default"
+                      size="small"
+                      className="text-emerald-500 hover:text-yellow-400 hover:border-emerald-600"
+                      onClick={() => handleEdit(doctor)}
+                    >
+                      <TbUserEdit />
+                    </Button>
+                    <Button
+                      type="default"
+                      size="small"
+                      danger
+                      className="text-red-500 hover:text-yellow-400 hover:border-red-600"
+                      onClick={() => showDeleteConfirm(doctor.id)}
+                    >
+                      Sil
+                    </Button>
+                  </Space>
+                </div>
+              </Card>
+            </List.Item>
+          )}
+        />
+      )}
 
       <Modal
         title={<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

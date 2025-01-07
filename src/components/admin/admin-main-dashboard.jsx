@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Input, Button } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, Input, Button, Pagination } from 'antd';
 import { 
   UserOutlined, 
   MedicineBoxOutlined, 
@@ -10,14 +10,21 @@ import {
 } from '@ant-design/icons';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getAllDoctors } from '../../services/doctor-service';
-import { useWindowSize} from 'react-use'; // Ekran boyutunu takip etmek için
-
+import { useWindowSize } from 'react-use'; // Ekran boyutunu takip etmek için
+import { useMediaQuery } from 'react-responsive';
 
 const AdminMainDashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [specialityCounts, setSpecialityCounts] = useState([]);
   const [searchText, setSearchText] = useState("");
   const { width } = useWindowSize();
+
+  const isMobileView = useMediaQuery({ maxWidth: 730 });
+
+  // Sayfalama için durum yönetimi
+  const [currentSpecialityPage, setCurrentSpecialityPage] = useState(1);
+  const [currentDoctorPage, setCurrentDoctorPage] = useState(1);
+  const pageSize = 5; // Her sayfada gösterilecek kart sayısı
 
   // Ekran genişliğine göre col span değerlerini belirle
   const getResponsiveSpan = () => {
@@ -43,8 +50,6 @@ const AdminMainDashboard = () => {
           acc[doctor.speciality] = (acc[doctor.speciality] || 0) + 1;
           return acc;
         }, {});
-        //console.log("fetchedDoctors: ", fetchedDoctors);
-        //console.log("specialityMap: ", specialityMap);
         const specialityData = Object.entries(specialityMap).map(([name, value]) => ({
           name,
           value
@@ -137,7 +142,6 @@ const AdminMainDashboard = () => {
           <MailOutlined /> {email}
         </span>
       ),
-      responsive: ['md']  // Sadece medium ve daha büyük ekranlarda göster
     },
     {
       title: 'Phone',
@@ -175,6 +179,17 @@ const AdminMainDashboard = () => {
     if (!searchTerm) return true; // Arama terimi boşsa tüm kayıtları göster
     return fullName.includes(searchTerm) || speciality.includes(searchTerm);
   });
+
+  // Sayfalama için verileri dilimle
+  const paginatedSpecialityCounts = specialityCounts.slice(
+    (currentSpecialityPage - 1) * pageSize,
+    currentSpecialityPage * pageSize
+  );
+
+  const paginatedDoctors = filteredDoctors.slice(
+    (currentDoctorPage - 1) * pageSize,
+    currentDoctorPage * pageSize
+  );
 
   return (
     <div className="p-4 lg:p-6 bg-gray-50">
@@ -237,14 +252,41 @@ const AdminMainDashboard = () => {
             </ResponsiveContainer>
           </Card>
         </Col>
-        <Col span={24}>
 
-            <Table style={{ marginTop: 16 }} dataSource={specialityCounts} columns={specialityColumns} rowKey={(record) => record.name} pagination={{ 
-              pageSize: width < 768 ? 5 : 10,
-              simple: width < 576
-            }} scroll={{ x: true }} />
+        {/* Uzmanlıklar Tablosu veya Kartları */}
+        <Col span={24}>
+          {isMobileView ? (
+            <>
+              {paginatedSpecialityCounts.map((speciality) => (
+                <Card key={speciality.name} style={{ marginBottom: 16 }}>
+                  <p><strong>Uzmanlık Adı:</strong> {speciality.name}</p>
+                  <p><strong>Doktor Sayısı:</strong> {speciality.value}</p>
+                </Card>
+              ))}
+              <Pagination
+                current={currentSpecialityPage}
+                pageSize={pageSize}
+                total={specialityCounts.length}
+                onChange={(page) => setCurrentSpecialityPage(page)}
+                style={{ textAlign: 'center', marginTop: 16 }}
+              />
+            </>
+          ) : (
+            <Table
+              style={{ marginTop: 16 }}
+              dataSource={specialityCounts}
+              columns={specialityColumns}
+              rowKey={(record) => record.name}
+              pagination={{
+                pageSize: 10,
+                simple: false,
+              }}
+              scroll={{ x: true }}
+            />
+          )}
         </Col>
-        {/* Doctor List */}
+
+        {/* Doctor List veya Kartları */}
         <Col span={24}>
           <Card title="Doctor Details">
             <Input
@@ -254,16 +296,36 @@ const AdminMainDashboard = () => {
               style={{ marginBottom: 16 }}
             />
             <div className="overflow-x-auto">
-              <Table 
-                columns={tableColumns} 
-                dataSource={filteredDoctors}
-                rowKey="id"
-                pagination={{ 
-                  pageSize: width < 768 ? 5 : 10,
-                  simple: width < 576
-                }}
-                scroll={{ x: true }}
-              />
+              {isMobileView ? (
+                <>
+                  {paginatedDoctors.map((doctor) => (
+                    <Card key={doctor.id} style={{ marginBottom: 16 }}>
+                      <p><strong>Ad:</strong> {doctor.ad} {doctor.soyad}</p>
+                      <p><strong>Uzmanlık:</strong> {doctor.speciality}</p>
+                      <p><strong>Email:</strong> {doctor.email}</p>
+                      <p><strong>Telefon:</strong> {doctor.phone}</p>
+                    </Card>
+                  ))}
+                  <Pagination
+                    current={currentDoctorPage}
+                    pageSize={pageSize}
+                    total={filteredDoctors.length}
+                    onChange={(page) => setCurrentDoctorPage(page)}
+                    style={{ textAlign: 'center', marginTop: 16 }}
+                  />
+                </>
+              ) : (
+                <Table
+                  columns={tableColumns}
+                  dataSource={filteredDoctors}
+                  rowKey="id"
+                  pagination={{
+                    pageSize: 10,
+                    simple: false,
+                  }}
+                  scroll={{ x: true }}
+                />
+              )}
             </div>
           </Card>
         </Col>

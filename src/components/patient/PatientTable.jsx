@@ -5,73 +5,52 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { deletePatient, getAllPatients } from '../../services/patient-service';
+import PropTypes from 'prop-types';
+import { useMediaQuery } from 'react-responsive';
 
-const PatientTable = () => {
+const PatientTable = ({ activeTab }) => {
   const [patients, setPatients] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
-  const [total, setTotal] = useState(0);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 530);
+  const isMobile = useMediaQuery({ maxWidth: 610 });
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await getAllPatients(page, size);
+        const response = await getAllPatients();
         const formattedPatients = response.content.map((patient) => {
-          const { ad, soyad, telefon, id } = patient;
+          const { ad, soyad, telefon, id, tcKimlik } = patient;
           return {
             name: `${ad} ${soyad}`,
             phone: telefon,
+            tcKimlik,
             id: id,
           };
         });
         setPatients(formattedPatients);
         setFilteredPatients(formattedPatients);
-        setTotal(response.totalElements);
       } catch (error) {
-        console.error('Hastaları çekerken hata oluştu:', error);
+        console.error("Hastaları çekerken hata oluştu:", error);
       }
     };
 
     fetchPatients();
+  }, [activeTab==="list"]);
 
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 530);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [page, size]);
-
-  const handlePageChange = (newPage, newSize) => {
-    setPage(newPage - 1);
-    setSize(newSize);
-  };
-
-  const handleSearch = async (value) => {
-    try {
-      const response = await getAllPatients(page, size, value);
-      const formattedPatients = response.content.map((patient) => {
-        const { ad, soyad, telefon, id } = patient;
-        return {
-          name: `${ad} ${soyad}`,
-          phone: telefon,
-          id: id,
-        };
-      });
-      setPatients(formattedPatients);
-      setFilteredPatients(formattedPatients);
-      setTotal(response.totalElements);
-      setSearchText(value);
-    } catch (error) {
-      console.error('Hasta arama sırasında hata oluştu:', error);
-      toast.error('Hasta arama sırasında bir hata oluştu');
-    }
+  const handleSearch = (value) => {
+    const searchValue = value.toLowerCase();
+    const filtered = patients.filter((patient) =>
+      Object.values(patient).some(
+        (val) =>
+          val &&
+          val.toString().toLowerCase().includes(searchValue)
+      )
+    );
+    setFilteredPatients(filtered);
+    setSearchText(value);
   };
 
   const handleEdit = (record) => {
@@ -86,8 +65,8 @@ const PatientTable = () => {
   const handleDeleteConfirm = () => {
     if (selectedPatientId) {
       deletePatient(selectedPatientId);
-      toast.success('Hasta başarıyla silindi');
-      const updatedPatients = patients.filter((pat) => pat.id !== selectedPatientId);
+      toast.success("Hasta başarıyla silindi");
+      const updatedPatients = patients.filter((patient) => patient.id !== selectedPatientId);
       setPatients(updatedPatients);
       setFilteredPatients(updatedPatients);
       setIsDeleteModalVisible(false);
@@ -96,24 +75,38 @@ const PatientTable = () => {
 
   const columns = [
     {
-      title: 'İsim',
-      dataIndex: 'name',
-      key: 'name',
+      title: "İsim",
+      dataIndex: "name",
+      key: "name",
       width: 200,
-      responsive: ['xs', 'sm', 'md', 'lg'],
+      responsive: ["xs", "sm", "md", "lg"],
       sorter: (a, b) => a.name.localeCompare(b.name),
+      filterSearch: true,
+      filters: patients.map(patient => ({
+        text: patient.name,
+        value: patient.id,
+      })),
+      onFilter: (value, record) => record.id === value,
     },
     {
-      title: 'Telefon',
-      dataIndex: 'phone',
-      key: 'phone',
+      title: "TC Kimlik",
+      dataIndex: "tcKimlik",
+      key: "tcKimlik",
       width: 150,
-      responsive: ['md', 'lg'],
+      responsive: isMobile ? [] : ["xs", "sm", "md", "lg"],
+      sorter: (a, b) => a.tcKimlik.localeCompare(b.tcKimlik),
+    },
+    {
+      title: "Telefon",
+      dataIndex: "phone",
+      key: "phone",
+      width: 150,
+      responsive: isMobile ? [] : ["xs", "sm", "md", "lg"],
       sorter: (a, b) => a.phone.localeCompare(b.phone),
     },
     {
-      title: 'Aksiyonlar',
-      key: 'action',
+      title: "Aksiyonlar",
+      key: "action",
       width: 100,
       render: (text, record) => (
         <Space size="small">
@@ -137,7 +130,7 @@ const PatientTable = () => {
           </Button>
         </Space>
       ),
-      responsive: ['xs', 'sm', 'md', 'lg'],
+      responsive: ["xs", "sm", "md", "lg"],
     },
   ];
 
@@ -151,29 +144,40 @@ const PatientTable = () => {
         style={{ marginBottom: 16, width: 200 }}
       />
       {isMobile ? (
-        <div>
+        <div className="grid grid-cols-1 gap-4">
           {filteredPatients.map((patient) => (
-            <Card
-              key={patient.id}
-              style={{
-                marginBottom: 16,
-                borderRadius: 8,
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                padding: '16px',
-              }}
-            >
-              <div style={{ marginBottom: 8 }}>
-                <p className="text-lg font-medium"><strong>İsim:</strong> {patient.name}</p>
-                <p className="text-lg font-medium"><strong>Telefon:</strong> {patient.phone}</p>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                <Button type="primary" onClick={() => handleEdit(patient)}>Düzenle</Button>
-                <Button
-                  className="bg-red-500 hover:bg-red-700 text-white"
-                  onClick={() => showDeleteConfirm(patient.id)}
-                >
-                  Sil
-                </Button>
+            <Card key={patient.id} size="small" className="shadow-sm">
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-lg">{patient.name}</span>
+                  <Space size="small">
+                    <Button
+                      type="default"
+                      size="small"
+                      className="text-emerald-500 hover:text-yellow-400 hover:border-emerald-600"
+                      onClick={() => handleEdit(patient)}
+                    >
+                      <TbUserEdit />
+                    </Button>
+                    <Button
+                      type="default"
+                      size="small"
+                      danger
+                      className="text-red-500 hover:text-yellow-400 hover:border-red-600"
+                      onClick={() => showDeleteConfirm(patient.id)}
+                    >
+                      Sil
+                    </Button>
+                  </Space>
+                </div>
+                <div className="text-gray-600">
+                  <span className="font-medium">TC Kimlik: </span>
+                  {patient.tcKimlik}
+                </div>
+                <div className="text-gray-600">
+                  <span className="font-medium">Telefon: </span>
+                  {patient.phone}
+                </div>
               </div>
             </Card>
           ))}
@@ -183,13 +187,8 @@ const PatientTable = () => {
           columns={columns}
           dataSource={filteredPatients}
           rowKey={(record) => record.id}
-          pagination={{
-            current: page + 1,
-            pageSize: size,
-            total: total,
-            onChange: handlePageChange,
-          }}
-          scroll={{ x: true }}
+          pagination={{ pageSize: 10 }}
+          scroll={{ x: 580 }}
         />
       )}
 
@@ -232,6 +231,10 @@ const PatientTable = () => {
       </Modal>
     </div>
   );
+};
+
+PatientTable.propTypes = {
+  activeTab: PropTypes.string
 };
 
 export default PatientTable; 
