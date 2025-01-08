@@ -4,7 +4,7 @@ import { User, Mail, Phone, MapPin, Heart, AlertTriangle, Clock, Edit } from 'lu
 import { useMediaQuery } from 'react-responsive';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import { getPatientProfile, updatePatientProfile } from '../../services/patient-service';
+import { getPatientProfile, updatePatient } from '../../services/patient-service';
 import { useSelector } from 'react-redux';
 import { message } from 'antd';
 
@@ -36,7 +36,7 @@ const PatientProfile = () => {
   const handleUpdate = async (values) => {
     try {
       setLoading(true);
-      await updatePatientProfile(patientId, {
+      await updatePatient(patientId, {
         ad: values.ad,
         soyad: values.soyad,
         email: values.email,
@@ -81,7 +81,7 @@ const PatientProfile = () => {
   return (
     <div className="space-y-6 px-4 md:px-0">
       {/* Header - Mobilde gizlenecek */}
-      <div className={`${isMobile ? 'hidden' : 'flex flex-col md:flex-row items-start md:items-center justify-between mb-6'}`}>
+      <div className={isMobile ? 'hidden' : 'flex flex-col md:flex-row items-start md:items-center justify-between mb-6'}>
         <h2 className="text-xl font-semibold text-gray-900 mb-4 md:mb-0">Profil Bilgilerim</h2>
         <Button
           type="primary"
@@ -116,7 +116,7 @@ const PatientProfile = () => {
               />
               <div>
                 <h3 className="text-lg font-medium text-center md:text-left">
-                  {`${patient?.ad} ${patient?.soyad}`}
+                  {patient?.ad} {patient?.soyad}
                 </h3>
               </div>
             </div>
@@ -223,7 +223,7 @@ const PatientProfile = () => {
                 <h4 className="font-medium text-blue-700 mb-2">Yaklaşan Randevu</h4>
                 <p className="text-sm text-blue-600">
                   {patient?.reservations?.length > 0 
-                    ? `${dayjs(patient.reservations[0].reservationDate).format('DD/MM/YYYY')} - ${patient.reservations[0].reservationTime}` 
+                    ? `${dayjs(patient.reservations[0].reservationDate).format('DD/MM/YYYY')} - ${patient.reservations[0].reservationTime}`
                     : "Planlanmış randevu bulunmuyor"}
                 </p>
               </div>
