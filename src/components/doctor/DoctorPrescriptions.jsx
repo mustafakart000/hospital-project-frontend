@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Button, Input, DatePicker, Select, Card } from 'antd';
-import { FileText, Search, Calendar, User, Activity } from 'lucide-react';
+import { Table, Button, Input, DatePicker, Select, Card } from 'antd';
+import { FileText, Search, Calendar, Activity } from 'lucide-react';
 import PrescriptionForm from './prescription-form';
+import { getPrescriptionByPatientId } from '../../services/prescription-service';
+import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const DoctorPrescriptions = () => {
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [prescriptions, setPrescriptions] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 610);
 
   useEffect(() => {
@@ -19,83 +22,42 @@ const DoctorPrescriptions = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Sample data - replace with actual API data
-  const prescriptions = [
-    {
-      id: 1,
-      patientName: 'Ahmet Yılmaz',
-      date: '2024-12-19',
-      diagnosis: 'Grip',
-      medications: [
-        { name: 'Parol', dosage: '500mg', frequency: '2x1' },
-        { name: 'Sudafed', dosage: '30mg', frequency: '1x1' }
-      ],
-      status: 'active',
-      insuranceType: 'SGK'
-    },
-    {
-      id: 2,
-      patientName: 'Ayşe Demir',
-      date: '2024-12-18',
-      diagnosis: 'Alerji',
-      medications: [
-        { name: 'Allegra', dosage: '180mg', frequency: '1x1' }
-      ],
-      status: 'expired',
-      insuranceType: 'Özel'
-    },
-    // Add more sample data as needed
-  ];
-
-  const getStatusColor = (status) => {
-    const colors = {
-      active: 'bg-green-100 text-green-800',
-      expired: 'bg-red-100 text-red-800',
-      pending: 'bg-yellow-100 text-yellow-800'
+  useEffect(() => {
+    const fetchPrescriptions = async () => {
+      setLoading(true);
+      try {
+        const data = await getPrescriptionByPatientId(25); // örnek hasta ID'si
+        setPrescriptions(data);
+      } catch (error) {
+        console.error('Reçeteler yüklenirken hata oluştu:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
 
-  const getStatusText = (status) => {
-    const texts = {
-      active: 'Aktif',
-      expired: 'Süresi Dolmuş',
-      pending: 'Beklemede'
-    };
-    return texts[status] || status;
-  };
+    fetchPrescriptions();
+  }, []);
 
   const columns = [
     {
-      title: 'Hasta',
-      dataIndex: 'patientName',
-      key: 'patientName',
+      title: 'Reçete No',
+      dataIndex: 'id',
+      key: 'id',
       render: (text) => (
         <div className="flex items-center space-x-2">
-          <User className="w-4 h-4 text-gray-400" />
-          <span className="font-medium">{text}</span>
+          <FileText className="w-4 h-4 text-gray-400" />
+          <span className="font-medium">{text.slice(0, 8)}...</span>
         </div>
       ),
     },
     {
       title: 'Tarih',
-      dataIndex: 'date',
-      key: 'date',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       render: (text) => (
         <div className="flex items-center space-x-2">
           <Calendar className="w-4 h-4 text-gray-400" />
-          <span>{text}</span>
-        </div>
-      ),
-    },
-    {
-      title: 'Tanı',
-      dataIndex: 'diagnosis',
-      key: 'diagnosis',
-      render: (text) => (
-        <div className="flex items-center space-x-2">
-          <Activity className="w-4 h-4 text-gray-400" />
-          <span>{text}</span>
+          <span>{dayjs(text).format('DD/MM/YYYY')}</span>
         </div>
       ),
     },
@@ -105,34 +67,42 @@ const DoctorPrescriptions = () => {
       key: 'medications',
       render: (medications) => (
         <div className="space-y-1">
-          {medications.map((med, index) => (
-            <div key={index} className="text-sm">
+          {medications.map((med) => (
+            <div key={med.id} className="text-sm">
               <span className="font-medium">{med.name}</span>
               <span className="text-gray-500"> - {med.dosage} ({med.frequency})</span>
+              <div className="text-xs text-gray-500">
+                Kullanım: {med.usage}, Süre: {med.duration} gün
+              </div>
             </div>
           ))}
         </div>
       ),
     },
     {
-      title: 'Sigorta',
-      dataIndex: 'insuranceType',
-      key: 'insuranceType',
+      title: 'Notlar',
+      dataIndex: 'notes',
+      key: 'notes',
       render: (text) => (
-        <Tag className="rounded-full px-2 py-1 text-xs">
-          {text}
-        </Tag>
+        <div className="flex items-center space-x-2">
+          <Activity className="w-4 h-4 text-gray-400" />
+          <span>{text}</span>
+        </div>
       ),
     },
     {
       title: 'Durum',
-      dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-          {getStatusText(status)}
-        </span>
-      ),
+      render: (_, record) => {
+        const isActive = dayjs().isBefore(dayjs(record.medications[0].endDate));
+        return (
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {isActive ? 'Aktif' : 'Süresi Dolmuş'}
+          </span>
+        );
+      },
     },
   ];
 
@@ -187,30 +157,34 @@ const DoctorPrescriptions = () => {
             <Card key={prescription.id} className="bg-white shadow-sm">
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center space-x-2">
-                  <User className="w-4 h-4 text-gray-400" />
-                  <span className="font-medium">{prescription.patientName}</span>
+                  <FileText className="w-4 h-4 text-gray-400" />
+                  <span className="font-medium">Reçete No: {prescription.id.slice(0, 8)}...</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-gray-400" />
-                  <span>{prescription.date}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Activity className="w-4 h-4 text-gray-400" />
-                  <span>{prescription.diagnosis}</span>
+                  <span>{dayjs(prescription.createdAt).format('DD/MM/YYYY')}</span>
                 </div>
                 <div className="space-y-1">
-                  {prescription.medications.map((med, index) => (
-                    <div key={index} className="text-sm">
+                  {prescription.medications.map((med) => (
+                    <div key={med.id} className="text-sm">
                       <span className="font-medium">{med.name}</span>
                       <span className="text-gray-500"> - {med.dosage} ({med.frequency})</span>
+                      <div className="text-xs text-gray-500">
+                        Kullanım: {med.usage}, Süre: {med.duration} gün
+                      </div>
                     </div>
                   ))}
                 </div>
-                <Tag className="rounded-full px-2 py-1 text-xs">
-                  {prescription.insuranceType}
-                </Tag>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(prescription.status)}`}>
-                  {getStatusText(prescription.status)}
+                <div className="flex items-center space-x-2">
+                  <Activity className="w-4 h-4 text-gray-400" />
+                  <span>{prescription.notes}</span>
+                </div>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  dayjs().isBefore(dayjs(prescription.medications[0].endDate))
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {dayjs().isBefore(dayjs(prescription.medications[0].endDate)) ? 'Aktif' : 'Süresi Dolmuş'}
                 </span>
               </div>
             </Card>

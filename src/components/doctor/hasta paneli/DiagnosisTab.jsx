@@ -1,6 +1,7 @@
-import React from 'react';
+import React from "react";
+import PropTypes from "prop-types";
 
-const DiagnosisTab = () => {
+const DiagnosisTab = ({ values, onChange }) => {
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="p-4 border rounded">
@@ -8,22 +9,46 @@ const DiagnosisTab = () => {
         <div className="space-y-3">
           <div>
             <label className="block text-sm mb-1">Ön Tanı</label>
-            <input type="text" className="w-full border rounded p-2" placeholder="Ön tanıyı giriniz"/>
+            <input
+              type="text"
+              name="preliminaryDiagnosis"
+              value={values.preliminaryDiagnosis}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+              placeholder="Ön tanıyı giriniz"
+            />
           </div>
           <div>
             <label className="block text-sm mb-1">Kesin Tanı</label>
-            <input type="text" className="w-full border rounded p-2" placeholder="Kesin tanıyı giriniz"/>
+            <input
+              type="text"
+              name="finalDiagnosis"
+              value={values.finalDiagnosis}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+              placeholder="Kesin tanıyı giriniz"
+            />
           </div>
           <div>
             <label className="block text-sm mb-1">Tanı Detayları</label>
-            <textarea 
-              className="w-full h-32 border rounded p-2" 
+            <textarea
+              name="diagnosticDetails"
+              value={values.diagnosticDetails}
+              onChange={onChange}
+              className="w-full h-32 border rounded p-2"
               placeholder="Tanı ile ilgili detayları giriniz..."
             />
           </div>
           <div>
             <label className="block text-sm mb-1">ICD-10 Kodu</label>
-            <input type="text" className="w-full border rounded p-2" placeholder="ICD-10 kodu giriniz"/>
+            <input
+              type="text"
+              name="icdCode"
+              value={values.icdCode}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+              placeholder="ICD-10 kodu giriniz"
+            />
           </div>
         </div>
       </div>
@@ -33,27 +58,46 @@ const DiagnosisTab = () => {
         <div className="space-y-3">
           <div>
             <label className="block text-sm mb-1">Tedavi Türü</label>
-            <select className="w-full border rounded p-2">
+            <select
+              name="treatmentType"
+              value={values.treatmentType}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+            >
               <option value="">Seçiniz</option>
-              <option value="ayaktan">Ayaktan Tedavi</option>
-              <option value="yatarak">Yatarak Tedavi</option>
+              <option value="OUTPATIENT">Ayaktan Tedavi</option>
+              <option value="INPATIENT">Yatarak Tedavi</option>
             </select>
           </div>
           <div>
             <label className="block text-sm mb-1">Tedavi Planı</label>
-            <textarea 
-              className="w-full h-32 border rounded p-2" 
+            <textarea
+              name="treatmentDetails"
+              value={values.treatmentDetails}
+              onChange={onChange}
+              className="w-full h-32 border rounded p-2"
               placeholder="Tedavi planını detaylı olarak giriniz..."
             />
           </div>
           <div>
             <label className="block text-sm mb-1">Kontrol Tarihi</label>
-            <input type="date" className="w-full border rounded p-2"/>
+            <input
+              type="date"
+              name="followUpDate"
+              value={values.followUpDate}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+            />
           </div>
         </div>
       </div>
     </div>
   );
+};
+
+DiagnosisTab.propTypes = {
+  values: PropTypes.object.isRequired,
+  onChange: PropTypes.func.isRequired
 };
 
 export default DiagnosisTab;
