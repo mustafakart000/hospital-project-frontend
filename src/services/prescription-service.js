@@ -20,3 +20,8 @@ export const getPrescriptionByPatientId = async (patientId) => {
   return response.data;
 };
 
+export const getPrescriptionsCurrentPatient = async () => {
+  const response = await axios.get(`${BASE_URL}/prescriptions/patient`, { headers: getAuthHeader() });
+  return response.data;
+};
+

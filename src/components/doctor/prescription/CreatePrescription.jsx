@@ -12,6 +12,8 @@ const CreatePrescription = ({ doctorId, patientId, reservationId }) => {
     notes: ''
   });
 
+  const [shouldResetForm, setShouldResetForm] = useState(false);
+
   const handlePrescriptionChange = (newData) => {
     setPrescriptionData(prev => ({
       ...prev,
@@ -26,8 +28,9 @@ const CreatePrescription = ({ doctorId, patientId, reservationId }) => {
         message: 'Başarılı',
         description: 'Reçete başarıyla oluşturuldu.',
       });
+      setShouldResetForm(true);
+      setTimeout(() => setShouldResetForm(false), 100);
     } catch (error) {
-      
       notification.error({
         message: error.message,
         description: 'Reçete oluşturulurken bir hata oluştu.',
@@ -41,7 +44,10 @@ const CreatePrescription = ({ doctorId, patientId, reservationId }) => {
         <h2 className="text-xl font-semibold">Yeni Reçete Oluştur</h2>
       </div>
 
-      <MedicationsTab onPrescriptionChange={handlePrescriptionChange} />
+      <MedicationsTab 
+        onPrescriptionChange={handlePrescriptionChange} 
+        resetForm={shouldResetForm}
+      />
 
       <div className="flex justify-end">
         <Button 

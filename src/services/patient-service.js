@@ -65,6 +65,11 @@ export const updatePatientProfile = async (patientId, patient) => {
     return response.data;
 }
 
+export const updatePatient = async (patientId) => {
+    const response = await axios.get(`${baseUrl}/patient/get/${patientId}`, { headers: getAuthHeader() });
+    return response.data;
+}
+
 export const deletePatient = async (patientId) => {
     try {
         const response = await axios.delete(`${baseUrl}/patient/delete/${patientId}`, { headers: getAuthHeader() });

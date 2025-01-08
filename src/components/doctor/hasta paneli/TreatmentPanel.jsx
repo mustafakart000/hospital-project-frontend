@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import { Tabs, Tab, Box } from "@mui/material";
@@ -23,8 +22,9 @@ const getLastAppointmentDate = (allReservations, patientId) => {
 
   if (patientReservations.length === 0) return null;
 
-  const sortedAppointments = patientReservations
-    .sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
+  const sortedAppointments = patientReservations.sort(
+    (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
+  );
 
   return sortedAppointments[0]?.appointmentDate;
 };
@@ -56,11 +56,9 @@ const TreatmentPanel = () => {
     }));
   };
 
-
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
 
   const handleButtonClick = async (action) => {
     setSelectedPatient(null);
@@ -84,11 +82,11 @@ const TreatmentPanel = () => {
         createAppointment: action === "createAppointment",
       },
       metadata: {
-        patientId: String(patientInformation?.id),
+        patientId: String(patientInformation?.patientId),
         doctorId: String(userId),
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
+        updatedAt: new Date().toISOString(),
+      },
     };
 
     console.log("Gönderilen payload:", payload);
@@ -113,8 +111,8 @@ const TreatmentPanel = () => {
       const allReservations = await getAllDoctorByReservations(userId);
       setAllReservations(allReservations);
       console.log("API Response:", response);
-      
-      setRefreshQueue(prev => !prev);
+
+      setRefreshQueue((prev) => !prev);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -141,7 +139,10 @@ const TreatmentPanel = () => {
                 <div className="p-4 bg-blue-50 rounded">
                   <div className="text-sm text-gray-600">Son Randevu</div>
                   <div className="font-semibold">
-                    {getLastAppointmentDate(allReservations, patientInformation?.id) || 'Randevu Yok'}
+                    {getLastAppointmentDate(
+                      allReservations,
+                      patientInformation?.id
+                    ) || "Randevu Yok"}
                   </div>
                 </div>
                 <div className="p-4 bg-green-50 rounded">
@@ -178,11 +179,17 @@ const TreatmentPanel = () => {
                         patientId: patientInformation?.id,
                         doctorId: userId,
                         createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
+                        updatedAt: new Date().toISOString(),
                       }}
                     />
                   )}
-                  {value === "medications" && <CreatePrescription />}
+                  {value === "medications" && (
+                    <CreatePrescription
+                      doctorId={userId}
+                      patientId={patientInformation?.patientId}
+                      reservationId={patientInformation?.reservationId}
+                    />
+                  )}
                   {value === "imaging" && <ImagingTab />}
                   {value === "labs" && <LabsTab />}
                 </Box>
@@ -214,13 +221,12 @@ const TreatmentPanel = () => {
         )}
       </div>
       <div>
-        <TodayPatientQueue 
-          setPatientInformation={setPatientInformation} 
+        <TodayPatientQueue
+          setPatientInformation={setPatientInformation}
           refresh={refreshQueue}
         />
       </div>
     </>
-
   );
 };
 

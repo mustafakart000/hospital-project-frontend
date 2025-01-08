@@ -13,7 +13,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
   
   const initialPrescriptionData = useMemo(() => ({
     doctorId: userDoctorId ? String(userDoctorId) : null,
-    patientId: selectedPatient?.id ? String(selectedPatient.id) : null,
+    patientId: selectedPatient?.patientId ? String(selectedPatient.patientId) : null,
     reservationId: selectedPatient?.reservationId ? String(selectedPatient.reservationId) : null,
     medications: [],
     notes: ''
@@ -75,19 +75,22 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 5); // Varsayılan 5 günlük süre
 
+      // Mevcut ilaçları kontrol et
+      const existingMedication = prescriptionData.medications.find(m => m.medicineId === String(medicine.id));
+
       const updatedPrescription = {
         ...prescriptionData,
         medications: [
-          ...prescriptionData.medications,
+          ...prescriptionData.medications.filter(m => m.medicineId !== String(medicine.id)),
           {
             medicineId: String(medicine.id),
             name: medicine.name,
             dosage: `${medicine.dosage}mg`,
-            usage: "",
-            frequency: "",
-            duration: 5, // Varsayılan süre
-            startDate: startDate,
-            endDate: endDate.toISOString()
+            usage: existingMedication?.usage || "",
+            frequency: existingMedication?.frequency || "",
+            duration: existingMedication?.duration || 5,
+            startDate: existingMedication?.startDate || startDate,
+            endDate: existingMedication?.endDate || endDate.toISOString()
           }
         ]
       };
@@ -137,7 +140,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
     const usage = e.target.value;
     if (selectedMedicine) {
       const updatedMedications = prescriptionData.medications.map(med => 
-        med.medicineId === selectedMedicine.id 
+        med.medicineId === String(selectedMedicine.id)
           ? { ...med, usage } 
           : med
       );
@@ -156,7 +159,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
     const frequency = e.target.value;
     if (selectedMedicine) {
       const updatedMedications = prescriptionData.medications.map(med => 
-        med.medicineId === selectedMedicine.id 
+        med.medicineId === String(selectedMedicine.id)
           ? { ...med, frequency } 
           : med
       );
@@ -226,7 +229,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
               <select 
                 className="w-full border rounded p-2"
                 onChange={handleUsageChange}
-                value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === selectedMedicine.id)?.usage || "" : ""}
+                value={selectedMedicine ? (prescriptionData.medications.find(m => m.medicineId === String(selectedMedicine.id))?.usage || "") : ""}
               >
                 <option value="">Seçiniz</option>
                 <option value="oral">Oral</option>
@@ -240,7 +243,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
               <select 
                 className="w-full border rounded p-2"
                 onChange={handleFrequencyChange}
-                value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === selectedMedicine.id)?.frequency || "" : ""}
+                value={selectedMedicine ? (prescriptionData.medications.find(m => m.medicineId === String(selectedMedicine.id))?.frequency || "") : ""}
               >
                 <option value="">Seçiniz</option>
                 <option value="1x1">Günde 1x1</option>

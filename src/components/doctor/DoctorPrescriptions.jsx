@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Input, DatePicker, Select, Card } from 'antd';
+import { Table, Input, DatePicker, Select, Card } from 'antd';
 import { FileText, Search, Calendar } from 'lucide-react';
 import { useMediaQuery } from 'react-responsive';
 import PrescriptionForm from './prescription-form';
 import { getPrescriptionByPatientId } from '../../services/prescription-service';
 import dayjs from 'dayjs';
+import { useSelector } from 'react-redux';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -17,12 +18,13 @@ const DoctorPrescriptions = () => {
   const isTablet = useMediaQuery({ maxWidth: 1024 });
   const [currentPage, setCurrentPage] = React.useState(1);
   const pageSize = 10;
+  const userDoctorId = useSelector((state) => state.auth.user?.id);
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
       setLoading(true);
       try {
-        const data = await getPrescriptionByPatientId(25);
+        const data = await getPrescriptionByPatientId(userDoctorId);
         setPrescriptions(data);
       } catch (error) {
         console.error('Reçeteler yüklenirken hata oluştu:', error);
@@ -110,13 +112,6 @@ const DoctorPrescriptions = () => {
             <p className="text-sm text-gray-500">Tüm reçeteleri görüntüle ve yönet</p>
           </div>
         </div>
-        <Button 
-          type="primary"
-          className="bg-blue-600"
-          onClick={() => setShowForm(true)}
-        >
-          Yeni Reçete Oluştur
-        </Button>
       </div>
 
       {showForm && <PrescriptionForm onClose={() => setShowForm(false)} />}
