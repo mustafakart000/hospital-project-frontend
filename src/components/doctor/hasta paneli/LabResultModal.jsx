@@ -1,6 +1,7 @@
-    import React from 'react';
+import React from 'react';
 import { Modal, Box, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+
 const LabResultModal = ({ open, onClose, result }) => {
   return (
     <Modal open={open} onClose={onClose}>
@@ -15,8 +16,25 @@ const LabResultModal = ({ open, onClose, result }) => {
         p: 4,
         borderRadius: 2
       }}>
-        <Typography variant="h6">Laboratuvar Sonucu</Typography>
-        <Typography>{result}</Typography>
+        <Typography variant="h6" gutterBottom>Laboratuvar Sonucu</Typography>
+        <div className="space-y-4">
+          <div>
+            <Typography variant="subtitle2" color="textSecondary">Test Adı</Typography>
+            <Typography>{result.testName || '-'}</Typography>
+          </div>
+          <div>
+            <Typography variant="subtitle2" color="textSecondary">Tarih</Typography>
+            <Typography>{result.date || '-'}</Typography>
+          </div>
+          <div>
+            <Typography variant="subtitle2" color="textSecondary">Durum</Typography>
+            <Typography>{result.status || '-'}</Typography>
+          </div>
+          <div>
+            <Typography variant="subtitle2" color="textSecondary">Notlar</Typography>
+            <Typography>{result.notes || '-'}</Typography>
+          </div>
+        </div>
       </Box>
     </Modal>
   );
@@ -25,7 +43,12 @@ const LabResultModal = ({ open, onClose, result }) => {
 LabResultModal.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  result: PropTypes.string.isRequired
+  result: PropTypes.shape({
+    testName: PropTypes.string,
+    date: PropTypes.string,
+    status: PropTypes.string,
+    notes: PropTypes.string
+  }).isRequired
 };
 
 export default LabResultModal; 

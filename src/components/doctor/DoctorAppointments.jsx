@@ -256,13 +256,15 @@ const DoctorAppointments = () => {
           >
             Görüntüle
           </Button>
-          <Button 
-            size="small"
-            danger
-            onClick={() => handleMenuClick('3', record)}
-          >
-            İptal Et
-          </Button>
+          {record.status !== 'CANCELLED' && record.status !== 'COMPLETED' && (
+            <Button 
+              size="small"
+              danger
+              onClick={() => handleMenuClick('3', record)}
+            >
+              İptal Et
+            </Button>
+          )}
         </div>
       ),
     },
@@ -341,13 +343,15 @@ const DoctorAppointments = () => {
                   <Button size="small" onClick={() => handleMenuClick('1', appointment)}>
                     Görüntüle
                   </Button>
-                  <Button 
-                    size="small" 
-                    danger 
-                    onClick={() => handleMenuClick('3', appointment)}
-                  >
-                    İptal Et
-                  </Button>
+                  {appointment.status !== 'CANCELLED' && appointment.status !== 'COMPLETED' && (
+                    <Button 
+                      size="small" 
+                      danger 
+                      onClick={() => handleMenuClick('3', appointment)}
+                    >
+                      İptal Et
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
