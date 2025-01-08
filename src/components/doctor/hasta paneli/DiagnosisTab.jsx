@@ -1,8 +1,11 @@
-import React from 'react';
+
+import React from "react";
+import PropTypes from "prop-types";
 import { useMediaQuery } from 'react-responsive';
 
-const DiagnosisTab = () => {
+const DiagnosisTab = ({ values, onChange }) => {
   const isMobile = useMediaQuery({ maxWidth: 600 });
+
 
   return (
     <div className={`${isMobile ? 'flex flex-col' : 'grid grid-cols-2'} gap-4`}>
@@ -10,42 +13,53 @@ const DiagnosisTab = () => {
         <h3 className="font-semibold mb-4 text-lg border-b pb-2">Tanı Bilgileri</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Ön Tanı
-            </label>
-            <input 
-              type="text" 
-              className="w-full border rounded p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+
+            <label className="block text-sm mb-1">Ön Tanı</label>
+            <input
+              type="text"
+              name="preliminaryDiagnosis"
+              value={values.preliminaryDiagnosis}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+
               placeholder="Ön tanıyı giriniz"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Kesin Tanı
-            </label>
-            <input 
-              type="text" 
-              className="w-full border rounded p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+
+            <label className="block text-sm mb-1">Kesin Tanı</label>
+            <input
+              type="text"
+              name="finalDiagnosis"
+              value={values.finalDiagnosis}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+
               placeholder="Kesin tanıyı giriniz"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Tanı Detayları
-            </label>
-            <textarea 
-              className="w-full border rounded p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-              rows={4}
+
+            <label className="block text-sm mb-1">Tanı Detayları</label>
+            <textarea
+              name="diagnosticDetails"
+              value={values.diagnosticDetails}
+              onChange={onChange}
+              className="w-full h-32 border rounded p-2"
+
               placeholder="Tanı ile ilgili detayları giriniz..."
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              ICD-10 Kodu
-            </label>
-            <input 
-              type="text" 
-              className="w-full border rounded p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+
+            <label className="block text-sm mb-1">ICD-10 Kodu</label>
+            <input
+              type="text"
+              name="icdCode"
+              value={values.icdCode}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+
               placeholder="ICD-10 kodu giriniz"
             />
           </div>
@@ -56,38 +70,53 @@ const DiagnosisTab = () => {
         <h3 className="font-semibold mb-4 text-lg border-b pb-2">Tedavi Planı</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Tedavi Türü
-            </label>
-            <select className="w-full border rounded p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+
+            <label className="block text-sm mb-1">Tedavi Türü</label>
+            <select
+              name="treatmentType"
+              value={values.treatmentType}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+            >
+
               <option value="">Seçiniz</option>
-              <option value="ayaktan">Ayaktan Tedavi</option>
-              <option value="yatarak">Yatarak Tedavi</option>
+              <option value="OUTPATIENT">Ayaktan Tedavi</option>
+              <option value="INPATIENT">Yatarak Tedavi</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Tedavi Planı
-            </label>
-            <textarea 
-              className="w-full border rounded p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-              rows={4}
+
+            <label className="block text-sm mb-1">Tedavi Planı</label>
+            <textarea
+              name="treatmentDetails"
+              value={values.treatmentDetails}
+              onChange={onChange}
+              className="w-full h-32 border rounded p-2"
+
               placeholder="Tedavi planını detaylı olarak giriniz..."
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Kontrol Tarihi
-            </label>
-            <input 
-              type="date" 
-              className="w-full border rounded p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+
+            <label className="block text-sm mb-1">Kontrol Tarihi</label>
+            <input
+              type="date"
+              name="followUpDate"
+              value={values.followUpDate}
+              onChange={onChange}
+              className="w-full border rounded p-2"
+
             />
           </div>
         </div>
       </div>
     </div>
   );
+};
+
+DiagnosisTab.propTypes = {
+  values: PropTypes.object.isRequired,
+  onChange: PropTypes.func.isRequired
 };
 
 export default DiagnosisTab;

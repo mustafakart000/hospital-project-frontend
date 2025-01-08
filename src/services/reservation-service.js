@@ -39,6 +39,15 @@ export const getReservationsByPatientId = async (patientId) => {
     const response = await axios.get(`${baseUrl}/reservations/get/patient/${patientId}`, { headers: getAuthHeader() });
     return response.data;
 }
+export const getTodayPatients = async () => {
+    const response = await axios.get(`${baseUrl}/reservations/get/today`, { headers: getAuthHeader() });
+    return response.data;
+  };
+
+  export const getTodayTreatedPatients = async () => {
+    const response = await axios.get(`${baseUrl}/reservations/get/today/treated`, { headers: getAuthHeader() });
+    return response.data;
+  };
 
 
 
