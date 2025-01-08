@@ -94,4 +94,28 @@ export const updateAdminByDoctor = async (id, doctorData) => {
     }
 }
 
+// /imaging-requests/create
+export const createImagingRequest = async (imagingRequestData) => {
+    try {
+        const response = await axios.post(`${baseUrl}/imaging-requests/create`, imagingRequestData, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        console.error("Service Error:", error);
+        throw error;
+    }
+}
+
+// /lab-requests/create
+export const createLabRequest = async (labRequestData) => {
+    try {
+        const response = await axios.post(`${baseUrl}/lab-requests/create`, labRequestData, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        console.error("Service Error:", error);
+        throw error;
+    }
+}
+
+
+
 

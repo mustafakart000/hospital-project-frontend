@@ -3,7 +3,7 @@ import { Table, Input, DatePicker, Select, Card } from 'antd';
 import { FileText, Search, Calendar } from 'lucide-react';
 import { useMediaQuery } from 'react-responsive';
 import PrescriptionForm from './prescription-form';
-import { getPrescriptionByPatientId } from '../../services/prescription-service';
+import { getPrescriptionsCurrentDoctor } from '../../services/prescription-service';
 import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 
@@ -18,13 +18,16 @@ const DoctorPrescriptions = () => {
   const isTablet = useMediaQuery({ maxWidth: 1024 });
   const [currentPage, setCurrentPage] = React.useState(1);
   const pageSize = 10;
-  const userDoctorId = useSelector((state) => state.auth.user?.id);
+  const doctorId = useSelector((state) => state.auth.user?.id);
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
+      if (!doctorId) return;
+      
       setLoading(true);
       try {
-        const data = await getPrescriptionByPatientId(userDoctorId);
+        const data = await getPrescriptionsCurrentDoctor(doctorId);
+        console.log("data",data)
         setPrescriptions(data);
       } catch (error) {
         console.error('Reçeteler yüklenirken hata oluştu:', error);
@@ -34,20 +37,9 @@ const DoctorPrescriptions = () => {
     };
 
     fetchPrescriptions();
-  }, []);
+  }, [doctorId]);
 
   const columns = [
-    {
-      title: 'Reçete No',
-      dataIndex: 'id',
-      key: 'id',
-      render: (text) => (
-        <div className="flex items-center space-x-2">
-          <FileText className="w-4 h-4 text-gray-400" />
-          <span className="font-medium">{text.slice(0, 8)}...</span>
-        </div>
-      ),
-    },
     {
       title: 'Tarih',
       dataIndex: 'createdAt',
@@ -63,37 +55,43 @@ const DoctorPrescriptions = () => {
       title: 'İlaçlar',
       dataIndex: 'medications',
       key: 'medications',
-      render: (medications, record) => (
+      render: (medications) => (
         <div className="space-y-2">
           {medications.map((med) => (
             <div key={med.id} className="text-sm">
-              <span className="font-medium">{med.name}</span>
-              <span className="text-gray-500"> - {med.dosage} ({med.frequency})</span>
-              <div className="text-xs text-gray-500">
-                Kullanım: {med.usage}, Süre: {med.duration} gün
-              </div>
+              <span className="font-medium">{med.name.split('-')[0]}</span>
             </div>
           ))}
-          <div className="text-sm text-gray-600">
-            <span className="font-medium">Notlar: </span>
-            {record.notes}
-          </div>
         </div>
       ),
     },
     {
-      title: 'Durum',
-      key: 'status',
-      render: (_, record) => {
-        const isActive = dayjs().isBefore(dayjs(record.medications[0].endDate));
-        return (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}>
-            {isActive ? 'Aktif' : 'Süresi Dolmuş'}
-          </span>
-        );
-      },
+      title: 'Dosage',
+      dataIndex: 'medications',
+      key: 'dosage',
+      render: (medications) => (
+        <div className="space-y-2">
+          {medications.map((med) => (
+            <div key={med.id} className="text-sm text-gray-500">
+              {med.dosage} ({med.frequency || '1x1'})
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: 'Kullanım',
+      dataIndex: 'medications',
+      key: 'usage',
+      render: (medications) => (
+        <div className="space-y-2">
+          {medications.map((med) => (
+            <div key={med.id} className="text-sm text-gray-500">
+              {med.usage || 'Belirtilmemiş'}
+            </div>
+          ))}
+        </div>
+      ),
     },
   ];
 
@@ -150,7 +148,7 @@ const DoctorPrescriptions = () => {
                 <div className="space-y-2">
                   {prescription.medications.map((med) => (
                     <div key={med.id} className="text-sm">
-                      <span className="font-medium">{med.name}</span>
+                      <span className="font-medium">{med.name.split('-')[0]}</span>
                       <span className="text-gray-500"> - {med.dosage} ({med.frequency})</span>
                       <div className="text-xs text-gray-500">
                         Kullanım: {med.usage}, Süre: {med.duration} gün

@@ -26,6 +26,7 @@ import DoctorAppointments from "../components/doctor/DoctorAppointments.jsx";
 import TreatmentPanel from "../components/doctor/hasta paneli/TreatmentPanel.jsx";
 import DoctorDashboard from "../pages/dashboards/DoctorDashboardPage.jsx";
 
+
 const router = createBrowserRouter([
   {
     path: "/",
