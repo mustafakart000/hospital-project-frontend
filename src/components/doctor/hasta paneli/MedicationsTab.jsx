@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { getAllMedicinesByDoctorSpeciality } from '../../../services/medicine-service';
@@ -190,89 +189,77 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
     }
   };
 
-
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="p-4 border rounded">
-        <div className={`flex ${isTablet ? 'flex-col space-y-3' : 'items-center justify-between'} mb-4`}>
+        <div className="flex flex-col space-y-3 mb-4">
           <h3 className="font-semibold">İlaç Listesi</h3>
-
-
         </div>
-        
         <div className="space-y-4">
-
-            <div className="grid grid-cols-6 gap-3">
-              <div>
-                <label className="block text-sm mb-1">İlaç Adı</label>
-                <select 
-                  className="w-full border rounded p-2"
-                  onChange={handleMedicineChange}
-                  value={selectedMedicine?.id || ""}
-                >
-                  <option value="">Seçiniz</option>
-                  {medicines.map((medicine) => (
-                    <option key={medicine.id} value={medicine.id}>
-                      {medicine.name} - {medicine.category} ({medicine.dosage} mg)
-                    </option>
-                  ))}
-                </select>
-
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Doz</label>
-                <input 
-                  type="text" 
-                  className="w-full border rounded p-2" 
-
-                  value={selectedMedicine ? `${selectedMedicine.dosage} mg` : ''}
-                  disabled
-
-                />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Kullanım Şekli</label>
-                <select 
-                  className="w-full border rounded p-2"
-                  onChange={handleUsageChange}
-                  value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === selectedMedicine.id)?.usage || "" : ""}
-                >
-                  <option value="">Seçiniz</option>
-                  <option value="oral">Oral</option>
-                  <option value="im">IM</option>
-                  <option value="iv">IV</option>
-                  <option value="sc">SC</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Sıklık</label>
-                <select 
-                  className="w-full border rounded p-2"
-                  onChange={handleFrequencyChange}
-                  value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === selectedMedicine.id)?.frequency || "" : ""}
-                >
-                  <option value="">Seçiniz</option>
-                  <option value="1x1">Günde 1x1</option>
-                  <option value="2x1">Günde 2x1</option>
-                  <option value="3x1">Günde 3x1</option>
-                  <option value="4x1">Günde 4x1</option>
-                </select>
-              </div>
-              <div>
-
-                <label className="block text-sm mb-1">Süre (Gün)</label>
-                <input 
-                  type="number" 
-                  min="1"
-                  className="w-full border rounded p-2"
-                  value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === String(selectedMedicine.id))?.duration || 5 : 5}
-                  onChange={(e) => selectedMedicine && handleDurationChange(String(selectedMedicine.id), e.target.value)}
-                />
-
-              </div>
+          <div className="grid grid-cols-6 gap-3">
+            <div>
+              <label className="block text-sm mb-1">İlaç Adı</label>
+              <select 
+                className="w-full border rounded p-2"
+                onChange={handleMedicineChange}
+                value={selectedMedicine?.id || ""}
+              >
+                <option value="">Seçiniz</option>
+                {medicines.map((medicine) => (
+                  <option key={medicine.id} value={medicine.id}>
+                    {medicine.name} - {medicine.category} ({medicine.dosage} mg)
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Doz</label>
+              <input 
+                type="text" 
+                className="w-full border rounded p-2" 
+                value={selectedMedicine ? `${selectedMedicine.dosage} mg` : ''}
+                disabled
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Kullanım Şekli</label>
+              <select 
+                className="w-full border rounded p-2"
+                onChange={handleUsageChange}
+                value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === selectedMedicine.id)?.usage || "" : ""}
+              >
+                <option value="">Seçiniz</option>
+                <option value="oral">Oral</option>
+                <option value="im">IM</option>
+                <option value="iv">IV</option>
+                <option value="sc">SC</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Sıklık</label>
+              <select 
+                className="w-full border rounded p-2"
+                onChange={handleFrequencyChange}
+                value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === selectedMedicine.id)?.frequency || "" : ""}
+              >
+                <option value="">Seçiniz</option>
+                <option value="1x1">Günde 1x1</option>
+                <option value="2x1">Günde 2x1</option>
+                <option value="3x1">Günde 3x1</option>
+                <option value="4x1">Günde 4x1</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Süre (Gün)</label>
+              <input 
+                type="number" 
+                min="1"
+                className="w-full border rounded p-2"
+                value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === String(selectedMedicine.id))?.duration || 5 : 5}
+                onChange={(e) => selectedMedicine && handleDurationChange(String(selectedMedicine.id), e.target.value)}
+              />
             </div>
           </div>
-
           {prescriptionData.medications.length > 0 && (
             <div className="border rounded p-3">
               <h4 className="font-semibold mb-3">Seçilen İlaçlar</h4>
@@ -304,9 +291,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
               </div>
             </div>
           )}
-
           <div className="border rounded p-3">
-
             <div className="grid grid-cols-1">
               <div>
                 <label className="block text-sm mb-1">Reçete Notları</label>
@@ -323,7 +308,6 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
       </div>
       <div className="flex justify-end gap-3 mt-6">
        
-
       </div>
     </div>
   );
