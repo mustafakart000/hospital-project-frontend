@@ -1,73 +1,74 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Modal, Input, Card } from "antd";
-import { TbUserEdit } from "react-icons/tb";
+import React, { useState, useEffect } from 'react';
+import { Table, Button, Space, Modal, Input, Card } from 'antd';
+import { TbUserEdit } from 'react-icons/tb';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import toast from "react-hot-toast";
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { deleteAdmin, getAllAdmins } from "../../services/admin-service";
+import { deletePatient, getAllPatients } from '../../services/patient-service';
 import PropTypes from 'prop-types';
 import { useMediaQuery } from 'react-responsive';
 
-const AdminTable = ({ activeTab }) => {
-  const [admins, setAdmins] = useState([]);
+const PatientTable = ({ activeTab }) => {
+  const [patients, setPatients] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [filteredAdmins, setFilteredAdmins] = useState([]);
-  const [selectedAdminId, setSelectedAdminId] = useState(null);
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const isMobile = useMediaQuery({ maxWidth: 580 });
+  const isMobile = useMediaQuery({ maxWidth: 610 });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchAdmins = async () => {
+    const fetchPatients = async () => {
       try {
-        const response = await getAllAdmins();
-        const formattedAdmins = response.map((admin) => {
-          const { ad, soyad, phoneNumber, id } = admin;
+        const response = await getAllPatients();
+        const formattedPatients = response.content.map((patient) => {
+          const { ad, soyad, telefon, id, tcKimlik } = patient;
           return {
             name: `${ad} ${soyad}`,
-            phone: phoneNumber,
+            phone: telefon,
+            tcKimlik,
             id: id,
           };
         });
-        setAdmins(formattedAdmins);
-        setFilteredAdmins(formattedAdmins);
+        setPatients(formattedPatients);
+        setFilteredPatients(formattedPatients);
       } catch (error) {
-        console.error("Adminleri çekerken hata oluştu:", error);
+        console.error("Hastaları çekerken hata oluştu:", error);
       }
     };
 
-    fetchAdmins();
+    fetchPatients();
   }, [activeTab==="list"]);
 
   const handleSearch = (value) => {
     const searchValue = value.toLowerCase();
-    const filtered = admins.filter((admin) =>
-      Object.values(admin).some(
+    const filtered = patients.filter((patient) =>
+      Object.values(patient).some(
         (val) =>
           val &&
           val.toString().toLowerCase().includes(searchValue)
       )
     );
-    setFilteredAdmins(filtered);
+    setFilteredPatients(filtered);
     setSearchText(value);
   };
 
   const handleEdit = (record) => {
-    navigate(`/dashboard/admin-management/edit/${record.id}`);
+    navigate(`/dashboard/patient-management/edit/${record.id}`);
   };
 
-  const showDeleteConfirm = (adminId) => {
-    setSelectedAdminId(adminId);
+  const showDeleteConfirm = (patientId) => {
+    setSelectedPatientId(patientId);
     setIsDeleteModalVisible(true);
   };
 
   const handleDeleteConfirm = () => {
-    if (selectedAdminId) {
-      deleteAdmin(selectedAdminId);
-      toast.success("Admin başarıyla silindi");
-      const updatedAdmins = admins.filter((admin) => admin.id !== selectedAdminId);
-      setAdmins(updatedAdmins);
-      setFilteredAdmins(updatedAdmins);
+    if (selectedPatientId) {
+      deletePatient(selectedPatientId);
+      toast.success("Hasta başarıyla silindi");
+      const updatedPatients = patients.filter((patient) => patient.id !== selectedPatientId);
+      setPatients(updatedPatients);
+      setFilteredPatients(updatedPatients);
       setIsDeleteModalVisible(false);
     }
   };
@@ -81,11 +82,19 @@ const AdminTable = ({ activeTab }) => {
       responsive: ["xs", "sm", "md", "lg"],
       sorter: (a, b) => a.name.localeCompare(b.name),
       filterSearch: true,
-      filters: admins.map(admin => ({
-        text: admin.name,
-        value: admin.id,
+      filters: patients.map(patient => ({
+        text: patient.name,
+        value: patient.id,
       })),
       onFilter: (value, record) => record.id === value,
+    },
+    {
+      title: "TC Kimlik",
+      dataIndex: "tcKimlik",
+      key: "tcKimlik",
+      width: 150,
+      responsive: isMobile ? [] : ["xs", "sm", "md", "lg"],
+      sorter: (a, b) => a.tcKimlik.localeCompare(b.tcKimlik),
     },
     {
       title: "Telefon",
@@ -128,7 +137,7 @@ const AdminTable = ({ activeTab }) => {
   return (
     <div>
       <Input.Search
-        placeholder="Admin ara..."
+        placeholder="Hasta ara..."
         allowClear
         value={searchText}
         onChange={(e) => handleSearch(e.target.value)}
@@ -136,17 +145,17 @@ const AdminTable = ({ activeTab }) => {
       />
       {isMobile ? (
         <div className="grid grid-cols-1 gap-4">
-          {filteredAdmins.map((admin) => (
-            <Card key={admin.id} size="small" className="shadow-sm">
+          {filteredPatients.map((patient) => (
+            <Card key={patient.id} size="small" className="shadow-sm">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-lg">{admin.name}</span>
+                  <span className="font-semibold text-lg">{patient.name}</span>
                   <Space size="small">
                     <Button
                       type="default"
                       size="small"
                       className="text-emerald-500 hover:text-yellow-400 hover:border-emerald-600"
-                      onClick={() => handleEdit(admin)}
+                      onClick={() => handleEdit(patient)}
                     >
                       <TbUserEdit />
                     </Button>
@@ -155,15 +164,19 @@ const AdminTable = ({ activeTab }) => {
                       size="small"
                       danger
                       className="text-red-500 hover:text-yellow-400 hover:border-red-600"
-                      onClick={() => showDeleteConfirm(admin.id)}
+                      onClick={() => showDeleteConfirm(patient.id)}
                     >
                       Sil
                     </Button>
                   </Space>
                 </div>
                 <div className="text-gray-600">
+                  <span className="font-medium">TC Kimlik: </span>
+                  {patient.tcKimlik}
+                </div>
+                <div className="text-gray-600">
                   <span className="font-medium">Telefon: </span>
-                  {admin.phone}
+                  {patient.phone}
                 </div>
               </div>
             </Card>
@@ -172,7 +185,7 @@ const AdminTable = ({ activeTab }) => {
       ) : (
         <Table
           columns={columns}
-          dataSource={filteredAdmins}
+          dataSource={filteredPatients}
           rowKey={(record) => record.id}
           pagination={{ pageSize: 10 }}
           scroll={{ x: 580 }}
@@ -182,7 +195,7 @@ const AdminTable = ({ activeTab }) => {
       <Modal
         title={<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: '22px' }} />
-          <span style={{ color: '#faad14', fontSize: '18px' }}>Admini Sil</span>
+          <span style={{ color: '#faad14', fontSize: '18px' }}>Hastayı Sil</span>
         </div>}
         open={isDeleteModalVisible}
         onOk={handleDeleteConfirm}
@@ -212,16 +225,16 @@ const AdminTable = ({ activeTab }) => {
         }}
       >
         <div style={{ fontSize: '16px', marginTop: '16px' }}>
-          <p>Bu admini silmek istediğinizden emin misiniz?</p>
-          <p style={{ color: '#8c8c8c', marginTop: '8px' }}>Not: Silinen admin kaydı sistem tarafından kalıcı olarak silinecektir ve geri alınamaz.</p>
+          <p>Bu hastayı silmek istediğinizden emin misiniz?</p>
+          <p style={{ color: '#8c8c8c', marginTop: '8px' }}>Not: Silinen hasta kaydı sistem tarafından kalıcı olarak silinecektir ve geri alınamaz.</p>
         </div>
       </Modal>
     </div>
   );
 };
 
-AdminTable.propTypes = {
+PatientTable.propTypes = {
   activeTab: PropTypes.string
 };
 
-export default AdminTable;
+export default PatientTable; 

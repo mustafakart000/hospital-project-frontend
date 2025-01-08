@@ -2,6 +2,7 @@ import { Form, Formik } from "formik";
 import React from "react";
 import * as Yup from "yup";
 
+
 import {
   Form as AntdForm,
   Button,
@@ -9,20 +10,20 @@ import {
   Typography,
   Col,
   Row,
+  Input,
+  Select
 } from "antd";
-import moment from "moment";
+import dayjs from "dayjs";
 import toast from "react-hot-toast";
 
-
-import { useNavigate } from "react-router-dom";
 
 import { createAdmin } from "../../services/admin-service";
 import "./floating-label.css";
 import TcInput from "../common/tc-input";
 import CustomInput from "../common/custom-input";
-import BloodTypeSelector from "../common/blood-type-selector";
 import PhoneInput from "../common/phone-input";
-
+import PropTypes from 'prop-types';
+import { EyeTwoTone, EyeInvisibleTwoTone } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -63,14 +64,12 @@ const initialValues = {
     "tcKimlik":""
   }
 
-const AdminNew = () => {
-  const navigate = useNavigate();
+const AdminNew = ({setActiveTab}) => {
   const handleSubmit = async (
     values,
     { setSubmitting, setErrors, resetForm }
   ) => {
     try {
-      //console.log("Gönderilen veriler:", values); // Form verilerini kontrol edin
       const formattedValues = {
         ...values,
         username: values.username.replace(/\s/g, ""),
@@ -80,18 +79,40 @@ const AdminNew = () => {
       };
       console.log("admin-new.jsx formattedValues", formattedValues);
       const response = await createAdmin(formattedValues);
-      console.log("API Yanıtı:", response); // API yanıtını kontrol edin
+      console.log("API Yanıtı:", response);
       if (response.includes("Admin başarıyla eklendi")) {
         toast.success("Başarılı bir şekilde kayıt oldunuz.");
-        navigate("/dashboard/admin-management");
+        setActiveTab("list");
         resetForm();
       }
     } catch (error) {
-      console.error("Hata:", error); // Hataları konsolda göster
-
-      setErrors({
-        submit: error.response?.data?.message || "Kayıt işlemi başarısız...",
-      });
+      console.error("Hata:", error);
+      
+      if (error.response?.data?.message) {
+        const errorMessage = error.response.data.message;
+        
+        if (errorMessage.includes("username")) {
+          setErrors({
+            username: "Bu kullanıcı adı zaten kullanılmaktadır.",
+          });
+          toast.error("Bu kullanıcı adı zaten kullanılmaktadır.");
+        } else if (errorMessage.includes("email")) {
+          setErrors({
+            email: "Bu email adresi zaten kullanılmaktadır.",
+          });
+          toast.error("Bu email adresi zaten kullanılmaktadır.");
+        } else {
+          setErrors({
+            submit: errorMessage,
+          });
+          toast.error(errorMessage);
+        }
+      } else {
+        setErrors({
+          submit: "Kayıt işlemi başarısız...",
+        });
+        toast.error("Kayıt işlemi başarısız...");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -261,47 +282,55 @@ const AdminNew = () => {
                 </AntdForm.Item>
               </Col>
 
-              {/* Doğum Tarihi ve Kan Grubu */}
+              {/* Doğum Tarihi */}
               <Col xs={24} sm={12}>
-                <AntdForm.Item
-                  className="w-full"
-                  validateStatus={
-                    errors.birthDate && touched.birthDate ? "error" : "success"
-                  }
-                  help={
-                    errors.birthDate && touched.birthDate
-                      ? errors.birthDate
-                      : null
-                  }
-                >
+                <div className="mb-2">
+                  <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">
+                    Doğum Tarihi
+                  </label>
                   <DatePicker
-                    showLabel={true}
-                    label="Doğum Tarihi"
+                    id="birthDate"
                     placeholder="Doğum Tarihi"
                     onChange={(date) => setFieldValue("birthDate", date)}
                     onBlur={() => setFieldTouched("birthDate", true)}
-                    value={values.birthDate ? moment(values.birthDate) : null}
+                    value={values.birthDate ? dayjs(values.birthDate) : null}
                     className="w-full h-9 border-gray-400 focus:border-blue-500 focus:ring-0"
+                    disabledDate={(current) => current && current > dayjs().endOf('day')}
                   />
-                </AntdForm.Item>
+                  {touched.birthDate && errors.birthDate && (
+                    <div className="text-red-500 text-sm mt-1">{errors.birthDate}</div>
+                  )}
+                </div>
               </Col>
 
+              {/* Kan Grubu */}
               <Col xs={24} sm={12}>
-                <AntdForm.Item
-                  className="w-full"
-                  validateStatus={
-                    errors.kanGrubu && touched.kanGrubu ? "error" : "success"
-                  }
-                  help={
-                    errors.kanGrubu && touched.kanGrubu ? errors.kanGrubu : null
-                  }
-                >
-                  <BloodTypeSelector
-                    value={values.kanGrubu}
-                    onChange={(newValue) => setFieldValue("kanGrubu", newValue)}
+                <div className="mb-2">
+                  <label htmlFor="kanGrubu" className="block text-sm font-medium text-gray-700 mb-1">
+                    Kan Grubu
+                  </label>
+                  <Select
+                    id="kanGrubu"
                     className="w-full"
-                  />
-                </AntdForm.Item>
+                    placeholder="Seçiniz"
+                    onChange={(value) => setFieldValue('kanGrubu', value)}
+                    onBlur={() => setFieldTouched('kanGrubu', true)}
+                    value={values.kanGrubu}
+                  >
+                    <Select.Option value="">Seçiniz</Select.Option>
+                    <Select.Option value="A+">A+</Select.Option>
+                    <Select.Option value="A-">A-</Select.Option>
+                    <Select.Option value="B+">B+</Select.Option>
+                    <Select.Option value="B-">B-</Select.Option>
+                    <Select.Option value="AB+">AB+</Select.Option>
+                    <Select.Option value="AB-">AB-</Select.Option>
+                    <Select.Option value="0+">0+</Select.Option>
+                    <Select.Option value="0-">0-</Select.Option>
+                  </Select>
+                  {touched.kanGrubu && errors.kanGrubu && (
+                    <div className="text-red-500 text-sm mt-1">{errors.kanGrubu}</div>
+                  )}
+                </div>
               </Col>
 
               {/* Adres - Tam Genişlik */}
@@ -335,14 +364,14 @@ const AdminNew = () => {
                     errors.password && touched.password ? errors.password : null
                   }
                 >
-                  <CustomInput
+                  <Input.Password
                     id="password"
-                    label="Şifre"
-                    type="password"
+                    placeholder="Şifre"
                     onChange={(e) => setFieldValue("password", e.target.value)}
                     onBlur={() => setFieldTouched("password", true)}
                     value={values.password}
-                    className="w-full"
+                    className="w-full h-9"
+                    iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleTwoTone />)}
                   />
                 </AntdForm.Item>
               </Col>
@@ -361,16 +390,14 @@ const AdminNew = () => {
                       : null
                   }
                 >
-                  <CustomInput
+                  <Input.Password
                     id="confirmPassword"
-                    label="Şifre Tekrar"
-                    type="password"
-                    onChange={(e) =>
-                      setFieldValue("confirmPassword", e.target.value)
-                    }
+                    placeholder="Şifre Tekrar"
+                    onChange={(e) => setFieldValue("confirmPassword", e.target.value)}
                     onBlur={() => setFieldTouched("confirmPassword", true)}
                     value={values.confirmPassword}
-                    className="w-full"
+                    className="w-full h-9"
+                    iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleTwoTone />)}
                   />
                 </AntdForm.Item>
               </Col>
@@ -401,6 +428,10 @@ const AdminNew = () => {
       </Formik>
     </div>
   );
+};
+
+AdminNew.propTypes = {
+  setActiveTab: PropTypes.func.isRequired
 };
 
 export default AdminNew;

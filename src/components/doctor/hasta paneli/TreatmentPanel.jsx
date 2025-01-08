@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import { Tabs, Tab, Box } from "@mui/material";
@@ -55,9 +56,11 @@ const TreatmentPanel = () => {
     }));
   };
 
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+
 
   const handleButtonClick = async (action) => {
     setSelectedPatient(null);
@@ -217,6 +220,7 @@ const TreatmentPanel = () => {
         />
       </div>
     </>
+
   );
 };
 

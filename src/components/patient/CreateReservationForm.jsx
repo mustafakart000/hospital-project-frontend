@@ -6,7 +6,7 @@ import { fetchSpecialties } from "../../redux/slices/specialities-thunk";
 
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { getAllDoctorsBySpecialtyId, getDoctorReservations } from "../../services/reservation-service";
+import { getAllDoctorsBySpecialtyId, getDoctorReservations, getReservationsByPatientId } from "../../services/reservation-service";
 import { createReservation } from "../../services/patient-service";
 import { setOperation, setListRefreshToken } from "../../redux/slices/misc-slice";
 import { ChevronUp, ChevronDown } from "lucide-react";
@@ -187,9 +187,15 @@ const CreateReservationForm = ({ visible, onCancel }) => {
   // Seçilen uzmanlığa göre doktorları getirir
   const handleSpecialtyChange = async (selectedSpecialtyId) => {
     try {
-     const response = await getAllDoctorsBySpecialtyId(selectedSpecialtyId);
-     console.log("createReservationForm.jsx response", response);
+      const response = await getAllDoctorsBySpecialtyId(selectedSpecialtyId);
+      console.log("createReservationForm.jsx response", response);
       setDoctors(response);
+      // Uzmanlık değiştiğinde formu tamamen sıfırla
+      formik.setFieldValue("speciality", selectedSpecialtyId);
+      formik.setFieldValue("doctor", "");
+      formik.setFieldValue("reservationDate", "");
+      formik.setFieldValue("reservationTime", "");
+      form.resetFields(["doctor", "reservationDate", "reservationTime"]);
     } catch (error) {
       console.error("Doktorlar getirilirken hata oluştu:", error);
     }
@@ -197,11 +203,15 @@ const CreateReservationForm = ({ visible, onCancel }) => {
 
   const handleDoctorChange = async (doctorId) => {
     try {
-      const reservations = await getDoctorReservations(doctorId);
-      const bookedTimes = reservations.map(res => ({
-        date: res.reservationDate,
-        time: res.reservationTime.substring(0, 5) // 'HH:mm:ss' formatından 'HH:mm' formatına dönüştür
-      }));
+      const doctorReservations = await getDoctorReservations(doctorId);
+      const patientReservations = await getReservationsByPatientId(user.id);
+      const allReservations = [...doctorReservations, ...patientReservations];
+      const bookedTimes = allReservations
+        .filter(res => res.status !== 'CANCELLED')
+        .map(res => ({
+          date: res.reservationDate,
+          time: res.reservationTime.substring(0, 5) // 'HH:mm:ss' formatından 'HH:mm' formatına dönüştür
+        }));
       setBookedSlots(bookedTimes);
     } catch (error) {
       console.error("Randevular getirilirken hata oluştu:", error);
@@ -265,49 +275,53 @@ const CreateReservationForm = ({ visible, onCancel }) => {
           label="Randevu Saati"
           name="reservationTime"
         >
-          <div className="space-y-2">
-            {Object.entries(timeSlots).map(([time, subSlots]) => ( // Zaman dilimlerini ve alt dilimlerini iterasyonla oluşturur
-              <div key={time} className="border rounded-lg">
-                <div
-                  className="flex items-center p-4 cursor-pointer"
-                  onClick={() => toggleTimeSlot(time)} // Zaman dilimi tıklanabilir ve genişletilebilir
-                >
-                  {expandedTime === time ? ( // Zaman dilimi genişletilmişse
-                    <ChevronUp className="w-5 h-5 mr-2" /> // Yukarı ok simgesi
-                  ) : (
-                    <ChevronDown className="w-5 h-5 mr-2" /> // Aşağı ok simgesi
-                  )}
-                  <span>{time}</span> 
-                </div>
-                {expandedTime === time && subSlots.length > 0 && ( // Zaman dilimi genişletilmişse ve alt dilimler varsa
-                  <div className="grid grid-cols-3 gap-2 p-4 pt-0"> 
-                    {subSlots.map((slot) => { // Her alt dilim için iterasyon
-                      const isBooked = bookedSlots.some( // Alt dilimin rezerve edilip edilmediğini kontrol eder
-                        (b) => b.date === formik.values.reservationDate.format('YYYY-MM-DD') && b.time === slot.time
-                      );
-                      const isSelected = formik.values.reservationTime === slot.time; // Seçili zaman dilimini kontrol et
-                      return (
-                        <button
-                          key={slot.time} // Alt dilim için benzersiz anahtar
-                          disabled={isBooked} // Rezerve edilmişse buton devre dışı
-                          className={`px-4 py-2 rounded-lg ${
-                            isBooked
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50' // Rezerve edilmiş stil
-                              : isSelected
-                              ? 'bg-green-500 text-white' // Seçili stil
-                              : 'bg-blue-500 text-white hover:bg-blue-600' // Rezerve edilmemiş stil
-                          }`}
-                          onClick={() => formik.setFieldValue("reservationTime", slot.time)} // Alt dilim seçildiğinde form alanını günceller
-                        >
-                          {slot.time} 
-                        </button>
-                      );
-                    })}
+          {formik.values.speciality && formik.values.doctor && formik.values.reservationDate ? ( // Eğer uzmanlık, doktor ve tarih seçilmişse saatleri göster
+            <div className="space-y-2">
+              {Object.entries(timeSlots).map(([time, subSlots]) => (
+                <div key={time} className="border rounded-lg">
+                  <div
+                    className="flex items-center p-4 cursor-pointer"
+                    onClick={() => toggleTimeSlot(time)}
+                  >
+                    {expandedTime === time ? (
+                      <ChevronUp className="w-5 h-5 mr-2" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 mr-2" />
+                    )}
+                    <span>{time}</span>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  {expandedTime === time && subSlots.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 p-4 pt-0">
+                      {subSlots.map((slot) => {
+                        const isBooked = bookedSlots.some(
+                          (b) => b.date === formik.values.reservationDate.format('YYYY-MM-DD') && b.time === slot.time
+                        );
+                        const isSelected = formik.values.reservationTime === slot.time;
+                        return (
+                          <button
+                            key={slot.time}
+                            disabled={isBooked}
+                            className={`px-4 py-2 rounded-lg ${
+                              isBooked
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                                : isSelected
+                                ? 'bg-green-500 text-white'
+                                : 'bg-blue-500 text-white hover:bg-blue-600'
+                            }`}
+                            onClick={() => formik.setFieldValue("reservationTime", slot.time)}
+                          >
+                            {slot.time}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>Lütfen önce uzmanlık, doktor ve randevu tarihini seçiniz.</p> // Seçimler tamamlanmamışsa uyarı mesajı göster
+          )}
         </Form.Item>
       </Form>
     </Modal>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { getAllMedicinesByDoctorSpeciality } from '../../../services/medicine-service';
@@ -189,15 +190,18 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
     }
   };
 
+
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="p-4 border rounded">
-        <div className="flex items-center justify-between mb-4">
+        <div className={`flex ${isTablet ? 'flex-col space-y-3' : 'items-center justify-between'} mb-4`}>
           <h3 className="font-semibold">İlaç Listesi</h3>
+
+
         </div>
         
         <div className="space-y-4">
-          <div className="border rounded p-3">
+
             <div className="grid grid-cols-6 gap-3">
               <div>
                 <label className="block text-sm mb-1">İlaç Adı</label>
@@ -213,14 +217,17 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
                     </option>
                   ))}
                 </select>
+
               </div>
               <div>
                 <label className="block text-sm mb-1">Doz</label>
                 <input 
                   type="text" 
                   className="w-full border rounded p-2" 
+
                   value={selectedMedicine ? `${selectedMedicine.dosage} mg` : ''}
                   disabled
+
                 />
               </div>
               <div>
@@ -252,6 +259,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
                 </select>
               </div>
               <div>
+
                 <label className="block text-sm mb-1">Süre (Gün)</label>
                 <input 
                   type="number" 
@@ -260,6 +268,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
                   value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === String(selectedMedicine.id))?.duration || 5 : 5}
                   onChange={(e) => selectedMedicine && handleDurationChange(String(selectedMedicine.id), e.target.value)}
                 />
+
               </div>
             </div>
           </div>
@@ -297,6 +306,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
           )}
 
           <div className="border rounded p-3">
+
             <div className="grid grid-cols-1">
               <div>
                 <label className="block text-sm mb-1">Reçete Notları</label>
@@ -313,6 +323,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
       </div>
       <div className="flex justify-end gap-3 mt-6">
        
+
       </div>
     </div>
   );

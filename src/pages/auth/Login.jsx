@@ -6,6 +6,8 @@ import * as yup from "yup";
 import { Formik, Form, Field } from "formik";
 import { toast } from "react-hot-toast";
 import { loginThunk } from "../../redux/slices/authThunks";
+import { Input } from "antd";
+import { EyeTwoTone, EyeInvisibleTwoTone } from "@ant-design/icons";
 
 const validationSchema = yup.object({
   username: yup
@@ -93,11 +95,16 @@ const Login = () => {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Şifre
               </label>
-              <Field
+              <Input.Password
                 name="password"
-                type="password"
-                className="w-full p-2 border rounded-md"
+                id="password"
                 placeholder="Şifreniz"
+                className="w-full"
+                onChange={(e) => {
+                  formikRef.current?.setFieldValue("password", e.target.value);
+                }}
+                onBlur={() => formikRef.current?.setFieldTouched("password", true)}
+                iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleTwoTone />)}
               />
               {errors.password && touched.password && (
                 <div className="text-red-500 text-sm">{errors.password}</div>

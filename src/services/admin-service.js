@@ -1,7 +1,6 @@
 import axios from "axios";
 import { getAuthHeader } from "./auth-header";
 import { config } from "../helpers/config";
-import toast from "react-hot-toast";
 const baseUrl = config.api.baseUrl;
 
 
@@ -11,16 +10,10 @@ export const createAdmin = async (adminData) => {
         return response.data;
     } catch (error) {
         if (error.response) {
-            //console.log("error.response", error.response)
-            // Hata mesajını burada döndürebilir veya işleyebilirsiniz
-            const { status, message } = error.response.data;
-            console.error("Service Error:", message); // Hata mesajını logluyoruz
-            toast.error(message);
-            throw new Error(`Error ${status}: ${message}`);
-        }else if(error.message.includes("for key 'admin.UK_")){
-            toast.error("Kullanıcı adı zaten kullanılmaktadır.");
+            const { message } = error.response.data;
+            console.error("Service Error:", message);
+            throw error;
         } else {
-            // Hata bir HTTP hatası değilse, genel hata loglama
             console.error("Unexpected Error:", error);
             throw error;
         }
@@ -57,4 +50,13 @@ export const getAdminById = async (id) => {
     }
 };
 
+export const updateAdmin = async (id, adminData) => {
+    try {
+        const response = await axios.put(`${baseUrl}/admin/update/${id}`, adminData, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        console.error("Service Error:", error);
+        throw error;
+    }
+};
 
