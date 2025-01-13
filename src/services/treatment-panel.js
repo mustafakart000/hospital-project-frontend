@@ -13,4 +13,8 @@ export const createDiagnosis = async (diagnosis) => {
   return response;
 };
 
+export const createVitals = async (payload) => {
+  const response = await axios.post(`${baseUrl}/vitals/create`, payload, { headers: getAuthHeader() });
+  return response.data;
+};
 

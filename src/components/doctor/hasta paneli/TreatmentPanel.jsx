@@ -65,6 +65,15 @@ const TreatmentPanel = () => {
   const handleButtonClick = async (action) => {
     setSelectedPatient(null);
 
+    if (value === "vitals") {
+      // Vitals tab için özel işlem
+      const vitalsTabRef = document.querySelector('[data-tab="vitals"]');
+      if (vitalsTabRef && vitalsTabRef.handleSubmit) {
+        await vitalsTabRef.handleSubmit();
+      }
+      return;
+    }
+
     const payload = {
       reservationId: patientInformation?.reservationId,
       diagnosticInfo: {
@@ -177,7 +186,13 @@ const TreatmentPanel = () => {
                 </Tabs>
 
                 <Box sx={{ mt: 2 }}>
-                  {value === "vitals" && <VitalsTab />}
+                  {value === "vitals" && (
+                    <VitalsTab
+                      doctorId={userId}
+                      patientId={patientInformation?.patientId}
+                      onSaveAndExit={() => handleButtonClick("saveAndExit")}
+                    />
+                  )}
                   {value === "diagnosis" && (
                     <DiagnosisTab
                       values={diagnosisValues}
