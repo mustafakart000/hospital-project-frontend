@@ -3,11 +3,13 @@ import { Card } from 'antd';
 import { Calendar, Users, FileText, ClipboardList } from "lucide-react";
 import { getDoctorById } from "../../services/doctor-service";
 import { getDoctorReservations } from "../../services/reservation-service";
+import { getPrescriptionsCurrentDoctor } from "../../services/prescription-service";
 import { useSelector } from "react-redux";
 import { useMediaQuery } from 'react-responsive';
 
 const DoctorPanel = () => {
   const [doctorInfo, setDoctorInfo] = useState(null);
+  const [prescriptions, setPrescriptions] = useState([]);
   const doctorId = useSelector(state => state.auth.user.id.toString());
   const isMobile = useMediaQuery({ maxWidth: 640 });
   const isTablet = useMediaQuery({ maxWidth: 1024 });
@@ -17,6 +19,8 @@ const DoctorPanel = () => {
       try {
         const response = await getDoctorById(doctorId);
         const reservations = await getDoctorReservations(doctorId);
+        const prescriptionsData = await getPrescriptionsCurrentDoctor(doctorId);
+        setPrescriptions(prescriptionsData);
         setDoctorInfo({ ...response, reservations });
       } catch (error) {
         console.error("Doktor bilgileri alınamadı:", error);
@@ -55,7 +59,7 @@ const DoctorPanel = () => {
     },
     {
       title: 'Aktif Reçeteler',
-      value: '6',
+      value: prescriptions.reduce((total, prescription) => total + prescription.medications.length, 0),
       icon: <FileText className="h-6 w-6 text-white" />,
       bgColor: 'bg-rose-500'
     }

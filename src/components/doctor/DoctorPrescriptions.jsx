@@ -4,6 +4,7 @@ import { FileText, Search, Calendar } from 'lucide-react';
 import { useMediaQuery } from 'react-responsive';
 import PrescriptionForm from './prescription-form';
 import { getPrescriptionsCurrentDoctor } from '../../services/prescription-service';
+import { getPatientProfile } from '../../services/patient-service';
 import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 
@@ -27,8 +28,18 @@ const DoctorPrescriptions = () => {
       setLoading(true);
       try {
         const data = await getPrescriptionsCurrentDoctor(doctorId);
-        console.log("data",data)
-        setPrescriptions(data);
+        
+        const prescriptionsWithPatientData = await Promise.all(
+          data.map(async (prescription) => {
+            const patientData = await getPatientProfile(prescription.patientId);
+            return {
+              ...prescription,
+              patientName: `${patientData.ad} ${patientData.soyad}`
+            };
+          })
+        );
+        
+        setPrescriptions(prescriptionsWithPatientData);
       } catch (error) {
         console.error('Reçeteler yüklenirken hata oluştu:', error);
       } finally {
@@ -40,6 +51,16 @@ const DoctorPrescriptions = () => {
   }, [doctorId]);
 
   const columns = [
+    {
+      title: 'Hasta',
+      dataIndex: 'patientName',
+      key: 'patientName',
+      render: (text) => (
+        <div className="flex items-center space-x-2">
+          <span>{text}</span>
+        </div>
+      ),
+    },
     {
       title: 'Tarih',
       dataIndex: 'createdAt',
@@ -137,6 +158,9 @@ const DoctorPrescriptions = () => {
           {paginatedData.map((prescription) => (
             <Card key={prescription.id} className="bg-white shadow-sm">
               <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium">Hasta: {prescription.patientName}</span>
+                </div>
                 <div className="flex items-center space-x-2">
                   <FileText className="w-4 h-4 text-gray-400" />
                   <span className="font-medium">Reçete No: {prescription.id.slice(0, 8)}...</span>
