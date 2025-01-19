@@ -64,21 +64,15 @@ jobs:
     - name: Transfer Frontend Files
       run: |
         pwd
-        if [ -d "dist" ] && [ "$(ls -A dist)" ]; then
-          echo "Transferring files from dist directory..."
-          expect <<'EOF'
-          spawn scp -r dist/* root@37.148.209.189:/var/www/html/
-          expect {
-            "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
-            "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
-          }
-          expect eof
+        ls -la dist/  # Debug için içeriği görelim
+        cd dist && expect <<'EOF'
+        spawn scp -r * root@37.148.209.189:/var/www/html/
+        expect {
+          "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
+          "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
+        }
+        expect eof
         EOF
-        else
-          echo "Build directory check failed. Contents of current directory:"
-          ls -la
-          exit 1
-        fi
         
     # Nginx Restart    
     - name: Restart Nginx
