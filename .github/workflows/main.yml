@@ -76,17 +76,29 @@ jobs:
         expect eof
         EOF
         
-    # Dist Klasörünü Transfer Et
+    # Build İşlemi ve Kontrol
+    - name: Build and Check
+      run: |
+        npm run build
+        echo "Build directory contents:"
+        ls -la dist/
+        
+    # Dosyaları Transfer Et
     - name: Transfer Frontend Files
       run: |
-        expect << EOF
-        spawn scp -r dist/* root@37.148.209.189:/var/www/html/
-        expect {
-          "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
-          "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
-        }
-        expect eof
-        EOF
+        if [ -d "dist" ] && [ "$(ls -A dist)" ]; then
+          expect << EOF
+          spawn scp -r dist/* root@37.148.209.189:/var/www/html/
+          expect {
+            "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
+            "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
+          }
+          expect eof
+          EOF
+        else
+          echo "Error: dist directory is empty or does not exist"
+          exit 1
+        fi
         
     # Nginx Yeniden Başlat
     - name: Restart Nginx
