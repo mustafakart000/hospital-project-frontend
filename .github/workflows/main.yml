@@ -64,9 +64,12 @@ jobs:
     - name: Transfer Frontend Files
       run: |
         pwd
-        ls -la dist/  # Debug için içeriği görelim
-        cd dist && expect <<'EOF'
-        spawn scp -r * root@37.148.209.189:/var/www/html/
+        ls -la dist/
+        cd dist || exit 1
+        pwd  # Debug için şu anki dizini göster
+        ls -la  # Debug için dizin içeriğini göster
+        expect <<'EOF'
+        spawn sh -c "scp -r ./* root@37.148.209.189:/var/www/html/"
         expect {
           "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
           "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
