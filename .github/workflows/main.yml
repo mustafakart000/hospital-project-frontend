@@ -1,0 +1,111 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    # Kodları Checkout Et
+    - name: Checkout Code
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    # Node.js Kurulumu
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    # Node Modules Cache
+    - name: Cache Node Modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+          
+    # Bağımlılıkları Yükle
+    - name: Install Dependencies
+      run: npm install
+      
+    # Frontend Build
+    - name: Build Frontend
+      run: npm run build
+      
+    # Expect Paketini Yükle
+    - name: Install Expect if Missing
+      run: |
+        if ! command -v expect &> /dev/null; then
+          sudo apt-get update && sudo apt-get install -y expect
+        else
+          echo "Expect already installed"
+        fi
+        
+    # Mevcut Frontend Dosyalarını Temizle
+    - name: Clean Existing Frontend Files
+      run: |
+        expect << EOF
+        spawn ssh root@37.148.209.189
+        expect {
+          "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
+          "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
+        }
+        expect "~#"
+        send "rm -rf /var/www/html/*\r"
+        expect "~#"
+        send "exit\r"
+        expect eof
+        EOF
+        
+    # Dist Klasörünü Sunucuya Gönder
+    - name: Transfer Frontend Files
+      run: |
+        expect << EOF
+        spawn scp -r dist/* root@37.148.209.189:/var/www/html/
+        expect {
+          "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
+          "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
+        }
+        expect eof
+        EOF
+        
+    # Nginx Kontrolü ve Yeniden Başlatma
+    - name: Restart Nginx
+      run: |
+        expect << EOF
+        spawn ssh root@37.148.209.189
+        expect {
+          "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
+          "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
+        }
+        expect "~#"
+        send "nginx -t\r"
+        expect "~#"
+        send "systemctl restart nginx\r"
+        expect "~#"
+        send "exit\r"
+        expect eof
+        EOF
+
+    # Deployment Başarı Kontrolü
+    - name: Verify Deployment
+      run: |
+        expect << EOF
+        spawn ssh root@37.148.209.189
+        expect {
+          "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
+          "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
+        }
+        expect "~#"
+        send "if [ -f /var/www/html/index.html ]; then echo 'Deployment successful'; else echo 'Deployment failed' && exit 1; fi\r"
+        expect "~#"
+        send "exit\r"
+        expect eof
+        EOF
