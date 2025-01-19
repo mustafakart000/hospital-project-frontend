@@ -20,33 +20,38 @@ jobs:
       with:
         node-version: '18'
         
-    # Debug - İlk Kontrol
-    - name: Initial Directory Check
+    # Bağımlılıkları Temizle ve Yeniden Yükle
+    - name: Clean Install
       run: |
-        pwd
-        ls -la
-        
-    # Bağımlılıkları Yükle
-    - name: Install Dependencies
-      run: |
+        rm -rf node_modules package-lock.json
+        npm cache clean --force
         npm install
         
-    # Build Öncesi ESLint Devre Dışı Bırak
-    - name: Disable ESLint
+    # ESLint'i Devre Dışı Bırak
+    - name: Create Vite Config
       run: |
-        echo "DISABLE_ESLINT_PLUGIN=true" >> .env
+        cat > vite.config.js << 'END'
+        import { defineConfig } from 'vite'
+        import react from '@vitejs/plugin-react'
+
+        export default defineConfig({
+          plugins: [react()],
+          build: {
+            outDir: 'dist',
+            emptyOutDir: true
+          }
+        })
+        END
         
-    # Build
+    # Build İşlemi
     - name: Build Frontend
       run: |
-        CI=false npm run build
+        VITE_DISABLE_ESLINT=true npm run build
         
     # Build Sonrası Kontrol
     - name: Check Build Output
       run: |
-        echo "Current directory contents:"
         ls -la
-        echo "Build directory contents:"
         ls -la dist || echo "dist directory not found"
         
     # Expect Yükleme    
@@ -55,7 +60,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y expect
         
-    # Transfer İşlemi
+    # Dosyaları Transfer Et    
     - name: Transfer Frontend Files
       run: |
         pwd
@@ -74,3 +79,19 @@ jobs:
           ls -la
           exit 1
         fi
+        
+    # Nginx Restart    
+    - name: Restart Nginx
+      run: |
+        expect <<'EOF'
+        spawn ssh root@37.148.209.189
+        expect {
+          "Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
+          "password:" { send "${{ secrets.SERVER_PASSWORD }}\r" }
+        }
+        expect "~#"
+        send "systemctl restart nginx\r"
+        expect "~#"
+        send "exit\r"
+        expect eof
+        EOF
