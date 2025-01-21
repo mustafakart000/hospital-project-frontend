@@ -9,6 +9,8 @@ import { config } from "../../helpers/config";
 import DoctorRegistration from "../../components/admin/DoctorRegistration";
 import AdminEdit from "../../components/admin/admin-edit";
 import PatientEdit from "../../components/admin/PatientEdit";
+import TechnicianManagement from "../../components/admin/TechnicianManagement";
+import TechnicianEdit from "../../components/admin/TechnicianEdit";
 
 const  AdminRoutes = [
     {
@@ -36,6 +38,24 @@ const  AdminRoutes = [
           </PrivateRoute>
         ),
       },
+      {
+        path: "technician-management",
+        element: (
+          <PrivateRoute roles={config.pageRoles.adminManagement}>
+            <TechnicianManagement/>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "technician-management/edit/:id",
+        element: (
+          <PrivateRoute roles={config.pageRoles.adminManagement}>
+            <TechnicianEdit/>
+          </PrivateRoute>
+        ),
+      },
+     
+
       {
         path: "doctor-management/register",
         element: (

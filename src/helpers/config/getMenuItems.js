@@ -5,6 +5,7 @@ export const getMenuItems = (role) => {
       { title: "Admin Yönetimi", link: "/dashboard/admin-management" },
       { title: "Doktor Yönetimi", link: "/dashboard/doctor-management" },
       { title: "Hasta Yönetimi", link: "/dashboard/patient-management" },
+      { title: "Teknisyen Yönetimi", link: "/dashboard/technician-management" },
       
       
     ],
@@ -22,6 +23,12 @@ export const getMenuItems = (role) => {
       { title: "Reçete Yönetimi", link: "/patient-dashboard/patient-prescriptions" },
       { title: "Hasta Geçmişi", link: "/patient-dashboard/patient-medical-history" },
       { title: "Hasta Profili", link: "/patient-dashboard/patient-profile" },
+    ],
+    TECHNICIAN: [
+      { title: "Ana Sayfa", link: "/technician-dashboard" },
+      { title: "Laboratuvar Paneli", link: "/technician-dashboard/lab-results" },
+      {title: "Görüntüleme Paneli", link: "/technician-dashboard/lab-results/view"},
+      { title: "Teknisyen Profili", link: "/technician-dashboard/technician-profile" },
     ],
   };
 

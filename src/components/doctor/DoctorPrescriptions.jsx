@@ -27,21 +27,40 @@ const DoctorPrescriptions = () => {
       
       setLoading(true);
       try {
-        const data = await getPrescriptionsCurrentDoctor(doctorId);
-        
-        const prescriptionsWithPatientData = await Promise.all(
-          data.map(async (prescription) => {
+        const prescriptionsData = await getPrescriptionsCurrentDoctor(doctorId);
+        console.log("Reçeteler:", prescriptionsData);
+
+        if (!prescriptionsData || prescriptionsData.length === 0) {
+          console.log("Reçete bulunamadı");
+          setPrescriptions([]);
+          return;
+        }
+
+        const promises = prescriptionsData.map(async (prescription) => {
+          try {
             const patientData = await getPatientProfile(prescription.patientId);
+            console.log("Hasta bilgisi:", patientData);
+            
             return {
               ...prescription,
               patientName: `${patientData.ad} ${patientData.soyad}`
             };
-          })
-        );
-        
-        setPrescriptions(prescriptionsWithPatientData);
+          } catch (error) {
+            console.error(`Hasta bilgisi alınamadı (ID: ${prescription.patientId}):`, error);
+            return {
+              ...prescription,
+              patientName: 'Hasta bilgisi alınamadı'
+            };
+          }
+        });
+
+        const completedPrescriptions = await Promise.all(promises);
+        console.log("İşlenmiş reçeteler:", completedPrescriptions);
+        setPrescriptions(completedPrescriptions);
+
       } catch (error) {
         console.error('Reçeteler yüklenirken hata oluştu:', error);
+        setPrescriptions([]);
       } finally {
         setLoading(false);
       }
@@ -52,7 +71,7 @@ const DoctorPrescriptions = () => {
 
   const columns = [
     {
-      title: 'Hasta',
+      title: 'Hasta Adı Soyadı',
       dataIndex: 'patientName',
       key: 'patientName',
       render: (text) => (

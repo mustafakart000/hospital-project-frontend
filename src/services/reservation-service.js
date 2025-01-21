@@ -20,7 +20,6 @@ export const updateReservation = async (reservationId, reservationData) => {
 
 export const getDoctorReservations = async (doctorId) => {
     const response = await axios.get(`${baseUrl}/reservations/get/doctor/${doctorId}`, { headers: getAuthHeader() });
-    console.log("getDoctorReservations response", response);
     return response.data;
 }
 

@@ -53,6 +53,8 @@ const Login = () => {
         navigate("/doctor-dashboard");
       } else if(resp.data.role === "PATIENT") {
         navigate("/patient-dashboard");
+      } else if(resp.data.role === "TECHNICIAN") {
+        navigate("/technician-dashboard");
       }
       toast.success("Giriş başarılı");
     } catch {

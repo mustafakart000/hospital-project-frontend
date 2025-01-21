@@ -4,6 +4,7 @@ import { loginSuccess } from "./auth-slice";
 const initialState = {
   patient: null,
   userId: null,
+  patientId: null,
 };
 
 const treatmentSlice = createSlice({
@@ -12,6 +13,8 @@ const treatmentSlice = createSlice({
   reducers: {
     setPatient: (state, action) => {
       state.patient = action.payload;
+      state.userId = action.payload.doctorId;
+      state.patientId = action.payload.patientId;
     },
     setUserId: (state, action) => {
       state.userId = action.payload;

@@ -11,34 +11,17 @@ import { CardContent } from "@mui/material";
 import { createDiagnosis } from "../../../services/treatment-panel";
 import { useSelector } from "react-redux";
 import TodayPatientQueue from "./TodayPatientQueue";
-import { getAllDoctorByReservations } from "../../../services/reservation-service";
 import CreatePrescription from "../prescription/CreatePrescription";
-
-const getLastAppointmentDate = (allReservations, patientId) => {
-  if (!allReservations || !patientId) return null;
-
-  const patientReservations = allReservations.filter(
-    (reservation) => reservation.patientId === patientId
-  );
-
-  if (patientReservations.length === 0) return null;
-
-  const sortedAppointments = patientReservations.sort(
-    (a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate)
-  );
-
-  return sortedAppointments[0]?.appointmentDate;
-};
+import { getLabRequestAll, getImagingRequestByPatientId } from "../../../services/technicians-service";
 
 const TreatmentPanel = () => {
   const isMobile = useMediaQuery({ maxWidth: 610 });
-  const { patient, userId } = useSelector((state) => state.treatment);
-  console.log("TreatmentPanel.jsx patient: ", patient);
-  console.log("TreatmentPanel.jsx userId: ", userId);
+  const { userId } = useSelector((state) => state.treatment);
+
   const [patientInformation, setPatientInformation] = useState(null);
   const [value, setValue] = useState("vitals");
-  const [allReservations, setAllReservations] = useState(null);
   const [refreshQueue, setRefreshQueue] = useState(false);
+  const [pendingTests, setPendingTests] = useState({ lab: 0, imaging: 0 });
 
   const [diagnosisValues, setDiagnosisValues] = useState({
     preliminaryDiagnosis: "",
@@ -119,8 +102,6 @@ const TreatmentPanel = () => {
 
     try {
       const response = await createDiagnosis(payload);
-      const allReservations = await getAllDoctorByReservations(userId);
-      setAllReservations(allReservations);
       console.log("API Response:", response);
 
       setRefreshQueue((prev) => !prev);
@@ -132,8 +113,33 @@ const TreatmentPanel = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   useEffect(() => {
     setSelectedPatient(patientInformation);
-    console.log("TreatmentPanel.jsx selectedPatient: ", selectedPatient);
   }, [patientInformation]);
+
+  useEffect(() => {
+    const fetchPendingTests = async () => {
+      if (patientInformation?.patientId) {
+        try {
+          const [labTests, imagingTests] = await Promise.all([
+            getLabRequestAll(patientInformation.patientId),
+            getImagingRequestByPatientId(patientInformation.patientId)
+          ]);
+
+          const pendingLabTests = labTests.filter(test => test.status === 'PENDING').length;
+          const pendingImagingTests = imagingTests.filter(test => test.status === 'PENDING').length;
+
+          setPendingTests({
+            lab: pendingLabTests,
+            imaging: pendingImagingTests
+          });
+        } catch (error) {
+          console.error('Bekleyen testler alınamadı:', error);
+        }
+      }
+    };
+
+    fetchPendingTests();
+  }, [patientInformation]);
+
   return (
     <>
       <div>
@@ -146,27 +152,19 @@ const TreatmentPanel = () => {
 
             <CardContent>
               {/* Özet Bilgiler */}
-              <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 mb-6`}>
-                <div className="p-4 bg-blue-50 rounded">
-                  <div className={`text-${isMobile ? 'xs' : 'sm'} text-gray-600`}>Son Randevu</div>
-                  <div className="font-semibold">
-                    {getLastAppointmentDate(
-                      allReservations,
-                      patientInformation?.id
-                    ) || "Randevu Yok"}
+              <div className="flex justify-start mb-6">
+                <div className={`p-4 bg-purple-50 rounded ${isMobile ? 'w-full' : 'w-72'}`}>
+                  <div className="text-gray-600 text-sm">Bekleyen Testler</div>
+                  <div className="font-semibold flex flex-col sm:flex-row sm:items-center gap-1">
+                    <span>{pendingTests.lab + pendingTests.imaging} Test{pendingTests.lab + pendingTests.imaging !== 1 && 'ler'}</span>
+                    {(pendingTests.lab > 0 || pendingTests.imaging > 0) && (
+                      <span className="text-sm text-gray-500">
+                        ({pendingTests.lab > 0 && `${pendingTests.lab} Lab`}
+                        {pendingTests.lab > 0 && pendingTests.imaging > 0 && ', '}
+                        {pendingTests.imaging > 0 && `${pendingTests.imaging} Görüntüleme`})
+                      </span>
+                    )}
                   </div>
-                </div>
-                <div className="p-4 bg-green-50 rounded">
-                  <div className={`text-${isMobile ? 'xs' : 'sm'} text-gray-600`}>Tanı</div>
-                  <div className="font-semibold">Hipertansiyon</div>
-                </div>
-                <div className="p-4 bg-purple-50 rounded">
-                  <div className={`text-${isMobile ? 'xs' : 'sm'} text-gray-600`}>Bekleyen Testler</div>
-                  <div className="font-semibold">2 Test</div>
-                </div>
-                <div className="p-4 bg-yellow-50 rounded">
-                  <div className={`text-${isMobile ? 'xs' : 'sm'} text-gray-600`}>Sonraki Randevu</div>
-                  <div className="font-semibold">15.01.2025</div>
                 </div>
               </div>
 
@@ -221,21 +219,9 @@ const TreatmentPanel = () => {
               <div className={`flex ${isMobile ? 'flex-col' : 'flex-row justify-end'} gap-3 mt-6`}>
                 <button
                   onClick={() => handleButtonClick("saveAndExit")}
-                  className={`px-4 py-2 border rounded text-gray-600 hover:bg-gray-100 transition-colors duration-200 ${isMobile ? 'w-full' : ''}`}
+                  className={`px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200 ${isMobile ? 'w-full' : ''}`}
                 >
                   Kaydet ve Çık
-                </button>
-                <button
-                  onClick={() => handleButtonClick("requestConsultation")}
-                  className={`px-4 py-2 bg-blue-500 hover:bg-blue-600 transition-colors duration-200 text-white rounded ${isMobile ? 'w-full' : ''}`}
-                >
-                  Konsültasyon İste
-                </button>
-                <button
-                  onClick={() => handleButtonClick("createAppointment")}
-                  className={`px-4 py-2 bg-green-500 hover:bg-green-600 transition-colors duration-200 text-white rounded ${isMobile ? 'w-full' : ''}`}
-                >
-                  Randevu Oluştur
                 </button>
               </div>
             </CardContent>
