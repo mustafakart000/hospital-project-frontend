@@ -8,6 +8,19 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
   plugins: [react(), eslintPlugin()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor (üçüncü parti) kütüphaneleri ayrı chunk'lara böl
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          // Diğer büyük kütüphaneleri de ayrı chunk'lara bölebilirsiniz
+          ui: ['@mui/material', '@emotion/react', '@emotion/styled'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // KB cinsinden
+  },
   server: {
     port: 3000,
     hmr: {
@@ -18,7 +31,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@components': path.resolve(__dirname, './src/components'),
-      '@ui': path.resolve(__dirname, './src/components/ui')
-    }
+      '@pages': path.resolve(__dirname, './src/pages'),
+    },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom'], // Önceden build edilecek bağımlılıklar
   }
 });
