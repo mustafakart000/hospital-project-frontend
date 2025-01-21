@@ -18,10 +18,17 @@ import {
   UserAddOutlined,
   HeartOutlined,
   FormOutlined,
+  AreaChartOutlined,
+  SafetyOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaHospitalUser, FaUserDoctor } from "react-icons/fa6";
+import store from "../../redux/store.jsx";
+import { logout } from "../../redux/slices/auth-slice.js";
+import { removeFromLocalStorage } from "../../helpers/functions/encrypted-storage.js";
+import { HeartPulse } from 'react-bootstrap-icons';
 
 const { Sider } = Layout;
 
@@ -33,6 +40,11 @@ const MenuBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(window.innerWidth >= 1024);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [selectedKeys, setSelectedKeys] = useState([]);
+
+  const handleLogout = () => {
+    store.dispatch(logout());
+    removeFromLocalStorage("token");
+  };
 
   // İkon eşleştirmeleri - Türkçe başlıklara göre
   const getIcon = (title) => {
@@ -61,8 +73,11 @@ const MenuBar = () => {
       "Randevu Yönetimi": <CalendarOutlined />,
       "Hasta Geçmişi": <TeamOutlined />,
       "Hasta Profili": <UserOutlined />,
-      "Tedavi Paneli": < HeartOutlined/>,
-
+      "Tedavi Paneli": <HeartOutlined/>,
+      "Laboratuvar Paneli": <ExperimentOutlined />,
+      "Görüntüleme Paneli": <AreaChartOutlined />,
+      "Teknisyen Profili": <UserOutlined />,
+      "Teknisyen Yönetimi": <SafetyOutlined   />,
     };
     return icons[title] || <FileTextOutlined />;
   };
@@ -167,16 +182,25 @@ const MenuBar = () => {
                 backgroundColor: "transparent",
                 border: "none",
               }}
-              items={menuItems.map((item) => ({
-                key: item.link,
-                icon: getIcon(item.title),
-                label: item.title,
-                className: `flex items-center p-3 rounded-lg transition-all duration-300 ${
-                  selectedKeys.includes(item.link)
-                    ? "bg-blue-100 text-blue-700 font-semibold"
-                    : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-                }`,
-              }))}
+              items={[
+                ...menuItems.map((item) => ({
+                  key: item.link,
+                  icon: getIcon(item.title),
+                  label: item.title,
+                  className: `flex items-center p-3 rounded-lg transition-all duration-300 ${
+                    selectedKeys.includes(item.link)
+                      ? "bg-blue-100 text-blue-700 font-semibold"
+                      : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                  }`,
+                })),
+                {
+                  key: "logout",
+                  icon: <LogoutOutlined />,
+                  label: "Çıkış Yap",
+                  onClick: handleLogout,
+                  className: "flex items-center p-3 rounded-lg transition-all duration-300 text-gray-600 hover:bg-blue-50 hover:text-blue-700 mt-auto",
+                },
+              ]}
             />
           </div>
         </Sider>
@@ -184,10 +208,8 @@ const MenuBar = () => {
 
       {/* Mobile Menu Button */}
       <Button
-        //sabitleştirme
-        
         type="primary"
-        className="lg:hidden fixed top-4 left-4 z-50"
+        className="block lg:hidden fixed z-50 top-1 sm:top-4 left-4"
         icon={<MenuOutlined />}
         onClick={() => setDrawerVisible(true)}
         style={{
@@ -196,10 +218,12 @@ const MenuBar = () => {
           boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
           border: "none",
           padding: "8px 12px",
-          height: "auto",
+          height: "40px",
+          width: "40px",
+          alignItems: "center",
+          justifyContent: "center",
           position: "fixed",
-          
-          
+          zIndex: 1000
         }}
       />
 
@@ -210,20 +234,32 @@ const MenuBar = () => {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-              color: "#1a365d",
-              
+              justifyContent: "center",
+              width: "100%",
+              padding: "10px 0",
             }}
           >
-            <MedicineBoxOutlined />
-            <span
+            <div
               style={{
-                fontWeight: "600",
-                fontSize: "18px",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                color: "#1a365d",
               }}
             >
-              Hastane Yönetimi
-            </span>
+              <HeartPulse 
+                size={24}
+                className="text-blue-600"
+              />
+              <span
+                style={{
+                  fontWeight: "600",
+                  fontSize: "18px",
+                }}
+              >
+                Hastane Yönetim Sistemi
+              </span>
+            </div>
           </div>
         }
         placement="left"
@@ -233,9 +269,13 @@ const MenuBar = () => {
         className="lg:hidden"
         width={300}
         styles={{
+          header: {
+            borderBottom: "1px solid #e5e7eb",
+            padding: "0",
+          },
           body: {
             backgroundColor: 'white',
-            padding: '16px',
+            padding: '16px 0',
           },
         }}
       >
@@ -248,26 +288,46 @@ const MenuBar = () => {
             border: "none",
             backgroundColor: "transparent",
           }}
-          items={menuItems.map((item) => ({
-            key: item.link,
-            icon: getIcon(item.title),
-            label: item.title,
-            style: {
-              margin: "4px 0",
-              padding: "12px 16px",
-              borderRadius: "8px",
-              backgroundColor: selectedKeys.includes(item.link)
-                ? "#e0f2fe"
-                : "transparent",
-              color: selectedKeys.includes(item.link) ? "#0369a1" : "#475569",
-              fontWeight: selectedKeys.includes(item.link) ? "600" : "500",
-              fontSize: "14px",
-              transition: "all 0.3s ease",
-              border: selectedKeys.includes(item.link)
-                ? "1px solid #bae6fd"
-                : "1px solid transparent",
+          items={[
+            ...menuItems.map((item) => ({
+              key: item.link,
+              icon: getIcon(item.title),
+              label: item.title,
+              style: {
+                margin: "4px 0",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                backgroundColor: selectedKeys.includes(item.link)
+                  ? "#e0f2fe"
+                  : "transparent",
+                color: selectedKeys.includes(item.link) ? "#0369a1" : "#475569",
+                fontWeight: selectedKeys.includes(item.link) ? "600" : "500",
+                fontSize: "14px",
+                transition: "all 0.3s ease",
+                border: selectedKeys.includes(item.link)
+                  ? "1px solid #bae6fd"
+                  : "1px solid transparent",
+              },
+            })),
+            {
+              key: "logout",
+              icon: <LogoutOutlined />,
+              label: "Çıkış Yap",
+              style: {
+                margin: "4px 0",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                backgroundColor: "transparent",
+                color: "#475569",
+                fontWeight: "500",
+                fontSize: "14px",
+                transition: "all 0.3s ease",
+                border: "1px solid transparent",
+                marginTop: "auto",
+              },
+              onClick: handleLogout,
             },
-          }))}
+          ]}
         />
       </Drawer>
     </>

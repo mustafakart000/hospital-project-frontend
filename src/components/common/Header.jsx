@@ -12,7 +12,7 @@ import { HeartPulse} from 'react-bootstrap-icons';
 
 const Header = () => {
   const { user } = useSelector((state) => state.auth);
-  const isExtraSmall = useMediaQuery({ maxWidth: 380 });
+  const isExtraSmall = useMediaQuery({ maxWidth: 430 });
 
   const handleLogout = () => {
     store.dispatch(logout());
@@ -21,9 +21,7 @@ const Header = () => {
 
   return (
     <header className="bg-gradient-to-r from-indigo-700 to-gray-700 text-white py-3 sm:py-4 md:py-5 shadow-lg relative overflow-hidden">
-      <div className="absolute inset-0 bg-pattern opacity-10"></div>
-
-      <div className="container mx-auto px-2 sm:px-4 relative z-10">
+      <div className="flex justify-center w-full px-8 sm:px-12 md:px-16 relative z-10">
         <div className="flex flex-col items-center relative">
           <div className={`flex items-center justify-center ${isExtraSmall ? 'space-x-0' : 'space-x-2 sm:space-x-3'}`}>
             <HeartPulse    
@@ -37,24 +35,30 @@ const Header = () => {
             )}
           </div>
 
-          <div className="hidden md:block text-xs sm:text-sm text-center text-gray-200 opacity-90 max-w-2xl px-4 mt-2">
+          <div className="hidden lg:block text-xs sm:text-sm text-center text-gray-200 opacity-90 max-w-2xl px-4 mt-2">
             Sağlık Hizmetlerinde Dijital Mükemmellik: Hızlı, Güvenli ve Entegre Yönetim Çözümü
           </div>
-
-          {user && (
-            <div className={`absolute right-0 top-0 sm:right-2 md:right-4 ${isExtraSmall ? 'top-1/2 -translate-y-1/2' : ''}`}>
-              <div className="border border-white rounded-md p-1.5 sm:p-2 hover:bg-white/20 transition-colors duration-200">
-                <Link to="/" onClick={handleLogout} className="flex items-center">
-                  <span className={`text-xs sm:text-sm font-semibold mr-1 sm:mr-2 ${isExtraSmall ? 'hidden' : ''}`}>
-                    Çıkış yap
-                  </span>
-                  <LogoutOutlined className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {user && (
+        <div className={`absolute right-8 sm:right-12 md:right-16 ${
+          isExtraSmall ? 'top-1/2 -translate-y-1/2' : 
+          'top-1/2 -translate-y-1/2'} z-20`}>
+          <Link 
+            to="/" 
+            onClick={handleLogout} 
+            className="block hover:bg-white/20 transition-colors duration-200"
+          >
+            <div className="border border-white rounded-md p-1.5 sm:p-2 flex items-center space-x-1">
+              <span className={`text-xs sm:text-sm font-semibold ${isExtraSmall ? 'hidden' : ''}`}>
+                Çıkış yap
+              </span>
+              <LogoutOutlined className="text-lg" />
+            </div>
+          </Link>
+        </div>
+      )}
     </header>
   );
 };

@@ -2,12 +2,27 @@ import axios from "axios"
 import { getAuthHeader } from "./auth-header";
 import { config } from "../helpers/config";
 import toast from "react-hot-toast";
+
+
 const baseUrl = config.api.baseUrl;
 
-export const getPatientProfile = async (patientId) => {
-    const response = await axios.get(`${baseUrl}/patient/get/${patientId}`, { headers: getAuthHeader() });
-    return response.data;
-}
+
+export const getPatientProfile = async (id) => {
+    try {
+        const response = await axios.get(`${baseUrl}/patient/get/${id}`, { headers: getAuthHeader() });
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            console.warn(`Hasta ID ${id} bulunamadı`);
+            return {
+                ad: 'Bilinmeyen',
+                soyad: 'Hasta'
+            };
+        }
+        console.error('Hasta bilgileri alınamadı:', error);
+        throw error;
+    }
+};
 
 export const createReservation = async (reservation) => {
     try {

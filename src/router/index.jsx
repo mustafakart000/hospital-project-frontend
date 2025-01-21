@@ -25,6 +25,7 @@ import DoctorPrescriptions from "../components/doctor/DoctorPrescriptions.jsx";
 import DoctorAppointments from "../components/doctor/DoctorAppointments.jsx";
 import TreatmentPanel from "../components/doctor/hasta paneli/TreatmentPanel.jsx";
 import DoctorDashboard from "../pages/dashboards/DoctorDashboardPage.jsx";
+import TechniciansRoutes from "./routes/technicians-routes.jsx";
 
 
 const router = createBrowserRouter([
@@ -46,6 +47,16 @@ const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [...AdminRoutes],
+  },
+
+  {
+    path: "/technician-dashboard",
+    element: (
+      <PrivateRoute roles={config.pageRoles.techniciansManagement}>
+        <UserLayout />
+      </PrivateRoute>
+    ),
+    children: [...TechniciansRoutes],
   },
   {
     path: "/patient-dashboard",
