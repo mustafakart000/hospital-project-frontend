@@ -2,10 +2,37 @@ import axios from "axios"
 import { getAuthHeader } from "./auth-header";
 import { config } from "../helpers/config";
 import { toast } from 'react-hot-toast';
+import JSEncrypt from 'jsencrypt';
+
 const baseUrl = config.api.baseUrl;
 
+const authService = {
+    publicKey: null,
+    getPublicKey: async function() {
+        if (!this.publicKey) {
+            const resp = await axios.get(`${baseUrl}/auth/public-key`);
+            this.publicKey = resp.data;
+            console.log("publicKey: ", this.publicKey)
+        }
+        return this.publicKey;
+    },
+    login: async function(password) {
+        const encrypt = new JSEncrypt();
+        encrypt.setPublicKey(await this.getPublicKey());
+        const encryptedPassword = encrypt.encrypt(password);
+        return encryptedPassword;
+    }
+}
+
+
+
+
 export const userLogin = async (payload) => {
+    payload.password = await authService.login(payload.password);
+
     try {
+        // payload.password = await authService.login(payload.password);
+        console.log("payload2: ", payload.password)
         const resp = await axios.post(`${baseUrl}/auth/login`, payload);
         // Login başarılı olduktan sonra hemen kullanıcı bilgilerini alalım
         if (resp.data.token) {
@@ -40,3 +67,7 @@ export const getUser = async () => {
     console.log("getUser data: ", data);
     return data;
 }
+
+
+
+
