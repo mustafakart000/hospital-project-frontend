@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useDispatch } from "react-redux";
 import { loginSuccess, logout } from "./redux/slices/auth-slice";
 import LoadingPage from "./components/common/LoadingPage";
-import AppRouter from "./router";
 import { Toaster } from "react-hot-toast";
 import { getUser } from "./services/auth-service";
 import { getFromLocalStorage, removeFromLocalStorage } from "./helpers/functions/encrypted-storage";
@@ -42,12 +41,12 @@ const App = () => {
   useEffect(() => {
     loadData();
   }, []); // URL değişimini izlemek için window.location'ı kullanacağız
-
+  const AppRouter = React.lazy(() => import("./router"));
   return (
-    <>
+    <Suspense fallback={<LoadingPage />}>
       <Toaster position="top-right" />
-      {loading ? <LoadingPage/> : <AppRouter />}
-    </>
+      {loading ? <LoadingPage /> : <AppRouter />}
+    </Suspense>
   );
 };
 

@@ -1,5 +1,9 @@
 export const config = {
     api: {
+
+
+        // baseUrl: "http://37.148.209.189/api",
+
         baseUrl: "http://localhost:8080/api",
       },
       pageRoles: {
@@ -13,5 +17,6 @@ export const config = {
         profile: ["ADMIN", "DOCTOR", "PATIENT", "SECRETARY", "TECHNICIAN"],
       },
 
-      
+     
 }
+
