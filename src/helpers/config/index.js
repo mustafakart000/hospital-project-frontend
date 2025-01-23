@@ -1,10 +1,8 @@
 export const config = {
     api: {
-        // baseUrl: "http://37.148.209.189/api",
         baseUrl: "http://healwell.online/api",
-        // baseUrl: "http://localhost:8080/api",
-      },
-      pageRoles: {
+    },
+    pageRoles: {
         dashboard: ["ADMIN", "DOCTOR", "SECRETARY"],
         techniciansManagement: ["TECHNICIAN"],
         adminManagement: ["ADMIN"],
@@ -13,8 +11,6 @@ export const config = {
         secretaryManagement: ["SECRETARY"],
         prescriptionManagement: ["DOCTOR"],
         profile: ["ADMIN", "DOCTOR", "PATIENT", "SECRETARY", "TECHNICIAN"],
-      },
-
-     
+    }
 }
 

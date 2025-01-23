@@ -10,7 +10,6 @@ export const getMedicalRecords = async (recordId) => {
 
 export const getMedicalRecordById = async (patientId) => {
     const response = await axios.get(`${baseUrl}/medical-record/patient/${patientId}`, { headers: getAuthHeader() });
-    console.log("response123",response)
     return response.data;
 }
 

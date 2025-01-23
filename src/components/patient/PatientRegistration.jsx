@@ -46,7 +46,6 @@ const initialValues = {
 
 const PatientRegistration = ({ setActiveTab }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
-    console.log("PatientRegistration.jsx-values:  ", values);
     try {
       const formattedValues = {
         ...values,
@@ -275,7 +274,6 @@ const PatientRegistration = ({ setActiveTab }) => {
                     loading={isSubmitting}
                     disabled={isSubmitting}
                     className="w-full"
-                    onClick={() => console.log('Button Clicked', values, errors)}
                   >
                     Kaydet
                   </Button>

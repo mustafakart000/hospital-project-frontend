@@ -83,8 +83,7 @@ const TechniciansMainDashboard = () => {
         getTechniciansImagingRequestAll()
       ]);
 
-      console.log('Tüm lab istekleri:', allLabRequests);
-      console.log('Tüm görüntüleme istekleri:', allImagingRequests);
+
 
       setTotalRequests({
         labRequests: allLabRequests,
@@ -113,11 +112,7 @@ const TechniciansMainDashboard = () => {
         getCompletedImagingRequestAll()
       ]);
 
-      console.log('Güncel lab istekleri:', labRequests);
-      console.log('Tamamlanan lab istekleri:', completedLabRequests);
-      console.log('Tüm lab istekleri:', allLabRequests);
-      console.log('Tüm görüntüleme istekleri:', allImagingRequests);
-      console.log('Tamamlanan görüntüleme istekleri:', completedImagingRequests);
+
 
       // Test tipi dağılımını hesapla
       const testTypeCounts = {};
@@ -135,14 +130,12 @@ const TechniciansMainDashboard = () => {
         }))
       };
 
-      console.log('Hesaplanan lab istatistikleri:', labStatsData);
+
       setLabStats(labStatsData);
 
       // Görüntüleme isteklerini al
       const imagingRequests = await getImagingRequests();
-      console.log('Güncel görüntüleme istekleri:', imagingRequests);
       const imagingStatsData = calculateImagingStats(imagingRequests);
-      console.log('Hesaplanan görüntüleme istatistikleri:', imagingStatsData);
       setImagingStats(imagingStatsData);
 
     } catch (error) {
@@ -154,7 +147,6 @@ const TechniciansMainDashboard = () => {
   const fetchPendingLabRequests = async () => {
     try {
       const response = await getTechniciansPendingLabRequestAll();
-      console.log('Bekleyen lab istekleri:', response);
       setPendingLabRequests(response);
     } catch (error) {
       console.error('Bekleyen lab istekleri yüklenirken hata oluştu:', error);
@@ -163,12 +155,10 @@ const TechniciansMainDashboard = () => {
   };
 
   const calculateImagingStats = (requests) => {
-    console.log('Görüntüleme istekleri hesaplanıyor:', requests);
+
     
     // Her bir isteğin durumunu kontrol et ve logla
-    requests.forEach(req => {
-      console.log(`Görüntüleme isteği ID: ${req.id}, Status: ${req.status}, Imaging Type: ${req.imagingType}`);
-    });
+
 
     // Status değerlerini kontrol et (büyük-küçük harf duyarlılığını kaldır)
     const pendingCount = requests.filter(req => {
@@ -186,9 +176,7 @@ const TechniciansMainDashboard = () => {
              status === 'FINISHED';
     }).length;
     
-    console.log('Bekleyen görüntüleme istekleri:', pendingCount);
-    console.log('Tamamlanan görüntüleme istekleri:', completedCount);
-    console.log('Farklı status değerleri:', [...new Set(requests.map(req => req.status))]);
+
 
     const stats = {
       totalRequests: requests.length,

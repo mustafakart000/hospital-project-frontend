@@ -93,16 +93,6 @@ const CreateReservationForm = ({ visible, onCancel }) => {
   });
   
   const user = useSelector((state) => state.auth.user);
-  const token = localStorage.getItem("token");
-  
-  // Kullanıcı bilgilerini konsola yazdırır
-  useEffect(() => {
-    console.log("Kullanıcı bilgileri:", {
-      id: user?.id,
-      role: user?.role,
-      token: token
-    });
-  }, [user]);
   
   // Formik ile form yönetimi ve gönderim işlemleri
   const formik = useFormik({
@@ -127,7 +117,7 @@ const CreateReservationForm = ({ visible, onCancel }) => {
           return;
         }
         
-        console.log("CreateReservationForm.jsx values:", values);
+        
         const payload = {
           doctor: {
             id: values.doctor
@@ -188,7 +178,7 @@ const CreateReservationForm = ({ visible, onCancel }) => {
   const handleSpecialtyChange = async (selectedSpecialtyId) => {
     try {
       const response = await getAllDoctorsBySpecialtyId(selectedSpecialtyId);
-      console.log("createReservationForm.jsx response", response);
+    
       setDoctors(response);
       // Uzmanlık değiştiğinde formu tamamen sıfırla
       formik.setFieldValue("speciality", selectedSpecialtyId);
@@ -228,47 +218,57 @@ const CreateReservationForm = ({ visible, onCancel }) => {
       <Form form={form} layout="vertical"> 
         <Form.Item label="Uzmanlık" name="speciality" rules={[{ required: true }]}> 
           <Select 
-            placeholder="Bir uzmanlık seçiniz" // Seçim kutusu için yer tutucu
-            onChange={(value) => { // Seçim değiştiğinde çalışacak fonksiyon
-              console.log("createReservationForm.jsx value", value); // Seçilen değeri konsola yazdırır
-              formik.setFieldValue("speciality", value); // Formik ile form alanını günceller
-              handleSpecialtyChange(value); // Uzmanlık değiştiğinde doktorları getirir
+            placeholder="Bir uzmanlık seçiniz"
+            onChange={(value) => {
+              formik.setFieldValue("speciality", value);
+              handleSpecialtyChange(value);
             }}
-            options={specialties && specialties.map((specialty) => ({ // Uzmanlık seçeneklerini oluşturur
-              label: specialty.name, // Uzmanlık adı
-              value: specialty.id // Uzmanlık ID'si
+            options={specialties && specialties.map((specialty) => ({
+              label: specialty.name,
+              value: specialty.id
             }))} 
-            value={formik.values.speciality} // Seçili uzmanlık değeri
-            onBlur={formik.handleBlur} // Seçim kutusu odaktan çıktığında çalışır
-            error={formik.errors.speciality} // Uzmanlık alanı hatası
+            value={formik.values.speciality}
+            onBlur={formik.handleBlur}
+            error={formik.errors.speciality}
           />
         </Form.Item>
         <Form.Item label="Doktor" name="doctor" rules={[{ required: true }]}> 
           <Select
-            placeholder="Bir doktor seçiniz" // Seçim kutusu için yer tutucu
-            options={doctors.map((doctor) => ({ // Doktor seçeneklerini oluşturur
-              label: doctor.ad + " " + doctor.soyad, // Doktor adı ve soyadı
-              value: doctor.id, // Doktor ID'si
-              key: doctor.id, // Doktor için benzersiz anahtar
+            placeholder="Bir doktor seçiniz"
+            options={doctors.map((doctor) => ({
+              label: doctor.ad + " " + doctor.soyad,
+              value: doctor.id,
+              key: doctor.id,
             }))}
-            onChange={(value) => { // Seçim değiştiğinde çalışacak fonksiyon
-              formik.setFieldValue("doctor", value); // Formik ile form alanını günceller
-              handleDoctorChange(value); // Doktor değiştiğinde randevuları getirir
+            onChange={(value) => {
+              formik.setFieldValue("doctor", value);
+              handleDoctorChange(value);
             }}
-            value={formik.values.doctor} // Seçili doktor değeri
-            onBlur={formik.handleBlur} // Seçim kutusu odaktan çıktığında çalışır
-            error={formik.errors.doctor} // Doktor alanı hatası
+            value={formik.values.doctor}
+            onBlur={formik.handleBlur}
+            error={formik.errors.doctor}
           />
         </Form.Item>
         <Form.Item label="Randevu Tarihi" name="reservationDate" rules={[{ required: true }]}> 
           <DatePicker
-            placeholder="YYYY-MM-DD" // Tarih seçici için yer tutucu
-            format="YYYY-MM-DD" // Tarih formatı
-            disabledDate={(current) => current && current < moment().startOf('day')} // Geçmiş tarihleri devre dışı bırakır
-            onChange={(value) => formik.setFieldValue("reservationDate", value)} // Tarih değiştiğinde form alanını günceller
-            value={formik.values.reservationDate} // Seçili tarih değeri
-            onBlur={formik.handleBlur} // Tarih seçici odaktan çıktığında çalışır
-            error={formik.errors.reservationDate} // Tarih alanı hatası
+            name="reservationDate"
+            placeholder="YYYY-MM-DD"
+            format="YYYY-MM-DD"
+            disabledDate={(current) => {
+              const now = moment();
+              const isAfter5PM = now.hour() >= 17;
+              // Eğer saat 17:00'den sonraysa bugünü de devre dışı bırak
+              return current && (
+                current < (isAfter5PM ? now.endOf('day') : now.startOf('day'))
+              );
+            }}
+            onChange={(value) => {
+              formik.setFieldValue("reservationDate", value);
+              // Tarih değiştiğinde randevu saatini sıfırla
+              formik.setFieldValue("reservationTime", "");
+            }}
+            value={formik.values.reservationDate}
+            error={formik.errors.reservationDate}
           />
         </Form.Item>
         <Form.Item
@@ -293,16 +293,40 @@ const CreateReservationForm = ({ visible, onCancel }) => {
                   {expandedTime === time && subSlots.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 p-4 pt-0">
                       {subSlots.map((slot) => {
+                        // Debug için bookedSlots'u kontrol et
+                        
+                        
                         const isBooked = bookedSlots.some(
                           (b) => b.date === formik.values.reservationDate.format('YYYY-MM-DD') && b.time === slot.time
                         );
                         const isSelected = formik.values.reservationTime === slot.time;
+                        
+                        // Gerçek tarihi manuel olarak ayarla
+                        const currentDate = moment('2024-01-23').set({ hour: 18, minute: 53 }); // Bugünün tarihi ve saati
+                        const slotTime = moment(slot.time, 'HH:mm');
+                        const selectedDate = formik.values.reservationDate.clone(); // clone() ile yeni bir moment nesnesi oluştur
+                        
+                
+                        
+                        // Seçilen tarih bugünden büyükse hiçbir kısıtlama olmasın
+                        const isToday = selectedDate.isSame(currentDate, 'day');
+                    
+                        
+                        // Sadece bugün için geçmiş saat kontrolü yap
+                        const isPastTime = isToday && 
+                          (slotTime.hour() < currentDate.hour() || 
+                          (slotTime.hour() === currentDate.hour() && slotTime.minute() <= currentDate.minute()));
+                        
+                        // Sadece bugün için geçmiş saat kısıtlaması uygula
+                        const isDisabled = isBooked || (isToday && isPastTime);
+
+      
                         return (
                           <button
                             key={slot.time}
-                            disabled={isBooked}
+                            disabled={isDisabled}
                             className={`px-4 py-2 rounded-lg ${
-                              isBooked
+                              isDisabled
                                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
                                 : isSelected
                                 ? 'bg-green-500 text-white'

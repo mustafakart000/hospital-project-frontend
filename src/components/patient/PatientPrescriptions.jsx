@@ -44,7 +44,6 @@ const PatientPrescriptions = () => {
     try {
       setLoading(true);
       const data = await getPrescriptionsCurrentPatient();
-      console.log("data",data)
       const prescriptionData = Array.isArray(data) ? data : [];
       
       // Doktor bilgilerini getir
@@ -52,7 +51,7 @@ const PatientPrescriptions = () => {
         prescriptionData.map(async (prescription) => {
           try {
             const doctorInfo = await getDoctorById(prescription.doctorId);
-            console.log("doctorInfo",doctorInfo)
+          
             return {
               ...prescription,
               status: calculatePrescriptionStatus(prescription),

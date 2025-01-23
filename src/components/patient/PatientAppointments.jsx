@@ -78,7 +78,6 @@ const PatientAppointments = () => {
     // Seçili randevuyu iptal eder ve güncellenmiş randevu listesini çeker.
     try {
       setLoading(true);
-      console.log("selectedAppointment", selectedAppointment);
 
       await updateReservation(selectedAppointment.id, 
         {

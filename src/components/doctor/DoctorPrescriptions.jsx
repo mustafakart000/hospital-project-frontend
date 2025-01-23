@@ -28,7 +28,7 @@ const DoctorPrescriptions = () => {
       setLoading(true);
       try {
         const prescriptionsData = await getPrescriptionsCurrentDoctor(doctorId);
-        console.log("Reçeteler:", prescriptionsData);
+
 
         if (!prescriptionsData || prescriptionsData.length === 0) {
           console.log("Reçete bulunamadı");
@@ -39,7 +39,7 @@ const DoctorPrescriptions = () => {
         const promises = prescriptionsData.map(async (prescription) => {
           try {
             const patientData = await getPatientProfile(prescription.patientId);
-            console.log("Hasta bilgisi:", patientData);
+
             
             return {
               ...prescription,
@@ -55,7 +55,6 @@ const DoctorPrescriptions = () => {
         });
 
         const completedPrescriptions = await Promise.all(promises);
-        console.log("İşlenmiş reçeteler:", completedPrescriptions);
         setPrescriptions(completedPrescriptions);
 
       } catch (error) {

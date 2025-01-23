@@ -64,7 +64,6 @@ export const userLogin = async (payload) => {
 export const getUser = async () => {
     const resp = await axios.get(`${baseUrl}/auth/me`, { headers: getAuthHeader() });
     const data = await resp.data;
-    console.log("getUser data: ", data);
     return data;
 }
 

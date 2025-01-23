@@ -3,10 +3,12 @@ import { Upload } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { completeImagingRequest, getImagingRequests } from '../../services/technicians-service';
+import { Card, CardContent, Typography } from '@mui/material';
 
 const LabResultsView = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [imageData, setImageData] = useState('');
   const [findings, setFindings] = useState('');
   const [notes, setNotes] = useState('');
   const [imagingRequests, setImagingRequests] = useState([]);
@@ -46,7 +48,15 @@ const LabResultsView = () => {
         return;
       }
 
-      setImageUrl(URL.createObjectURL(file));
+      // Dosyayı base64'e çevir
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result.split(',')[1];
+        setImageData(base64String);
+        // Önizleme için URL oluştur
+        setImageUrl(URL.createObjectURL(file));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -56,23 +66,24 @@ const LabResultsView = () => {
       return;
     }
 
-    if (!imageUrl) {
+    if (!imageData) {
       toast.error('Lütfen bir görüntü dosyası yükleyin');
       return;
     }
 
-    const imagingData = {
-      imageUrl: imageUrl,
-      findings: findings,
-      notes: notes,
-      completedAt: new Date().toISOString(),
-      technicianId: technicianId,
-      status: 'COMPLETED',
-      createdAt: new Date().toISOString()
-    };
-
     try {
-      await completeImagingRequest(selectedRequest.id, imagingData);
+      
+      const requestData = {
+        imageData,
+        findings,
+        notes,
+        technicianId,
+        status: 'COMPLETED'
+      };
+
+
+      // Alternatif endpoint'i deneyelim
+      await completeImagingRequest(selectedRequest.id, requestData);
       toast.success('Görüntüleme sonuçları başarıyla kaydedildi');
       fetchImagingRequests();
       resetForm();
@@ -85,6 +96,7 @@ const LabResultsView = () => {
   const resetForm = () => {
     setSelectedRequest(null);
     setImageUrl('');
+    setImageData('');
     setFindings('');
     setNotes('');
   };
@@ -107,30 +119,45 @@ const LabResultsView = () => {
         <h3 className="text-lg font-semibold text-gray-700 mb-3">Görüntüleme İstekleri</h3>
         <div className="space-y-4">
           {imagingRequests.map((request) => (
-            <div key={request.id} className="border rounded-lg overflow-hidden">
-              <div
-                onClick={() => setSelectedRequest(request)}
-                className={`p-4 cursor-pointer transition-colors duration-200 ${
-                  selectedRequest?.id === request.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200'
-                }`}
+            <div key={request.id} className="mb-4">
+              <Card 
+                onClick={() => setSelectedRequest(selectedRequest?.id === request.id ? null : request)}
+                sx={{ 
+                  cursor: 'pointer',
+                  bgcolor: selectedRequest?.id === request.id ? '#3b82f6' : '#f3f4f6',
+                  '&:hover': {
+                    bgcolor: selectedRequest?.id === request.id ? '#3b82f6' : '#e5e7eb'
+                  },
+                  transition: 'background-color 0.2s'
+                }}
               >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">
-                      Hasta: {request.patient.ad} {request.patient.soyad}
-                    </p>
-                    <p className="text-sm">Görüntüleme: {request.imagingType ? imagingTypeMapping[request.imagingType] : 'Belirtilmemiş'}</p>
-                    <p className="text-sm">Vücut Bölgesi: {request.bodyPart || 'Belirtilmemiş'}</p>
-                    <p className="text-sm">Oluşturulma Tarihi: {new Date(request.createdAt).toLocaleString('tr-TR')}</p>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <Typography variant="h6" sx={{ color: selectedRequest?.id === request.id ? 'white' : 'inherit' }}>
+                        Hasta: {request.patient.ad} {request.patient.soyad}
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: selectedRequest?.id === request.id ? 'white' : 'inherit' }}>
+                        Görüntüleme: {request.imagingType ? imagingTypeMapping[request.imagingType] : 'Belirtilmemiş'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: selectedRequest?.id === request.id ? 'white' : 'inherit' }}>
+                        Vücut Bölgesi: {request.bodyPart || 'Belirtilmemiş'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: selectedRequest?.id === request.id ? 'white' : 'inherit' }}>
+                        Oluşturulma Tarihi: {new Date(request.createdAt).toLocaleString('tr-TR')}
+                      </Typography>
+                    </div>
+                    <div>
+                      <Typography variant="body2" sx={{ color: selectedRequest?.id === request.id ? 'white' : 'text.secondary', textAlign: 'right' }}>
+                        Öncelik: {request.priority || 'NORMAL'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: selectedRequest?.id === request.id ? 'white' : 'text.secondary', textAlign: 'right' }}>
+                        Durum: {request.status || 'PENDING'}
+                      </Typography>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm">Öncelik: {request.priority || 'NORMAL'}</p>
-                    <p className="text-sm">Durum: {request.status || 'PENDING'}</p>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {selectedRequest?.id === request.id && (
                 <div className="p-4 bg-white border-t">

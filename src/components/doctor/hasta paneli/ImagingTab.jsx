@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { useSelector } from 'react-redux';
 import { createImagingRequest } from '../../../services/doctor-service';
-import { getImagingRequestByPatientId } from '../../../services/technicians-service';
-import { message } from 'antd';
+import { getImagingRequestByPatientId, getImagingRequestImageById } from '../../../services/technicians-service';
+import { message, Modal } from 'antd';
+import ReactPaginate from 'react-paginate';
 
 const ITEMS_PER_PAGE = 3;
 
@@ -17,6 +18,9 @@ const ImagingTab = () => {
   const [imagingRequests, setImagingRequests] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [formData, setFormData] = useState({
     imagingType: '',
@@ -50,10 +54,28 @@ const ImagingTab = () => {
   };
 
   const formatDate = (request) => {
-    const date = request.status === 'COMPLETED' 
-      ? new Date(request.completedAt)
-      : new Date(request.createdAt);
-    return `${date.toLocaleDateString('tr-TR')} ${date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`;
+    try {
+      if (!request) return '-';
+      
+      const date = request.status === 'COMPLETED' && request.completedAt
+        ? new Date(request.completedAt)
+        : new Date(request.createdAt);
+
+      if (isNaN(date.getTime())) {
+        return request.status === 'COMPLETED' ? request.completedAt : request.createdAt;
+      }
+
+      return date.toLocaleString('tr-TR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Tarih formatı hatası:', error);
+      return '-';
+    }
   };
 
   const getStatusText = (status) => {
@@ -107,6 +129,46 @@ const ImagingTab = () => {
     }
   };
 
+  const handleImageView = async (imageId) => {
+    try {
+      setLoading(true);
+      const response = await getImagingRequestImageById(selectedPatient.patientId, imageId);
+      
+      if (!response || !response.imageData) {
+        message.error('Görüntü verisi bulunamadı. Lütfen teknisyenin görüntüyü yüklemesini bekleyin.');
+        return;
+      }
+
+      // Base64 görüntüyü direkt olarak yeni sekmede aç
+      const newWindow = window.open();
+      newWindow.document.write(
+        `<img src="data:image/png;base64,${response.imageData}" style="max-width: 100%; height: auto;" />`
+      );
+
+    } catch (error) {
+      console.error('Görüntü görüntüleme hatası:', error);
+      
+      if (error.response?.status === 403) {
+        message.error('Bu görüntüye erişim yetkiniz bulunmamaktadır. Lütfen tekrar giriş yapın.');
+      } else if (error.response?.status === 404) {
+        message.error('Görüntü henüz yüklenmemiş. Lütfen teknisyenin görüntüyü yüklemesini ve işlemi tamamlamasını bekleyin.');
+      } else if (error.code === 'ERR_NETWORK') {
+        message.error('Sunucuya bağlanılamadı. Lütfen internet bağlantınızı kontrol edin.');
+      } else if (error.message.includes('Görüntü verisi bulunamadı')) {
+        message.error('Görüntü verisi henüz hazır değil. Lütfen teknisyenin işlemi tamamlamasını bekleyin.');
+      } else {
+        message.error('Görüntü görüntülenirken bir hata oluştu. Lütfen tekrar deneyin.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewDetails = (request) => {
+    setSelectedRequest(request);
+    setIsModalVisible(true);
+  };
+
   const filteredRequests = imagingRequests
     .sort((a, b) => {
       const dateA = a.status === 'COMPLETED' ? new Date(a.completedAt) : new Date(a.createdAt);
@@ -145,19 +207,19 @@ const ImagingTab = () => {
     });
 
   const totalPages = Math.ceil(filteredRequests.length / ITEMS_PER_PAGE);
-  const paginatedRequests = filteredRequests.slice(
+  const paginatedData = filteredRequests.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
 
   useEffect(() => {
     // Filtre değiştiğinde ilk sayfaya dön
     setCurrentPage(1);
   }, [selectedStatus]);
+
+  const handlePageClick = (event) => {
+    setCurrentPage(event.selected + 1);
+  };
 
   return (
     <div className={`${isTablet ? 'flex flex-col' : 'grid grid-cols-2'} gap-4`}>
@@ -175,110 +237,103 @@ const ImagingTab = () => {
           </select>
         </div>
         <div className="space-y-3">
-          <div className="grid grid-cols-1 gap-3">
-            {paginatedRequests.map((request) => (
+          <div className="grid grid-cols-1 gap-3 min-h-[340px]">
+            {paginatedData.map((request) => (
               <div 
                 key={request.id}
-                className={`border rounded p-3 ${isSmallMobile ? 'text-sm' : ''}`}
+                className={`border rounded p-3 ${isSmallMobile ? 'text-sm' : ''} h-[${isSmallMobile ? '130px' : '100px'}] bg-white flex flex-col justify-between`}
               >
                 <div>
-                  <div className={`${isSmallMobile ? 'flex flex-col gap-2' : 'flex items-center justify-between'} mb-2`}>
-                    <div className={`flex ${isSmallMobile ? 'flex-col' : 'items-center'} gap-2`}>
+                  <div className={`${isSmallMobile ? 'flex flex-col gap-1' : 'flex items-center justify-between'} mb-2`}>
+                    <div className={`${isSmallMobile ? 'flex flex-col' : 'flex items-center'} gap-2`}>
                       <span className="font-medium">{request.imagingType} - {request.bodyPart}</span>
                       <span className={`${getStatusColor(request.status)} ${isSmallMobile ? 'text-xs' : 'text-sm'}`}>
                         ({getStatusText(request.status)})
                       </span>
                     </div>
-                    <span className={`${isSmallMobile ? 'text-xs' : 'text-sm'} bg-gray-100 px-2 py-1 rounded text-gray-600`}>
+                    <span className={`${isSmallMobile ? 'text-xs mt-1' : 'text-sm'} bg-gray-100 px-2 py-1 rounded text-gray-600`}>
                       {formatDate(request)}
                     </span>
                   </div>
-                  {request.notes && (
-                    <p className={`${isSmallMobile ? 'text-xs' : 'text-sm'} text-gray-600 mt-1`}>
-                      <span className="font-medium">Not:</span> {request.notes}
-                    </p>
-                  )}
-                  <p className={`${isSmallMobile ? 'text-xs' : 'text-sm'} text-gray-500`}>
-                    Öncelik: {request.priority === 'URGENT' ? 'Acil' : 'Normal'}
-                  </p>
-                  {request.findings && (
-                    <p className={`${isSmallMobile ? 'text-xs' : 'text-sm'} text-gray-600 mt-1`}>Bulgular: {request.findings}</p>
-                  )}
                 </div>
-                <div className="flex justify-end mt-2">
-                  {request.imageUrl && (
-                    <a 
-                      href={request.imageUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className={`bg-blue-500 text-white ${isSmallMobile ? 'px-3 py-1 text-xs' : 'px-4 py-1.5'} rounded hover:bg-blue-600 transition-colors duration-200`}
+                <div className={`flex ${isSmallMobile ? 'flex-col' : 'justify-end'} gap-2`}>
+                  <button
+                    onClick={() => handleViewDetails(request)}
+                    className={`text-blue-500 hover:text-blue-600 ${isSmallMobile ? 'text-xs w-full py-1' : 'text-sm'} font-medium ${isSmallMobile ? 'border border-blue-500 rounded' : ''}`}
+                  >
+                    Detayları Görüntüle
+                  </button>
+                  {request.status === 'COMPLETED' && (
+                    <button 
+                      onClick={() => handleImageView(request.id)}
+                      disabled={loading}
+                      className={`bg-blue-500 text-white ${isSmallMobile ? 'text-xs w-full py-1' : 'px-4 py-1.5'} rounded hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      Görüntüle
-                    </a>
+                      {loading ? 'Yükleniyor...' : 'Görüntüle'}
+                    </button>
                   )}
                 </div>
               </div>
             ))}
-          </div>
-          {[...Array(3 - paginatedRequests.length)].map((_, index) => (
-            <div key={`empty-${index}`} className="border rounded p-3 h-[120px] bg-gray-50">
-              <div className="h-full flex items-center justify-center text-gray-400">
-                
+            {paginatedData.length > 0 && paginatedData.length < 3 && (
+              [...Array(3 - paginatedData.length)].map((_, index) => (
+                <div 
+                  key={`empty-${index}`} 
+                  className="border rounded p-3 h-[100px] bg-gray-50"
+                />
+              ))
+            )}
+            {filteredRequests.length === 0 && (
+              <div className="col-span-1 flex items-center justify-center h-[340px] border rounded bg-gray-50">
+                <div className="text-center text-gray-500 py-4">
+                  {selectedStatus === 'ALL' 
+                    ? 'Henüz görüntüleme talebi bulunmamaktadır.'
+                    : `${selectedStatus === 'PENDING' ? 'Bekleyen' : 'Tamamlanan'} görüntüleme talebi bulunmamaktadır.`
+                  }
+                </div>
               </div>
-            </div>
-          ))}
-          {filteredRequests.length === 0 && (
-            <div className="text-center text-gray-500 py-4">
-              {selectedStatus === 'ALL' 
-                ? 'Henüz görüntüleme talebi bulunmamaktadır.'
-                : `${selectedStatus === 'PENDING' ? 'Bekleyen' : 'Tamamlanan'} görüntüleme talebi bulunmamaktadır.`
-              }
-            </div>
-          )}
+            )}
+          </div>
           
           {/* Sayfalandırma */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-4">
-              {!isSmallMobile && (
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`px-3 py-1 rounded ${
-                    currentPage === 1
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                  }`}
-                >
-                  Önceki
-                </button>
-              )}
-              {[...Array(totalPages)].map((_, index) => (
-                <button
-                  key={index + 1}
-                  onClick={() => handlePageChange(index + 1)}
-                  className={`w-8 h-8 flex items-center justify-center rounded ${
-                    currentPage === index + 1
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 hover:bg-gray-300'
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              ))}
-              {!isSmallMobile && (
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`px-3 py-1 rounded ${
-                    currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                  }`}
-                >
-                  Sonraki
-                </button>
-              )}
-            </div>
+            <ReactPaginate
+              breakLabel={<span className="px-2">...</span>}
+              nextLabel={
+                <span className={`flex items-center ${isSmallMobile ? 'text-xs px-2 py-1' : 'text-sm px-3 py-1.5'} font-medium`}>
+                  Sonraki <span className="ml-1">→</span>
+                </span>
+              }
+              previousLabel={
+                <span className={`flex items-center ${isSmallMobile ? 'text-xs px-2 py-1' : 'text-sm px-3 py-1.5'} font-medium`}>
+                  <span className="mr-1">←</span> Önceki
+                </span>
+              }
+              onPageChange={handlePageClick}
+              pageRangeDisplayed={isSmallMobile ? 1 : 3}
+              marginPagesDisplayed={isSmallMobile ? 1 : 2}
+              pageCount={totalPages}
+              renderOnZeroPageCount={null}
+              className="flex items-center justify-center gap-1 mt-4 select-none flex-wrap"
+              pageClassName="flex"
+              pageLinkClassName={`${isSmallMobile ? 'w-7 h-7 text-xs' : 'w-8 h-8 text-sm'} flex items-center justify-center font-medium text-gray-700 hover:bg-blue-50 rounded-md transition-colors duration-200`}
+              activeLinkClassName="!bg-blue-500 !text-white hover:!bg-blue-600"
+              previousClassName="flex items-center mr-1"
+              nextClassName="flex items-center ml-1"
+              previousLinkClassName={`flex items-center rounded-md transition-colors duration-200 ${
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-blue-500 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+              nextLinkClassName={`flex items-center rounded-md transition-colors duration-200 ${
+                currentPage === totalPages
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-blue-500 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+              disabledClassName="opacity-50"
+              breakClassName="flex items-center text-gray-500"
+              containerClassName="border-t pt-4 mt-4"
+            />
           )}
         </div>
       </div>
@@ -287,12 +342,12 @@ const ImagingTab = () => {
         <h3 className={`font-semibold mb-4 ${isSmallMobile ? 'text-sm' : ''}`}>Yeni Görüntüleme Talebi</h3>
         <div className="space-y-3">
           <div>
-            <label className={`block ${isSmallMobile ? 'text-xs' : 'text-sm'} mb-1`}>Görüntüleme Türü</label>
+            <label className={`block ${isSmallMobile ? 'text-xs' : 'text-sm'} mb-1 font-medium text-gray-700`}>Görüntüleme Türü</label>
             <select 
               name="imagingType"
               value={formData.imagingType}
               onChange={handleInputChange}
-              className={`w-full border rounded p-2 ${isSmallMobile ? 'text-sm' : ''}`}
+              className={`w-full border rounded p-2 ${isSmallMobile ? 'text-xs' : 'text-sm'} focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
             >
               <option value="">Görüntüleme Türü Seçin</option>
               <option value="EKG">EKG</option>
@@ -303,33 +358,33 @@ const ImagingTab = () => {
             </select>
           </div>
           <div>
-            <label className={`block ${isSmallMobile ? 'text-xs' : 'text-sm'} mb-1`}>Çekim Bölgesi</label>
+            <label className={`block ${isSmallMobile ? 'text-xs' : 'text-sm'} mb-1 font-medium text-gray-700`}>Çekim Bölgesi</label>
             <input 
               type="text" 
               name="bodyPart"
               value={formData.bodyPart}
               onChange={handleInputChange}
-              className={`w-full border rounded p-2 ${isSmallMobile ? 'text-sm' : ''}`}
+              className={`w-full border rounded p-2 ${isSmallMobile ? 'text-xs' : 'text-sm'} focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
               placeholder="Çekim yapılacak bölge"
             />
           </div>
           <div>
-            <label className={`block ${isSmallMobile ? 'text-xs' : 'text-sm'} mb-1`}>Talep Notları</label>
+            <label className={`block ${isSmallMobile ? 'text-xs' : 'text-sm'} mb-1 font-medium text-gray-700`}>Talep Notları</label>
             <textarea 
               name="notes"
               value={formData.notes}
               onChange={handleInputChange}
-              className={`w-full h-24 border rounded p-2 ${isSmallMobile ? 'text-sm' : ''}`}
+              className={`w-full ${isSmallMobile ? 'h-16' : 'h-24'} border rounded p-2 ${isSmallMobile ? 'text-xs' : 'text-sm'} focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
               placeholder="Talep notları..."
             />
           </div>
           <div>
-            <label className={`block ${isSmallMobile ? 'text-xs' : 'text-sm'} mb-1`}>Öncelik Durumu</label>
+            <label className={`block ${isSmallMobile ? 'text-xs' : 'text-sm'} mb-1 font-medium text-gray-700`}>Öncelik Durumu</label>
             <select 
               name="priority"
               value={formData.priority}
               onChange={handleInputChange}
-              className={`w-full border rounded p-2 ${isSmallMobile ? 'text-sm' : ''}`}
+              className={`w-full border rounded p-2 ${isSmallMobile ? 'text-xs' : 'text-sm'} focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
             >
               <option value="NORMAL">Normal</option>
               <option value="URGENT">Acil</option>
@@ -339,7 +394,7 @@ const ImagingTab = () => {
             onClick={handleSubmit}
             className={`${
               isMobile ? 'w-full' : 'w-fit px-6'
-            } ${isSmallMobile ? 'text-sm py-1.5' : 'py-2'} bg-blue-500 text-white rounded hover:bg-blue-600 ${
+            } ${isSmallMobile ? 'text-xs py-2' : 'py-2'} bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200 ${
               !isMobile && 'float-right'
             }`}
           >
@@ -347,6 +402,68 @@ const ImagingTab = () => {
           </button>
         </div>
       </div>
+
+      {/* Detay Modalı */}
+      <Modal
+        title={
+          <div className={`${isSmallMobile ? 'text-base' : 'text-lg'} font-semibold`}>
+            Görüntüleme Detayları
+          </div>
+        }
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+        width={isSmallMobile ? '95%' : 600}
+      >
+        {selectedRequest && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Görüntüleme Türü</p>
+                <p className="text-base">{selectedRequest.imagingType}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Çekim Bölgesi</p>
+                <p className="text-base">{selectedRequest.bodyPart}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Durum</p>
+                <p className={`text-base ${getStatusColor(selectedRequest.status)}`}>
+                  {getStatusText(selectedRequest.status)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Öncelik</p>
+                <p className="text-base">{selectedRequest.priority === 'URGENT' ? 'Acil' : 'Normal'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Talep Tarihi</p>
+                <p className="text-base">{formatDate(selectedRequest)}</p>
+              </div>
+              {selectedRequest.completedAt && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Tamamlanma Tarihi</p>
+                  <p className="text-base">
+                    {new Date(selectedRequest.completedAt).toLocaleString('tr-TR')}
+                  </p>
+                </div>
+              )}
+            </div>
+            {selectedRequest.notes && (
+              <div>
+                <p className="text-sm font-medium text-gray-500">Notlar</p>
+                <p className="text-base">{selectedRequest.notes}</p>
+              </div>
+            )}
+            {selectedRequest.findings && (
+              <div>
+                <p className="text-sm font-medium text-gray-500">Bulgular</p>
+                <p className="text-base">{selectedRequest.findings}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
