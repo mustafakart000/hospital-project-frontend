@@ -26,15 +26,7 @@ export const getPatientProfile = async (id) => {
 
 export const createReservation = async (reservation) => {
     try {
-        const headers = getAuthHeader();
-        
-        // Debug için
-        console.log("Auth bilgileri:", {
-            headers,
-            token: localStorage.getItem("token"),
-            user: JSON.parse(localStorage.getItem("user"))
-        });
-        
+
         const response = await axios.post(
             `${baseUrl}/reservations/create`, 
             reservation, 
@@ -42,7 +34,7 @@ export const createReservation = async (reservation) => {
                 headers: getAuthHeader()
             }
         );
-        console.log("response123", response.data);
+      
         return response.data;
     } catch (error) {
         if (error.response?.status === 403) {
@@ -80,8 +72,8 @@ export const updatePatientProfile = async (patientId, patient) => {
     return response.data;
 }
 
-export const updatePatient = async (patientId) => {
-    const response = await axios.get(`${baseUrl}/patient/get/${patientId}`, { headers: getAuthHeader() });
+export const updatePatient = async (patientId, patient) => {
+    const response = await axios.put(`${baseUrl}/patient/update/${patientId}`, patient, { headers: getAuthHeader() });
     return response.data;
 }
 

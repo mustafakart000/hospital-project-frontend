@@ -7,7 +7,6 @@ const baseUrl = config.api.baseUrl;
 export const getTechnicianById = async (technicianId) => {
   try {
     const response = await axios.get(`${baseUrl}/technicians/${technicianId}`, { headers: getAuthHeader() });
-    console.log("Teknisyen bilgileri:", response.data);
     return response.data;
   } catch (error) {
     console.error('Teknisyen bilgileri alınamadı:', error);
@@ -103,6 +102,21 @@ export const completeImagingRequest = async (imagingId, imagingResults) => {
   }
 };
 
+// {{baseUrl}}/imaging-requests/patient/4/images/4/complete
+
+export const completeImagingRequestById = async (patientId, requestData) => {
+  try {
+    const response = await axios.post(
+      `${baseUrl}/imaging-requests/patient/${patientId}/images/${requestData.id}/complete`, 
+      requestData,
+      { headers: getAuthHeader() }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Görüntüleme isteği tamamlanamadı:', error);
+    throw error;
+  }
+};
 
 
 // {{baseUrl}}/imaging-requests/patient/4
@@ -121,16 +135,42 @@ export const getImagingRequestByPatientId = async (patientId) => {
 
 export const getImagingRequestImageById = async (patientId, imageId) => {
   try {
-    const response = await axios.get(
-      `${baseUrl}/imaging-requests/patient/${patientId}/images/${imageId}`,
-      { 
-        headers: getAuthHeader(),
-        responseType: 'arraybuffer'
+
+    
+    // URL'yi backend endpoint'i ile eşleştir
+    const url = `${baseUrl}/imaging-requests/patient/${patientId}/images/${imageId}`;
+   
+    
+    const response = await axios.get(url, { 
+      headers: {
+        ...getAuthHeader(),
+        'Accept': 'application/json'
       }
-    );
+    });
+    
+   
+
+    // Yanıt kontrolü
+    if (!response.data || !response.data.imageData) {
+      throw new Error('Görüntü verisi bulunamadı');
+    }
+
     return response.data;
+    
   } catch (error) {
-    console.error('Görüntüleme isteği alınamadı:', error);
+    // Hata detaylarını genişlet
+    console.error('Görüntü alınamadı:', {
+      error: error.response || error,
+      url: error.config?.url,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+
+    // 404 hatası için özel mesaj
+    if (error.response?.status === 404) {
+      throw new Error(`Görüntü bulunamadı (ID: ${imageId}). Lütfen görüntünün var olduğundan emin olun.`);
+    }
+
     throw error;
   }
 };
@@ -153,7 +193,6 @@ export const getImagingRequests = async () => {
 export const getLabRequestPdf = async (patientId) => {
   try {
     const response = await axios.get(`${baseUrl}/lab-requests/patient/${patientId}/pdfs`, { headers: getAuthHeader() });
-    console.log("Lab sonuçları:", response.data);
     return response.data;
   } catch (error) {
     console.error('Lab istekleri alınamadı:', error);
@@ -165,10 +204,18 @@ export const getLabRequestPdf = async (patientId) => {
 
 export const getLabRequestPdfById = async (patientId, pdfId) => {
   try {
-    const response = await axios.get(`${baseUrl}/lab-requests/patient/${patientId}/pdfs/${pdfId}`, { headers: getAuthHeader() });
+   
+    
+    const response = await axios.get(
+      `${baseUrl}/lab-requests/patient/${patientId}/pdfs/${pdfId}`, 
+      { headers: getAuthHeader()}
+    );
+    
+  
     return response.data;
+    
   } catch (error) {
-    console.error('Lab istekleri alınamadı:', error);
+    console.error('Lab PDF alınamadı:', error.response || error);
     throw error;
   }
 };
@@ -269,4 +316,5 @@ export const getTechniciansPendingLabRequestAll = async () => {
     throw error;
   }
 };
+
 

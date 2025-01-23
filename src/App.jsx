@@ -22,7 +22,6 @@ const App = () => {
 
       const storedToken = getFromLocalStorage('token');
       const userData = await getUser();
-      console.log("userData: ", userData)
       
       dispatch(loginSuccess({
         ...userData,

@@ -4,8 +4,10 @@ import { getAllMedicinesByDoctorSpeciality } from '../../../services/medicine-se
 import { useSelector } from 'react-redux';
 import { Button } from 'antd';
 import { Trash2 } from 'lucide-react';
+import { useMediaQuery } from 'react-responsive';
 
 const MedicationsTab = ({ onPrescriptionChange }) => {
+  const isMobile = useMediaQuery({ maxWidth: 710 });
   const userDoctorId = useSelector((state) => state.auth.user?.id);
   const selectedPatient = useSelector((state) => state.treatment.patient);
   const [medicines, setMedicines] = useState([]);
@@ -24,9 +26,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
   useEffect(() => {
     const loadMedicines = async () => {
       try {
-        console.log("İlaçlar yükleniyor...");
         const response = await getAllMedicinesByDoctorSpeciality();
-        console.log("API yanıtı:", response);
 
         if (!response || !Array.isArray(response)) {
           console.error("API yanıtı geçersiz:", response);
@@ -40,7 +40,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
             : categoryCompare;
         });
         
-        console.log("Sıralanmış ilaçlar:", sortedMedicines);
+
         setMedicines(sortedMedicines);
       } catch (error) {
         console.error("İlaçlar yüklenirken hata oluştu:", error);
@@ -57,7 +57,6 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
 
   const handleMedicineChange = (e) => {
     const selectedId = e.target.value;
-    console.log("Seçilen ilaç ID:", selectedId);
     
     if (!selectedId) {
       setSelectedMedicine(null);
@@ -65,7 +64,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
     }
 
     const medicine = medicines.find(m => m.id === parseInt(selectedId));
-    console.log("Bulunan ilaç:", medicine);
+
 
     if (medicine) {
       setSelectedMedicine(medicine);
@@ -199,9 +198,9 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
           <h3 className="font-semibold">İlaç Listesi</h3>
         </div>
         <div className="space-y-4">
-          <div className="grid grid-cols-6 gap-3">
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-5 gap-3'}`}>
             <div>
-              <label className="block text-sm mb-1">İlaç Adı</label>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>İlaç Adı</label>
               <select 
                 className="w-full border rounded p-2"
                 onChange={handleMedicineChange}
@@ -216,7 +215,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm mb-1">Doz</label>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>Doz</label>
               <input 
                 type="text" 
                 className="w-full border rounded p-2" 
@@ -225,7 +224,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Kullanım Şekli</label>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>Kullanım Şekli</label>
               <select 
                 className="w-full border rounded p-2"
                 onChange={handleUsageChange}
@@ -239,7 +238,7 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm mb-1">Sıklık</label>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>Sıklık</label>
               <select 
                 className="w-full border rounded p-2"
                 onChange={handleFrequencyChange}
@@ -253,12 +252,12 @@ const MedicationsTab = ({ onPrescriptionChange }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm mb-1">Süre (Gün)</label>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-sm'} mb-1`}>Süre (Gün)</label>
               <input 
                 type="number" 
-                min="1"
                 className="w-full border rounded p-2"
-                value={selectedMedicine ? prescriptionData.medications.find(m => m.medicineId === String(selectedMedicine.id))?.duration || 5 : 5}
+                min="1"
+                value={selectedMedicine ? (prescriptionData.medications.find(m => m.medicineId === String(selectedMedicine.id))?.duration || 5) : 5}
                 onChange={(e) => selectedMedicine && handleDurationChange(String(selectedMedicine.id), e.target.value)}
               />
             </div>

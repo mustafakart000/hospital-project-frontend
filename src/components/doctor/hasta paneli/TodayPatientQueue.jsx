@@ -29,9 +29,7 @@ const TodayPatientQueue = ({ setPatientInformation, refresh }) => {
   const fetchTodayPatients = async () => {
     try {
       setLoading(true);
-      console.log("TodayPatientQueue.jsx fetchTodayPatients");
       const response = await getTodayPatients();
-      console.log("TodayPatientQueue.jsx response: ", response);
       
       // Veri kontrolü yap
       if (!response || response.length === 0) {
@@ -45,7 +43,7 @@ const TodayPatientQueue = ({ setPatientInformation, refresh }) => {
         return patient && patient.treated === false; // treated false olanları al
       });
       
-      console.log("TodayPatientQueue.jsx filteredData: ", filteredData);
+
       
       // Sort by time
       const sortedPatients = filteredData.sort((a, b) =>
@@ -64,7 +62,6 @@ const TodayPatientQueue = ({ setPatientInformation, refresh }) => {
   const fetchTreatedPatients = async () => {
     try {
       const response = await getTodayTreatedPatients();
-      console.log("Treated patients response:", response);
       
       const sortedTreatedPatients = response.sort((a, b) =>
         a.reservationTime.localeCompare(b.reservationTime)

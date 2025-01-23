@@ -33,6 +33,21 @@ const PatientProfile = () => {
     fetchPatientProfile();
   }, [patientId]);
 
+  const handleEdit = () => {
+    form.setFieldsValue({
+      ...patient,
+      birthDate: dayjs(patient.birthDate),
+      telefon: patient.telefon,
+      adres: patient.adres
+    });
+    setIsEditModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    form.resetFields();
+    setIsEditModalVisible(false);
+  };
+
   const handleUpdate = async (values) => {
     try {
       setLoading(true);
@@ -86,13 +101,7 @@ const PatientProfile = () => {
         <Button
           type="primary"
           icon={<Edit className="w-4 h-4" />}
-          onClick={() => {
-            form.setFieldsValue({
-              ...patient,
-              birthDate: dayjs(patient.birthDate, 'YYYY-MM-DD'),
-            });
-            setIsEditModalVisible(true);
-          }}
+          onClick={handleEdit}
           className="bg-blue-600 w-full md:w-auto"
         >
           Profili Düzenle
@@ -153,13 +162,7 @@ const PatientProfile = () => {
           <div className="flex justify-center">
             <Button
               type="primary"
-              onClick={() => {
-                form.setFieldsValue({
-                  ...patient,
-                  birthDate: dayjs(patient.birthDate, 'YYYY-MM-DD'),
-                });
-                setIsEditModalVisible(true);
-              }}
+              onClick={handleEdit}
               className="
                 bg-blue-600 
                 w-[200px]
@@ -182,164 +185,114 @@ const PatientProfile = () => {
             </Button>
           </div>
         )}
-
-        {/* Tıbbi Kayıtlar */}
-        <div className={`${isTablet && !isMobile ? 'col-span-2' : ''}`}>
-          <Card title="Tıbbi Kayıtlar" className="shadow-sm h-full">
-            <div className="space-y-4">
-              {patient?.medicalRecords.map(record => (
-                <div key={record.id} className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium text-gray-700 mb-2">{record.title}</h4>
-                  <p className="text-sm text-gray-600">{record.description}</p>
-                  <p className="text-sm text-gray-600">
-                    Doktor Notları: {record.doctorNotes}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {record.attachments && 
-                      Object.entries(JSON.parse(record.attachments)).map(([key, url]) => (
-                        <a 
-                          key={key} 
-                          href={url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline text-sm"
-                        >
-                          {key.toUpperCase()}
-                        </a>
-                      ))
-                    }
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        {/* Özet Bilgiler */}
-        <div className={`${isTablet && !isMobile ? 'col-span-2' : ''}`}>
-          <Card title="Özet" className="shadow-sm h-full">
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-700 mb-2">Yaklaşan Randevu</h4>
-                <p className="text-sm text-blue-600">
-                  {patient?.reservations?.length > 0 
-                    ? `${dayjs(patient.reservations[0].reservationDate).format('DD/MM/YYYY')} - ${patient.reservations[0].reservationTime}`
-                    : "Planlanmış randevu bulunmuyor"}
-                </p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <h4 className="font-medium text-green-700 mb-2">Aktif Reçete</h4>
-                <p className="text-sm text-green-600">
-                  {patient?.activePrescription || "Aktif reçete bulunmuyor"}
-                </p>
-              </div>
-            </div>
-          </Card>
-        </div>
       </div>
 
       {/* Edit Modal */}
-      <Modal
-        title="Profil Bilgilerini Düzenle"
-        open={isEditModalVisible}
-        onCancel={() => setIsEditModalVisible(false)}
-        footer={null}
-        width={700}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleUpdate}
-          className="mt-4"
+      {isEditModalVisible && (
+        <Modal
+          title="Profil Bilgilerini Düzenle"
+          open={isEditModalVisible}
+          onCancel={handleCancel}
+          footer={null}
+          width={700}
+          destroyOnClose={true}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item
-              name="ad"
-              label="Ad"
-              rules={[{ required: true, message: 'Ad gereklidir' }]}
-            >
-              <Input />
-            </Form.Item>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleUpdate}
+            className="mt-4"
+            preserve={false}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Form.Item
+                name="ad"
+                label="Ad"
+                rules={[{ required: true, message: 'Ad gereklidir' }]}
+              >
+                <Input />
+              </Form.Item>
 
-            <Form.Item
-              name="soyad"
-              label="Soyad"
-              rules={[{ required: true, message: 'Soyad gereklidir' }]}
-            >
-              <Input />
-            </Form.Item>
+              <Form.Item
+                name="soyad"
+                label="Soyad"
+                rules={[{ required: true, message: 'Soyad gereklidir' }]}
+              >
+                <Input />
+              </Form.Item>
 
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: 'Email gereklidir' },
-                { type: 'email', message: 'Geçerli bir email giriniz' }
-              ]}
-            >
-              <Input />
-            </Form.Item>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: 'Email gereklidir' },
+                  { type: 'email', message: 'Geçerli bir email giriniz' }
+                ]}
+              >
+                <Input />
+              </Form.Item>
 
-            <Form.Item
-              name="telefon"
-              label="Telefon"
-              rules={[{ required: true, message: 'Telefon gereklidir' }]}
-            >
-              <Input />
-            </Form.Item>
+              <Form.Item
+                name="telefon"
+                label="Telefon"
+                rules={[{ required: true, message: 'Telefon gereklidir' }]}
+              >
+                <Input />
+              </Form.Item>
 
-            <Form.Item
-              name="adres"
-              label="Adres"
-              rules={[{ required: true, message: 'Adres gereklidir' }]}
-            >
-              <Input.TextArea />
-            </Form.Item>
+              <Form.Item
+                name="adres"
+                label="Adres"
+                rules={[{ required: true, message: 'Adres gereklidir' }]}
+              >
+                <Input.TextArea />
+              </Form.Item>
 
-            <Form.Item
-              name="birthDate"
-              label="Doğum Tarihi"
-              rules={[{ required: true, message: 'Doğum tarihi gereklidir' }]}
-            >
-              <DatePicker
-                className="w-full border rounded-md shadow-sm"
-                style={{ width: "100%" }}
-                placeholder="Doğum Tarihi Seçiniz"
-                onChange={(date) => form.setFieldsValue({ birthDate: date })}
-                value={form.getFieldValue('birthDate') ? dayjs(form.getFieldValue('birthDate'), 'YYYY-MM-DD') : null}
-                format="YYYY-MM-DD"
-                popupClassName="bg-white border rounded-md shadow-lg"
-              />
-            </Form.Item>
+              <Form.Item
+                name="birthDate"
+                label="Doğum Tarihi"
+                rules={[{ required: true, message: 'Doğum tarihi gereklidir' }]}
+              >
+                <DatePicker
+                  className="w-full border rounded-md shadow-sm"
+                  style={{ width: "100%" }}
+                  placeholder="Doğum Tarihi Seçiniz"
+                  onChange={(date) => form.setFieldsValue({ birthDate: date })}
+                  value={form.getFieldValue('birthDate') ? dayjs(form.getFieldValue('birthDate'), 'YYYY-MM-DD') : null}
+                  format="YYYY-MM-DD"
+                  popupClassName="bg-white border rounded-md shadow-lg"
+                />
+              </Form.Item>
 
-            <Form.Item
-              name="kanGrubu"
-              label="Kan Grubu"
-              rules={[{ required: true, message: 'Kan grubu gereklidir' }]}
-            >
-              <Select>
-                <Select.Option value="A+">A+</Select.Option>
-                <Select.Option value="A-">A-</Select.Option>
-                <Select.Option value="B+">B+</Select.Option>
-                <Select.Option value="B-">B-</Select.Option>
-                <Select.Option value="AB+">AB+</Select.Option>
-                <Select.Option value="AB-">AB-</Select.Option>
-                <Select.Option value="0+">0+</Select.Option>
-                <Select.Option value="0-">0-</Select.Option>
-              </Select>
-            </Form.Item>
-          </div>
+              <Form.Item
+                name="kanGrubu"
+                label="Kan Grubu"
+                rules={[{ required: true, message: 'Kan grubu gereklidir' }]}
+              >
+                <Select>
+                  <Select.Option value="A+">A+</Select.Option>
+                  <Select.Option value="A-">A-</Select.Option>
+                  <Select.Option value="B+">B+</Select.Option>
+                  <Select.Option value="B-">B-</Select.Option>
+                  <Select.Option value="AB+">AB+</Select.Option>
+                  <Select.Option value="AB-">AB-</Select.Option>
+                  <Select.Option value="0+">0+</Select.Option>
+                  <Select.Option value="0-">0-</Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
 
-          <div className="flex justify-end gap-2 mt-6">
-            <Button onClick={() => setIsEditModalVisible(false)}>
-              İptal
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Güncelle
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+            <div className="flex justify-end gap-2 mt-6">
+              <Button onClick={handleCancel}>
+                İptal
+              </Button>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Güncelle
+              </Button>
+            </div>
+          </Form>
+        </Modal>
+      )}
     </div>
   );
 };

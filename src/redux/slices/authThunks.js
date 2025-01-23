@@ -6,7 +6,7 @@ export const loginThunk = (payload) => async (dispatch) => {
     dispatch(loginStart());
     try {
         const response = await userLogin(payload);
-        console.log('API Response:', response.data);
+       
 
         // Veri yapısını standardize et
         const userData = {
@@ -19,7 +19,7 @@ export const loginThunk = (payload) => async (dispatch) => {
             email: response.data.email || ''
         };
 
-        console.log('Processed User Data:', userData);
+     
 
         dispatch(loginSuccess(userData));
         
