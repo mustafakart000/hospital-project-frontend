@@ -15,7 +15,7 @@ import CreatePrescription from "../prescription/CreatePrescription";
 import { getLabRequestAll, getImagingRequestByPatientId } from "../../../services/technicians-service";
 
 const TreatmentPanel = () => {
-  const isMobile = useMediaQuery({ maxWidth: 610 });
+  const isMobile = useMediaQuery({ maxWidth: 710 });
   const { userId } = useSelector((state) => state.treatment);
 
   const [patientInformation, setPatientInformation] = useState(null);
@@ -83,7 +83,6 @@ const TreatmentPanel = () => {
       },
     };
 
-    console.log("Gönderilen payload:", payload);
 
     if (!payload.reservationId) {
       alert("Rezervasyon bilgisi eksik!");
@@ -101,8 +100,8 @@ const TreatmentPanel = () => {
     }
 
     try {
-      const response = await createDiagnosis(payload);
-      console.log("API Response:", response);
+      await createDiagnosis(payload);
+     
 
       setRefreshQueue((prev) => !prev);
     } catch (error) {
@@ -141,100 +140,113 @@ const TreatmentPanel = () => {
   }, [patientInformation]);
 
   return (
-    <>
-      <div>
-        {selectedPatient && (
-          <Card className={`${isMobile ? 'w-full' : 'w-full max-w-5xl'} mx-auto`}>
-            <div className="text-2xl font-bold text-gray-500 pt-2 pl-4 border-b-2 border-gray-200 pb-1">
-              {patientInformation.patientName}{" "}
-              {patientInformation.patientSurname}
-            </div>
+    <div className={`${isMobile ? 'p-2' : 'p-4'}`}>
+      {selectedPatient && (
+        <Card className={`${isMobile ? 'w-full shadow-sm' : 'w-full max-w-5xl shadow-md'} mx-auto`}>
+          <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-500 pt-2 pl-4 border-b-2 border-gray-200 pb-1`}>
+            {patientInformation.patientName}{" "}
+            {patientInformation.patientSurname}
+          </div>
 
-            <CardContent>
-              {/* Özet Bilgiler */}
-              <div className="flex justify-start mb-6">
-                <div className={`p-4 bg-purple-50 rounded ${isMobile ? 'w-full' : 'w-72'}`}>
-                  <div className="text-gray-600 text-sm">Bekleyen Testler</div>
-                  <div className="font-semibold flex flex-col sm:flex-row sm:items-center gap-1">
-                    <span>{pendingTests.lab + pendingTests.imaging} Test{pendingTests.lab + pendingTests.imaging !== 1 && 'ler'}</span>
-                    {(pendingTests.lab > 0 || pendingTests.imaging > 0) && (
-                      <span className="text-sm text-gray-500">
-                        ({pendingTests.lab > 0 && `${pendingTests.lab} Lab`}
-                        {pendingTests.lab > 0 && pendingTests.imaging > 0 && ', '}
-                        {pendingTests.imaging > 0 && `${pendingTests.imaging} Görüntüleme`})
-                      </span>
-                    )}
-                  </div>
+          <CardContent className={isMobile ? 'p-2' : 'p-4'}>
+            {/* Özet Bilgiler */}
+            <div className="flex justify-start mb-6">
+              <div className={`p-4 bg-purple-50 rounded ${isMobile ? 'w-full' : 'w-72'}`}>
+                <div className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Bekleyen Testler</div>
+                <div className="font-semibold flex flex-col sm:flex-row sm:items-center gap-1">
+                  <span>{pendingTests.lab + pendingTests.imaging} Test{pendingTests.lab + pendingTests.imaging !== 1 && 'ler'}</span>
+                  {(pendingTests.lab > 0 || pendingTests.imaging > 0) && (
+                    <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-500`}>
+                      ({pendingTests.lab > 0 && `${pendingTests.lab} Lab`}
+                      {pendingTests.lab > 0 && pendingTests.imaging > 0 && ', '}
+                      {pendingTests.imaging > 0 && `${pendingTests.imaging} Görüntüleme`})
+                    </span>
+                  )}
                 </div>
               </div>
+            </div>
 
-              {/* Tabs bölümü */}
-              <Box sx={{ width: "100%" }}>
-                <Tabs 
-                  value={value} 
-                  onChange={handleChange}
-                  variant={isMobile ? "scrollable" : "standard"}
-                  scrollButtons={isMobile ? "auto" : false}
-                >
-                  <Tab value="vitals" label={isMobile ? "Vital" : "Vital Bulgular"} />
-                  <Tab value="diagnosis" label={isMobile ? "Tanı" : "Tanı/Tedavi"} />
-                  <Tab value="medications" label="İlaçlar" />
-                  <Tab value="imaging" label="Görüntüleme" />
-                  <Tab value="labs" label="Lab" />
-                </Tabs>
+            {/* Tabs bölümü */}
+            <Box sx={{ 
+              width: "100%",
+              '.MuiTabs-root': {
+                minHeight: isMobile ? '40px' : '48px'
+              },
+              '.MuiTab-root': {
+                minHeight: isMobile ? '40px' : '48px',
+                fontSize: isMobile ? '0.8rem' : '0.875rem',
+                padding: isMobile ? '6px 12px' : '12px 16px'
+              }
+            }}>
+              <Tabs 
+                value={value} 
+                onChange={handleChange}
+                variant={isMobile ? "scrollable" : "standard"}
+                scrollButtons={isMobile ? "auto" : false}
+                sx={{
+                  borderBottom: 1,
+                  borderColor: 'divider'
+                }}
+              >
+                <Tab value="vitals" label={isMobile ? "Vital" : "Vital Bulgular"} />
+                <Tab value="diagnosis" label={isMobile ? "Tanı" : "Tanı/Tedavi"} />
+                <Tab value="medications" label="İlaçlar" />
+                <Tab value="imaging" label="Görüntüleme" />
+                <Tab value="labs" label="Lab" />
+              </Tabs>
 
-                <Box sx={{ mt: 2 }}>
-                  {value === "vitals" && (
-                    <VitalsTab
-                      doctorId={userId}
-                      patientId={patientInformation?.patientId}
-                      onSaveAndExit={() => handleButtonClick("saveAndExit")}
-                    />
-                  )}
-                  {value === "diagnosis" && (
-                    <DiagnosisTab
-                      values={diagnosisValues}
-                      onChange={handleDiagnosisChange}
-                      metaData={{
-                        patientId: patientInformation?.id,
-                        doctorId: userId,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                      }}
-                    />
-                  )}
-                  {value === "medications" && (
-                    <CreatePrescription
-                      doctorId={String(userId)}
-                      patientId={String(patientInformation?.patientId)}
-                      reservationId={String(patientInformation?.reservationId)}
-                    />
-                  )}
-                  {value === "imaging" && <ImagingTab />}
-                  {value === "labs" && <LabsTab />}
-                </Box>
+              <Box sx={{ mt: isMobile ? 1 : 2 }}>
+                {value === "vitals" && (
+                  <VitalsTab
+                    doctorId={userId}
+                    patientId={patientInformation?.patientId}
+                    onSaveAndExit={() => handleButtonClick("saveAndExit")}
+                  />
+                )}
+                {value === "diagnosis" && (
+                  <DiagnosisTab
+                    values={diagnosisValues}
+                    onChange={handleDiagnosisChange}
+                    metaData={{
+                      patientId: patientInformation?.id,
+                      doctorId: userId,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    }}
+                  />
+                )}
+                {value === "medications" && (
+                  <CreatePrescription
+                    doctorId={String(userId)}
+                    patientId={String(patientInformation?.patientId)}
+                    reservationId={String(patientInformation?.reservationId)}
+                  />
+                )}
+                {value === "imaging" && <ImagingTab />}
+                {value === "labs" && <LabsTab />}
               </Box>
+            </Box>
 
-              {/* Alt Aksiyon Butonları */}
-              <div className={`flex ${isMobile ? 'flex-col' : 'flex-row justify-end'} gap-3 mt-6`}>
-                <button
-                  onClick={() => handleButtonClick("saveAndExit")}
-                  className={`px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200 ${isMobile ? 'w-full' : ''}`}
-                >
-                  Kaydet ve Çık
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-      <div>
+            {/* Alt Aksiyon Butonları */}
+            <div className={`flex ${isMobile ? 'flex-col space-y-2 mt-4 px-2' : 'flex-row justify-end mt-6'}`}>
+              <button
+                onClick={() => handleButtonClick("saveAndExit")}
+                className={`px-4 py-2 rounded text-white bg-blue-500 hover:bg-blue-600 transition-colors duration-200 
+                  ${isMobile ? 'w-full text-sm h-12 flex items-center justify-center' : ''}`}
+              >
+                Kaydet ve Çık
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      <div className={isMobile ? 'mt-4' : 'mt-6'}>
         <TodayPatientQueue
           setPatientInformation={setPatientInformation}
           refresh={refreshQueue}
         />
       </div>
-    </>
+    </div>
   );
 };
 

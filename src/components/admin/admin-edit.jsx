@@ -68,7 +68,7 @@ const AdminEdit = () => {
     const fetchAdminDetails = async () => {
       try {
         const response = await getAdminById(id);
-        console.log("response:  ", response);
+
         const adminData = response;
         // Backend'den gelen verileri initialValues formatına dönüştürüyoruz
         setInitialValues({
@@ -105,7 +105,6 @@ const AdminEdit = () => {
           : "",
       };
       const response = await updateAdmin(id, formattedValues);
-      console.log("response123:  ", response);
       if (response === "OK") {
         toast.success("Admin bilgileri başarıyla güncellendi");
         navigate("/dashboard/admin-management");

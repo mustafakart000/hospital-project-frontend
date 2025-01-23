@@ -3,7 +3,11 @@ import { createPrescription } from '../../../services/prescription-service';
 import MedicationsTab from '../hasta paneli/MedicationsTab';
 import { Button, notification } from 'antd';
 import PropTypes from 'prop-types';
+import { useMediaQuery } from 'react-responsive';
+
 const CreatePrescription = ({ doctorId, patientId, reservationId }) => {
+  const isMobile = useMediaQuery({ maxWidth: 710 });
+
   const [prescriptionData, setPrescriptionData] = useState({
     doctorId,
     patientId,
@@ -41,7 +45,7 @@ const CreatePrescription = ({ doctorId, patientId, reservationId }) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Yeni Reçete Oluştur</h2>
+        <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold`}>Yeni Reçete Oluştur</h2>
       </div>
 
       <MedicationsTab 
@@ -49,11 +53,19 @@ const CreatePrescription = ({ doctorId, patientId, reservationId }) => {
         resetForm={shouldResetForm}
       />
 
-      <div className="flex justify-end">
+      <div className={`${isMobile ? 'mt-4' : 'mt-6'}`}>
         <Button 
           type="primary"
           onClick={handleSubmit}
-          className="bg-blue-500"
+          style={{
+            width: isMobile ? '100%' : 'auto',
+            height: isMobile ? '48px' : '40px',
+            fontSize: isMobile ? '14px' : '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#3b82f6'
+          }}
         >
           Reçeteyi Oluştur
         </Button>

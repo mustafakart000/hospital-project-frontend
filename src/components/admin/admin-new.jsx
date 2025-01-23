@@ -77,9 +77,7 @@ const AdminNew = ({setActiveTab}) => {
           ? values.birthDate.format("YYYY-MM-DD")
           : "",
       };
-      console.log("admin-new.jsx formattedValues", formattedValues);
       const response = await createAdmin(formattedValues);
-      console.log("API Yanıtı:", response);
       if (response.includes("Admin başarıyla eklendi")) {
         toast.success("Başarılı bir şekilde kayıt oldunuz.");
         setActiveTab("list");

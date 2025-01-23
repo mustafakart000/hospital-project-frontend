@@ -76,7 +76,6 @@ const PatientEdit = () => {
         ...values,
         birthDate: values.birthDate ? dayjs(values.birthDate).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
       };
-      console.log("formattedValues", formattedValues);
       const response = await updatePatientProfile(id, formattedValues); 
       if (response === "Updated successfully") {
         toast.success("Hasta bilgileri başarıyla güncellendi");

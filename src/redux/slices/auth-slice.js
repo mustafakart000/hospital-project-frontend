@@ -25,7 +25,7 @@ const authSlice = createSlice({
       state.isUserLogin = true;
       state.loginSuccess = true;
 
-      console.log("LoginSuccess Payload:", action.payload);
+
 
       const currentToken = state.user?.token;
 
@@ -40,7 +40,7 @@ const authSlice = createSlice({
       };
 
       state.menu = getMenuItems(action.payload.role);
-      console.log("Updated User State:", state.user);
+
     },
     logout: (state) => {
       state.user = null;

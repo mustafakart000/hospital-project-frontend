@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 
 const PatientPanelPage = () => {
   const [userInfo, setUserInfo] = useState({});
-  const [medicalRecords, setMedicalRecords] = useState([]);
   const patientId = useSelector(state => state.auth.user.id.toString());
 
   useEffect(() => {
@@ -14,7 +13,6 @@ const PatientPanelPage = () => {
       try {
         const response = await getPatientProfile(patientId);
         setUserInfo(response);
-        setMedicalRecords(response.medicalRecords);
       } catch (error) {
         console.error('Hasta bilgileri yüklenirken hata oluştu:', error);
       }
@@ -77,9 +75,9 @@ const PatientPanelPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         {/* User Info */}
-        <div className="lg:col-span-2">
+        <div>
           <Card title="Kişisel Bilgiler" className="h-full">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -106,20 +104,6 @@ const PatientPanelPage = () => {
                 <p className="text-sm text-gray-500">Kan Grubu</p>
                 <p className="font-medium">{userInfo.kanGrubu}</p>
               </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Medical Records */}
-        <div>
-          <Card title="Tıbbi Geçmiş">
-            <div className="space-y-4">
-              {medicalRecords.map(record => (
-                <div key={record.id} className="flex justify-between items-center">
-                  <span>{record.title}</span>
-                  <span className="text-gray-600">{record.date}</span>
-                </div>
-              ))}
             </div>
           </Card>
         </div>
