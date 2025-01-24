@@ -301,23 +301,20 @@ const CreateReservationForm = ({ visible, onCancel }) => {
                         );
                         const isSelected = formik.values.reservationTime === slot.time;
                         
-                        // Gerçek tarihi manuel olarak ayarla
-                        const currentDate = moment('2024-01-23').set({ hour: 18, minute: 53 }); // Bugünün tarihi ve saati
+                        // Gerçek zamanı al
+                        const currentDate = moment();
                         const slotTime = moment(slot.time, 'HH:mm');
-                        const selectedDate = formik.values.reservationDate.clone(); // clone() ile yeni bir moment nesnesi oluştur
+                        const selectedDate = formik.values.reservationDate.clone();
                         
-                
-                        
-                        // Seçilen tarih bugünden büyükse hiçbir kısıtlama olmasın
+                        // Seçilen tarih bugünse geçmiş saat kontrolü yap
                         const isToday = selectedDate.isSame(currentDate, 'day');
-                    
                         
-                        // Sadece bugün için geçmiş saat kontrolü yap
+                        // Bugün için geçmiş saat kontrolü
                         const isPastTime = isToday && 
                           (slotTime.hour() < currentDate.hour() || 
                           (slotTime.hour() === currentDate.hour() && slotTime.minute() <= currentDate.minute()));
                         
-                        // Sadece bugün için geçmiş saat kısıtlaması uygula
+                        // Geçmiş saat veya rezerve edilmiş slot kontrolü
                         const isDisabled = isBooked || (isToday && isPastTime);
 
       
