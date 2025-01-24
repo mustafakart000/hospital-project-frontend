@@ -19,6 +19,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { getPatientProfile, updatePatientProfile } from "../../services/patient-service";
 
 const validationSchema = Yup.object({
+  username: Yup.string(),
   ad: Yup.string(),
   soyad: Yup.string(),
   email: Yup.string()
@@ -117,6 +118,23 @@ const PatientEdit = () => {
           <Form autoComplete="off">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-4">
+                <AntdForm.Item
+                  label="Kullanıcı Adı"
+                  labelCol={{ span: 8 }}
+                  wrapperCol={{ span: 16 }}
+                  validateStatus={errors.username && touched.username ? "error" : ""}
+                  help={errors.username && touched.username ? errors.username : ""}
+                >
+                  <Input
+                    name="username"
+                    placeholder="Kullanıcı Adı"
+                    onChange={(e) => setFieldValue("username", e.target.value)}
+                    onBlur={() => setFieldTouched("username", true)}
+                    value={values.username}
+                    className="w-full"
+                  />
+                </AntdForm.Item>
+
                 <AntdForm.Item
                   label="Ad"
                   labelCol={{ span: 8 }}

@@ -12,7 +12,7 @@ const authService = {
         if (!this.publicKey) {
             const resp = await axios.get(`${baseUrl}/auth/public-key`);
             this.publicKey = resp.data;
-            console.log("publicKey: ", this.publicKey)
+
         }
         return this.publicKey;
     },
@@ -32,7 +32,7 @@ export const userLogin = async (payload) => {
 
     try {
         // payload.password = await authService.login(payload.password);
-        console.log("payload2: ", payload.password)
+        
         const resp = await axios.post(`${baseUrl}/auth/login`, payload);
         // Login başarılı olduktan sonra hemen kullanıcı bilgilerini alalım
         if (resp.data.token) {
