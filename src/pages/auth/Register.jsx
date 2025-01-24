@@ -36,6 +36,9 @@ const validationSchema = Yup.object({
   password: Yup.string()
     .min(6, "Şifre en az 6 karakter olmalıdır")
     .required("Şifre zorunludur"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password"), null], "Şifreler eşleşmiyor")
+    .required("Şifre tekrarı zorunludur"),
   ad: Yup.string().required("Ad zorunludur"),
   soyad: Yup.string().required("Soyad zorunludur"),
   email: Yup.string()
@@ -55,6 +58,7 @@ const validationSchema = Yup.object({
 const initialValues = {
   username: "",
   password: "",
+  confirmPassword: "",
   ad: "",
   soyad: "",
   email: "",
@@ -180,7 +184,7 @@ const Register = () => {
 
             {/* Username (Aynı TC kimlik alanı gibi zorunluluk) */}
             <AntdForm.Item
-              label={<span style={{ color: "gray", fontWeight: "bold" }}>Kullanıcı Adı (TC)</span>}
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Kullanıcı Adı</span>}
               validateStatus={errors.username && touched.username ? "error" : ""}
               help={errors.username && touched.username ? errors.username : ""}
             >
@@ -268,6 +272,7 @@ const Register = () => {
                 onBlur={handleBlur}
                 value={values.kanGrubu || ""}
               >
+                <Select.Option value="" disabled>Kan grubu seçiniz</Select.Option>
                 <Select.Option value="A+">A+</Select.Option>
                 <Select.Option value="A-">A-</Select.Option>
                 <Select.Option value="B+">B+</Select.Option>
@@ -291,6 +296,21 @@ const Register = () => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.password}
+              />
+            </AntdForm.Item>
+
+            {/* Şifre Tekrar */}
+            <AntdForm.Item
+              label={<span style={{ color: "gray", fontWeight: "bold" }}>Şifre Tekrar</span>}
+              validateStatus={errors.confirmPassword && touched.confirmPassword ? "error" : ""}
+              help={errors.confirmPassword && touched.confirmPassword ? errors.confirmPassword : ""}
+            >
+              <Input.Password
+                name="confirmPassword"
+                placeholder="Şifre Tekrar"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.confirmPassword}
               />
             </AntdForm.Item>
 
