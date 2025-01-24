@@ -30,7 +30,7 @@ export const loginThunk = (payload) => async (dispatch) => {
         return response;
     } catch (error) {
         if (error) {
-            const errorMessage = error.response?.data?.message || 'Giriş başarısız1234';
+            const errorMessage = error.response?.data?.message || 'Giriş başarısız';
             dispatch(loginFailure({ message: errorMessage }));
             dispatch(setLoginSuccess(false));
             return Promise.reject(error); // error objesini direkt olarak gönderiyoruz
