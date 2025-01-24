@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import * as yup from "yup";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form } from "formik";
 import { toast } from "react-hot-toast";
 import { loginThunk } from "../../redux/slices/authThunks";
 import { Input } from "antd";
@@ -24,7 +24,7 @@ const ErrorMessage = ({ message }) => (
 
 ErrorMessage.propTypes = {
   message: PropTypes.string.isRequired,
-};
+};é
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -81,12 +81,16 @@ const Login = () => {
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
               Username
               </label>
-              <Field
+              <Input
                 id="username"
                 name="username"
                 type="text"
-                className="w-full p-2 border rounded-md"
+                className="w-full focus:ring-2 focus:ring-blue-100 focus:border-blue-500 focus:outline-none"
                 placeholder="Username giriniz"
+                onChange={(e) => {
+                  formikRef.current?.setFieldValue("username", e.target.value);
+                }}
+                onBlur={() => formikRef.current?.setFieldTouched("username", true)}
               />
               {errors.username && touched.username && (
                 <div className="text-red-500 text-sm">{errors.username}</div>
@@ -101,7 +105,7 @@ const Login = () => {
                 name="password"
                 id="password"
                 placeholder="Şifreniz"
-                className="w-full"
+                className="w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                 onChange={(e) => {
                   formikRef.current?.setFieldValue("password", e.target.value);
                 }}
