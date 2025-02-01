@@ -24,7 +24,7 @@ const ErrorMessage = ({ message }) => (
 
 ErrorMessage.propTypes = {
   message: PropTypes.string.isRequired,
-};é
+};
 
 const Login = () => {
   const dispatch = useDispatch();

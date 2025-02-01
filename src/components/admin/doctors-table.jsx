@@ -43,11 +43,9 @@ const DoctorTable = ({ activeTab }) => {
   const handleSearch = (value) => {
     const searchValue = value.toLowerCase();
     const filtered = doctors.filter((doctor) =>
-      Object.values(doctor).some(
-        (val) =>
-          val &&
-          val.toString().toLowerCase().includes(searchValue)
-      )
+      doctor.name.toLowerCase().includes(searchValue) || 
+      doctor.phone.toLowerCase().includes(searchValue) || 
+      doctor.speciality.toLowerCase().includes(searchValue)
     );
     setFilteredDoctors(filtered);
     setSearchText(value);
