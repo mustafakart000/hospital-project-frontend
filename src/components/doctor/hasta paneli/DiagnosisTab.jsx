@@ -1,20 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useMediaQuery } from 'react-responsive';
-import { Form, DatePicker } from 'antd';
-import dayjs from 'dayjs';
+
 
 const DiagnosisTab = ({ values, onChange }) => {
   const isMobile = useMediaQuery({ maxWidth: 600 });
 
-  const handleDateChange = (date) => {
-    onChange({
-      target: {
-        name: 'birthDate',
-        value: date
-      }
-    });
-  };
+
 
   return (
     <div className={`${isMobile ? 'flex flex-col' : 'grid grid-cols-2'} gap-4`}>
@@ -93,18 +85,6 @@ const DiagnosisTab = ({ values, onChange }) => {
               placeholder="Tedavi planını detaylı olarak giriniz..."
             />
           </div>
-          <Form.Item
-            label="Doğum Tarihi"
-            className="mb-4"
-          >
-            <DatePicker
-              style={{ width: "100%" }}
-              placeholder="Doğum Tarihi Seçiniz"
-              onChange={handleDateChange}
-              value={values.birthDate ? dayjs(values.birthDate) : null}
-              format="YYYY-MM-DD"
-            />
-          </Form.Item>
         </div>
       </div>
     </div>
