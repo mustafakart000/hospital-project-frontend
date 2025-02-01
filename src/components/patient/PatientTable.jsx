@@ -21,6 +21,7 @@ const PatientTable = ({ activeTab }) => {
     const fetchPatients = async () => {
       try {
         const response = await getAllPatients();
+        console.log("response",response)
         const formattedPatients = response.content.map((patient) => {
           const { ad, soyad, telefon, id, tcKimlik } = patient;
           return {

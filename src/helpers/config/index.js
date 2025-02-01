@@ -1,6 +1,6 @@
 export const config = {
     api: {
-        baseUrl: "http://healwell.online/api",
+        baseUrl: "http://localhost:8080/api",
     },
     pageRoles: {
         dashboard: ["ADMIN", "DOCTOR", "SECRETARY"],
