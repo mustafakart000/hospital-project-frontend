@@ -26,6 +26,9 @@ import {
 import moment from "moment"; // Tarih formatlama için moment (Doğum tarihi seçimi)
 import toast from "react-hot-toast";
 import { config } from "../../helpers/config";
+
+import PhoneInputRegister from "../../components/common/phone-input-register";
+import TcInputRegister from "../../components/common/tc-input-register";
 // Ant Design tipografi ayarı (Daha iyi başlıklar):
 const { Title, Text } = Typography;
 
@@ -50,7 +53,9 @@ const validationSchema = Yup.object({
   adres: Yup.string().required("Adres zorunludur"),
   birthDate: Yup.date().required("Doğum tarihi zorunludur"),
   kanGrubu: Yup.string().required("Kan grubu zorunludur"),
-  tcKimlik: Yup.string().required("TC Kimlik numarası zorunludur"),
+  tcKimlik: Yup.string()
+    .required("TC Kimlik numarası zorunludur")
+    .matches(/^\d{11}$/, "TC Kimlik 11 haneli olmalıdır"),
 });
 
 // -----------------------------------------------------
@@ -132,16 +137,15 @@ const Register = () => {
           handleSubmit(values, actions);
         }}
       >
-        {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => (
-          <Form
-            labelCol={{ span: 24 }} // Etiketin tüm genişliği kaplaması için
-            wrapperCol={{ span: 24 }} // Giriş alanının tüm genişliği kaplaması için
-          >
+        {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting, setFieldTouched }) => (
+          <Form>
             {/* Ad */}
             <AntdForm.Item
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Ad</span>}
               validateStatus={errors.ad && touched.ad ? "error" : ""}
               help={errors.ad && touched.ad ? errors.ad : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <Input
                 name="ad"
@@ -157,6 +161,8 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Soyad</span>}
               validateStatus={errors.soyad && touched.soyad ? "error" : ""}
               help={errors.soyad && touched.soyad ? errors.soyad : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <Input
                 name="soyad"
@@ -172,14 +178,21 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>TC Kimlik</span>}
               validateStatus={errors.tcKimlik && touched.tcKimlik ? "error" : ""}
               help={errors.tcKimlik && touched.tcKimlik ? errors.tcKimlik : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
-              <Input
-                name="tcKimlik"
-                placeholder="TC Kimlik"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.tcKimlik}
-              />
+               <TcInputRegister
+                    value={values.tcKimlik}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,11}$/.test(value)) {
+                        setFieldValue("tcKimlik", value);
+                      }
+                    }}
+                    className="w-full"
+                    onBlur={() => setFieldTouched("tcKimlik", true)}
+                  />
+              
             </AntdForm.Item>
 
             {/* Username (Aynı TC kimlik alanı gibi zorunluluk) */}
@@ -187,6 +200,8 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Kullanıcı Adı</span>}
               validateStatus={errors.username && touched.username ? "error" : ""}
               help={errors.username && touched.username ? errors.username : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <Input
                 name="username"
@@ -202,6 +217,8 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Email</span>}
               validateStatus={errors.email && touched.email ? "error" : ""}
               help={errors.email && touched.email ? errors.email : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <Input
                 name="email"
@@ -218,14 +235,20 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Telefon</span>}
               validateStatus={errors.telefon && touched.telefon ? "error" : ""}
               help={errors.telefon && touched.telefon ? errors.telefon : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
-              <Input
-                name="telefon"
-                placeholder="Telefon"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.telefon}
-              />
+               <PhoneInputRegister
+                    name="telefon"
+                    placeholder="Telefon"
+                    onChange={(e) => {
+                      const cleanNumber = e.target.value.replace(/\s/g, '');
+                      setFieldValue("telefon", cleanNumber);
+                    }}
+                    onBlur={() => setFieldTouched("telefon", true)}
+                    value={values.telefon}
+                    className="w-full"
+                  />
             </AntdForm.Item>
 
             {/* Doğum Tarihi */}
@@ -233,6 +256,8 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Doğum Tarihi</span>}
               validateStatus={errors.birthDate && touched.birthDate ? "error" : ""}
               help={errors.birthDate && touched.birthDate ? errors.birthDate : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <DatePicker
                 style={{ width: "100%" }}
@@ -249,6 +274,8 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Adres</span>}
               validateStatus={errors.adres && touched.adres ? "error" : ""}
               help={errors.adres && touched.adres ? errors.adres : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <Input.TextArea
                 name="adres"
@@ -265,6 +292,8 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Kan Grubu</span>}
               validateStatus={errors.kanGrubu && touched.kanGrubu ? "error" : ""}
               help={errors.kanGrubu && touched.kanGrubu ? errors.kanGrubu : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <Select
                 placeholder="Kan grubu seçiniz"
@@ -289,6 +318,8 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Şifre</span>}
               validateStatus={errors.password && touched.password ? "error" : ""}
               help={errors.password && touched.password ? errors.password : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <Input.Password
                 name="password"
@@ -304,6 +335,8 @@ const Register = () => {
               label={<span style={{ color: "gray", fontWeight: "bold" }}>Şifre Tekrar</span>}
               validateStatus={errors.confirmPassword && touched.confirmPassword ? "error" : ""}
               help={errors.confirmPassword && touched.confirmPassword ? errors.confirmPassword : ""}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
             >
               <Input.Password
                 name="confirmPassword"
